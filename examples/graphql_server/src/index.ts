@@ -8,7 +8,7 @@ import { buildGraphbackAPI } from 'graphback'
 import { loadConfigSync } from 'graphql-config'
 import http from 'http'
 // FIXME: resolve as package
-import { createGraphQLWS } from '../../cactus_sync_server/lib'
+import { createGraphQLWS } from '../../../packages/cactus_sync_server/lib'
 import { connectDB } from './db'
 import { noteResolvers } from './resolvers/noteResolvers'
 async function start() {
