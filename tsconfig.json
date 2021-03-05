@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
+    "module": "commonjs",
     "baseUrl": "./packages",
     "paths": {
       "@xsoulspace/cactus-sync": ["cactus-sync/lib"]
