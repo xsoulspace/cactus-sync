@@ -5,8 +5,8 @@ module.exports = {
   ...base,
   displayName: pack.name,
   name: pack.name,
-  rootDir: '../..',
-  testMatch: [
-    `<rootDir>/packages/${pack.name}/**/*.(test|spec).(jsx?|tsx?|ts|js)`,
-  ],
+  // rootDir: '../..',
+  // testMatch: [
+  //   `<rootDir>/packages/${pack.name}/**/*.(test|spec).(jsx?|tsx?|ts|js)`,
+  // ],
 }
