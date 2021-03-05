@@ -22,7 +22,6 @@
     "dist"
   ],
   "scripts": {
-    "test": "",
     "lint-fix": "",
     "build": "yarn clean && yarn compile",
     "clean": "rm -rf ./dist",

@@ -9,6 +9,8 @@ interface CactusSyncI {
 
 /**
  * To init class use `CactusSync.init()`
+ *
+ * This is main class to init db
  * */
 export class CactusSync extends Dexie {
   static db: CactusSync
