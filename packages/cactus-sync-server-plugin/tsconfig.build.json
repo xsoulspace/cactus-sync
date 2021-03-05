@@ -1,7 +1,10 @@
 {
   "extends": "../../tsconfig.build.json",
   "compilerOptions": {
-    "outDir": "./dist"
+    "composite": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./lib"
   },
 
   "include": ["src/**/*"]

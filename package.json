@@ -2,8 +2,22 @@
   "dependencies": {
     "lerna": "^4.0.0"
   },
+  "devDependencies": {
+    "typescript": "^4.2.3",
+    "eslint": "^7.18.0",
+    "@types/jest": "^26.0.20",
+    "@typescript-eslint/eslint-plugin": "^4.13.0",
+    "@typescript-eslint/parser": "^4.13.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "prettier": "^2.2.1",
+    "yarn-upgrade-all": "^0.5.4"
+  },
   "name": "@xsoulspace/cactus_sync",
+  "private": true,
   "workspaces": [
-    "packages/*/*"
-  ]
+    "packages/*"
+  ],
+  "scripts": {
+    "bootstrap": "yarn && yarn lerna bootstrap"
+  }
 }
