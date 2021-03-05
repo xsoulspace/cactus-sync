@@ -2,5 +2,8 @@
   "dependencies": {
     "lerna": "^4.0.0"
   },
-  "name": "@xsoulspace/cactus_sync"
+  "name": "@xsoulspace/cactus_sync",
+  "workspaces": [
+    "packages/*/*"
+  ]
 }

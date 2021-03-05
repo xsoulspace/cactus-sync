@@ -1,14 +1,13 @@
 {
-  "name": "@xsoulspace/cactus_sync",
+  "name": "@xsoulspace/cactus_sync_client_plugin",
   "version": "0.1.0",
-  "description": "Sharp and simple as cactus offline-first client library to sync with graphql server..",
+  "description": "Plugin for client api generation",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "author": {
     "name": "Anton Malofeev",
     "email": "anton@xsoulspace.dev"
   },
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xsoulspace/cactus-sync.git"
@@ -17,6 +16,7 @@
     "url": "https://github.com/xsoulspace/cactus-sync/issues"
   },
   "homepage": "https://github.com/xsoulspace/cactus-sync#readme",
+  "license": "MIT",
   "private": false,
   "files": [
     "dist"
