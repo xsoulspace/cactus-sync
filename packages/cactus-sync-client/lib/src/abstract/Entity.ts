@@ -1,10 +1,10 @@
 import uuid4 from 'uuid4'
 
 export abstract class AbstractEntity {
-  constructor(public gid?: string) {
-    gid ? (this.gid = gid) : (this.gid = uuid4())
+  constructor(public _id?: string) {
+    _id ? (this._id = _id) : (this._id = uuid4)
   }
-  equals(e1: AbstractEntity, e2: AbstractEntity) {
-    return e1.gid == e2.gid
+  static equal(e1: AbstractEntity, e2: AbstractEntity) {
+    return e1._id === e2._id
   }
 }

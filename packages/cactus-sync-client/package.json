@@ -29,7 +29,10 @@
     "compile": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "dexie": "^3.0.3"
+    "dexie": "^3.0.3",
+    "uuid4": "^2.0.2",
+    "graphql-metadata": "^0.7.6",
+    "graphql": "^15.5.0"
   },
   "devDependencies": {
     "typescript": "^4.2.3",
@@ -40,8 +43,6 @@
     "@typescript-eslint/parser": "^4.13.0",
     "eslint-plugin-prettier": "^3.3.1",
     "prettier": "^2.2.1",
-    "yarn-upgrade-all": "^0.5.4",
-    "uuid4": "^2.0.2",
-    "graphql-metadata": "^0.7.6"
+    "yarn-upgrade-all": "^0.5.4"
   }
 }
