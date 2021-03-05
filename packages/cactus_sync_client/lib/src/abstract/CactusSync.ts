@@ -29,5 +29,6 @@ export class CactusSync extends Dexie {
     CactusSync.db.version(db.dbVersion).stores({
       [model.__typename]: model._dexieTableFields(),
     })
+    return model
   }
 }

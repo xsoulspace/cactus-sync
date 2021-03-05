@@ -1,14 +1,13 @@
 {
-  "name": "@xsoulspace/cactus_sync_server",
+  "name": "@xsoulspace/cactus_sync_server_plugin",
   "version": "0.1.0",
-  "description": "Sharp and simple as cactus offline-first client library to sync with graphql server..",
+  "description": "Plugin for server resolvers generation",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Anton Malofeev",
+    "email": "anton@xsoulspace.dev"
   },
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xsoulspace/cactus-sync.git"
@@ -17,6 +16,7 @@
     "url": "https://github.com/xsoulspace/cactus-sync/issues"
   },
   "homepage": "https://github.com/xsoulspace/cactus-sync#readme",
+  "license": "MIT",
   "private": false,
   "files": [
     "dist"
@@ -28,14 +28,12 @@
     "clean": "rm -rf ./dist",
     "compile": "tsc -p tsconfig.build.json"
   },
-  "dependencies": {
-    "dexie": "^3.0.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^4.2.3",
     "eslint": "^7.18.0",
     "@types/jest": "^26.0.20",
-    "jest": "^26.6.3",
+    "ts-jest": "^26.5.3",
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",
     "eslint-plugin-prettier": "^3.3.1",

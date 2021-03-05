@@ -1,15 +1,16 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('dotenv').config()
-import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
-import { buildGraphbackAPI } from 'graphback'
 import { createMongoDbProvider } from '@graphback/runtime-mongo'
+import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
 import cors from 'cors'
 import express from 'express'
-import http from 'http'
+import { buildGraphbackAPI } from 'graphback'
 import { loadConfigSync } from 'graphql-config'
+import http from 'http'
+// FIXME: resolve as package
+import { createGraphQLWS } from '../../cactus_sync_server/lib'
 import { connectDB } from './db'
 import { noteResolvers } from './resolvers/noteResolvers'
-import { createGraphQLWS } from '../../cactus-sync-server/lib'
 async function start() {
   const app = express()
 
