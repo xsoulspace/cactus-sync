@@ -1,0 +1,11 @@
+{
+  "name": "@xsoulspace/cactus-sync",
+  "version": "0.1.0",
+  "description": "Sharp and simple as cactus offline-first library to sync graphql server with client. ",
+  "main": "dist/index",
+  "typings": "dist/index.d.ts",
+  "repository": "https://github.com/xsoulspace/cactus-sync.git",
+  "author": "Anton Malofeev",
+  "license": "MIT",
+  "private": false
+}
