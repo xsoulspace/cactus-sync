@@ -33,3 +33,27 @@ type User {
   """
   todos: [User]!
 }
+
+"""
+@model
+This model keeps all changes for every model any made
+"""
+type CactusSyncTimestamp{
+  # TODO: replace type with ID
+  _id: string
+  # TODO: add Timestamp
+  # TODO: must be indexed for fastest finds
+  timestamp: number
+  # FIXME:
+  changeType: DatabaseChangeType
+  # model __typename
+  modelTypename: string
+  # TODO: replace with ID
+  changedId: string
+}
+
+enum DatabaseChangeType {
+  Create = 1,
+  Update = 2,
+  Delete = 3,
+}
