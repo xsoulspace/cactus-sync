@@ -9,6 +9,7 @@ import {
 } from 'dexie-observable/api'
 import Maybe from 'graphql/tsutils/Maybe'
 import { DbModelBuilder } from './DbModel'
+import { GraphbackRunner } from './GraphbackRunner'
 
 interface CactusSyncI {
   dbName?: Maybe<string>
@@ -43,7 +44,19 @@ const useRunHooks = <TIDatabaseChange extends IDatabaseChange>({
  * This is main class to init db
  * */
 export class CactusSync extends Dexie {
-  static db: CactusSync
+  /**
+   * This is running Dexie db instance
+   * To initialize db use:
+   * 1. `CactusSync.init()`
+   * 2. add models by `CactusSync.createModel()`
+   * 3. use it anywehere in app via Model.(save/update/remove/find/get)
+   *
+   * Model will use `CactusSync.graphqlExecute` to run query and
+   * will get results back
+   */
+  static db?: Maybe<CactusSync>
+
+  graphqlRunner?: Maybe<GraphbackRunner>
   dbVersion: number
   // include enumeration for models map
   constructor({ dbName, dexieOptions, dbVersion }: CactusSyncI) {
@@ -52,14 +65,22 @@ export class CactusSync extends Dexie {
     this.dbVersion = dbVersion ?? 1
 
     db.version(this.dbVersion)
+    // maybe will need to @deprecate
     db.on('changes', this.handleOnCactusSyncChanges)
   }
   /**
-   * Start point to initialize CactusSyncDb
+   * Start point to initialize CactusSyncDb to add new models
+   *
+   * You also should configure path for your graphql schema
+   * See more about config: https://graphql-config.com/introduction/
+   *
    * @param arg
    */
-  static init(arg: CactusSyncI) {
+  static async init(arg: CactusSyncI) {
     CactusSync.db = new CactusSync(arg)
+    CactusSync.db.graphqlRunner = await GraphbackRunner.init({
+      db: CactusSync.db,
+    })
   }
   /**
    * Start point to include Model into db
@@ -83,9 +104,7 @@ export class CactusSync extends Dexie {
   updateHooks: Maybe<HandleModelChange<IUpdateChange>>[] = []
   deleteHooks: Maybe<HandleModelChange<IDeleteChange>>[] = []
 
-  // TODO: @deprecated as it will be completely resolved in ? how to handle offline/online updates??
-  // maybe it needs to be sended and queued only inside
-  // model changes (create, update, delete) as hooks?
+  // TODO: @deprecated?
   handleOnCactusSyncChanges(changes: IDatabaseChange[], partial: boolean) {
     for (const change of changes) {
       switch (change.type) {

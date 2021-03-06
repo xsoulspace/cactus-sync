@@ -33,7 +33,9 @@
     "uuid4": "^2.0.2",
     "graphql-metadata": "^0.7.6",
     "graphql": "^15.5.0",
+    "graphql-config": "^3.2.0",
     "graphql-tools": "^7.0.4",
+    "@graphql-tools/merge": "^6.2.10",
     "graphback": "^1.1.2"
   },
   "devDependencies": {
