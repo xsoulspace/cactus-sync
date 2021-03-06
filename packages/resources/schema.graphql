@@ -70,9 +70,11 @@ type CactusSyncTimestamp{
   # TODO: replace with ID
   changedId: string
 }
-
+"""
+Named according to spec: https://graphql-rules.com/rules/naming-enum
+"""
 enum DatabaseChangeType {
-  Create = 1,
-  Update = 2,
-  Delete = 3,
+  CREATE = 1,
+  UPDATE = 2,
+  DELETE = 3,
 }
