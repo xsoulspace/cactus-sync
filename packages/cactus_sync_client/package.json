@@ -29,13 +29,11 @@
   },
   "dependencies": {
     "dexie": "^3.0.3",
-    "dexie-observable": "^3.0.0-beta.10",
     "uuid4": "^2.0.2",
     "graphql-metadata": "^0.7.6",
     "graphql": "^15.5.0",
-    "@types/lodash": "^4.14.168",
-    "lodash": "^4.17.21",
-    "graphql-tools": "^7.0.4"
+    "graphql-tools": "^7.0.4",
+    "graphback": "^1.1.2"
   },
   "devDependencies": {
     "typescript": "^4.2.3",
