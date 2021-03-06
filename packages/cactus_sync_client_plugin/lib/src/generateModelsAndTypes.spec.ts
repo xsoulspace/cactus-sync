@@ -17,15 +17,6 @@ describe('generateModelsAndTypes', () => {
     // )
     const exectableSchema = makeExecutableSchema({
       typeDefs: schemaStr,
-      resolvers: {
-        Query: {
-          findTodos: async () => {
-            console.log('findTodos')
-            // async findTodos(parent, args, context, info) {
-            return { items: [] }
-          },
-        },
-      },
       logger: { log: (e) => console.log(e) },
     })
     const query = `

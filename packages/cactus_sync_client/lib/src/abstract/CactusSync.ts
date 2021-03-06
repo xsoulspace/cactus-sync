@@ -78,12 +78,12 @@ export class CactusSync extends Dexie {
     return model
   }
 
-  // TODO: rethink
+  // TODO: @deprecated?
   createHooks: Maybe<HandleModelChange<ICreateChange>>[] = []
   updateHooks: Maybe<HandleModelChange<IUpdateChange>>[] = []
   deleteHooks: Maybe<HandleModelChange<IDeleteChange>>[] = []
 
-  // TODO: how to handle offline/online updates??
+  // TODO: @deprecated as it will be completely resolved in ? how to handle offline/online updates??
   // maybe it needs to be sended and queued only inside
   // model changes (create, update, delete) as hooks?
   handleOnCactusSyncChanges(changes: IDatabaseChange[], partial: boolean) {
