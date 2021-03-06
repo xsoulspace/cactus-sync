@@ -1,6 +1,8 @@
 /* eslint-disable */
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -11,53 +13,89 @@ export type Scalars = {
   GraphbackObjectID: string;
 };
 
-/**  @model  */
-export type Comment = {
-  __typename?: 'Comment';
+/**
+ * @model
+ * @cactusSync
+ * This model keeps all changes for every model any made
+ * FIXME: Maybe schema needs to work this way (first open, after offline):
+ * client queried CactusSyncTimestamp first.
+ * If new timestamps occured, then request changes
+ */
+export type CactusSyncTimestamp = {
+  __typename?: 'CactusSyncTimestamp';
   _id: Scalars['GraphbackObjectID'];
-  text?: Maybe<Scalars['String']>;
-  description?: Maybe<Scalars['String']>;
-  /** @manyToOne(field: 'comments', key: 'noteId') */
-  note?: Maybe<Note>;
+  /**
+   * The id, which will be created, if
+   * the model was created offline
+   */
+  _clientId: Scalars['GraphbackObjectID'];
+  timestamp?: Maybe<Scalars['Int']>;
+  changeType: DatabaseChangeType;
+  modelTypename?: Maybe<Scalars['String']>;
+  modelId: Scalars['GraphbackObjectID'];
 };
 
-export type CommentFilter = {
+export type CactusSyncTimestampFilter = {
   _id?: Maybe<GraphbackObjectIdInput>;
-  text?: Maybe<StringInput>;
-  description?: Maybe<StringInput>;
-  noteId?: Maybe<GraphbackObjectIdInput>;
-  and?: Maybe<Array<CommentFilter>>;
-  or?: Maybe<Array<CommentFilter>>;
-  not?: Maybe<CommentFilter>;
+  _clientId?: Maybe<GraphbackObjectIdInput>;
+  timestamp?: Maybe<IntInput>;
+  changeType?: Maybe<StringInput>;
+  modelTypename?: Maybe<StringInput>;
+  modelId?: Maybe<GraphbackObjectIdInput>;
+  and?: Maybe<Array<CactusSyncTimestampFilter>>;
+  or?: Maybe<Array<CactusSyncTimestampFilter>>;
+  not?: Maybe<CactusSyncTimestampFilter>;
 };
 
-export type CommentResultList = {
-  __typename?: 'CommentResultList';
-  items: Array<Maybe<Comment>>;
+export type CactusSyncTimestampResultList = {
+  __typename?: 'CactusSyncTimestampResultList';
+  items: Array<Maybe<CactusSyncTimestamp>>;
   offset?: Maybe<Scalars['Int']>;
   limit?: Maybe<Scalars['Int']>;
   count?: Maybe<Scalars['Int']>;
 };
 
-export type CommentSubscriptionFilter = {
-  and?: Maybe<Array<CommentSubscriptionFilter>>;
-  or?: Maybe<Array<CommentSubscriptionFilter>>;
-  not?: Maybe<CommentSubscriptionFilter>;
+export type CactusSyncTimestampSubscriptionFilter = {
+  and?: Maybe<Array<CactusSyncTimestampSubscriptionFilter>>;
+  or?: Maybe<Array<CactusSyncTimestampSubscriptionFilter>>;
+  not?: Maybe<CactusSyncTimestampSubscriptionFilter>;
   _id?: Maybe<GraphbackObjectIdInput>;
-  text?: Maybe<StringInput>;
-  description?: Maybe<StringInput>;
+  _clientId?: Maybe<GraphbackObjectIdInput>;
+  timestamp?: Maybe<IntInput>;
+  changeType?: Maybe<StringInput>;
+  modelTypename?: Maybe<StringInput>;
+  modelId?: Maybe<GraphbackObjectIdInput>;
 };
 
-export type CreateCommentInput = {
-  text?: Maybe<Scalars['String']>;
-  description?: Maybe<Scalars['String']>;
-  noteId?: Maybe<Scalars['GraphbackObjectID']>;
+export type CreateCactusSyncTimestampInput = {
+  _clientId: Scalars['GraphbackObjectID'];
+  timestamp?: Maybe<Scalars['Int']>;
+  changeType: DatabaseChangeType;
+  modelTypename?: Maybe<Scalars['String']>;
+  modelId: Scalars['GraphbackObjectID'];
 };
 
-export type CreateNoteInput = {
-  title: Scalars['String'];
-  description?: Maybe<Scalars['String']>;
+export type CreateTodoInput = {
+  _clientId: Scalars['GraphbackObjectID'];
+  _version: Scalars['Int'];
+  _lastUpdatedAt: Scalars['Int'];
+  title?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['GraphbackObjectID']>;
 };
+
+export type CreateUserInput = {
+  _clientId: Scalars['GraphbackObjectID'];
+  _version: Scalars['Int'];
+  _lastUpdatedAt: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+};
+
+/** Named according to spec: https://graphql-rules.com/rules/naming-enum */
+export enum DatabaseChangeType {
+  Create = 'CREATE',
+  Update = 'UPDATE',
+  Delete = 'DELETE'
+}
 
 
 export type GraphbackObjectIdInput = {
@@ -71,102 +109,99 @@ export type GraphbackObjectIdInput = {
   between?: Maybe<Array<Scalars['GraphbackObjectID']>>;
 };
 
-export type MutateCommentInput = {
-  _id: Scalars['GraphbackObjectID'];
-  text?: Maybe<Scalars['String']>;
-  description?: Maybe<Scalars['String']>;
-  noteId?: Maybe<Scalars['GraphbackObjectID']>;
+export type IntInput = {
+  ne?: Maybe<Scalars['Int']>;
+  eq?: Maybe<Scalars['Int']>;
+  le?: Maybe<Scalars['Int']>;
+  lt?: Maybe<Scalars['Int']>;
+  ge?: Maybe<Scalars['Int']>;
+  gt?: Maybe<Scalars['Int']>;
+  in?: Maybe<Array<Scalars['Int']>>;
+  between?: Maybe<Array<Scalars['Int']>>;
 };
 
-export type MutateNoteInput = {
+export type MutateCactusSyncTimestampInput = {
   _id: Scalars['GraphbackObjectID'];
+  _clientId?: Maybe<Scalars['GraphbackObjectID']>;
+  timestamp?: Maybe<Scalars['Int']>;
+  changeType?: Maybe<DatabaseChangeType>;
+  modelTypename?: Maybe<Scalars['String']>;
+  modelId?: Maybe<Scalars['GraphbackObjectID']>;
+};
+
+export type MutateTodoInput = {
+  _id: Scalars['GraphbackObjectID'];
+  _clientId?: Maybe<Scalars['GraphbackObjectID']>;
+  _version?: Maybe<Scalars['Int']>;
+  _lastUpdatedAt?: Maybe<Scalars['Int']>;
   title?: Maybe<Scalars['String']>;
-  description?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['GraphbackObjectID']>;
+};
+
+export type MutateUserInput = {
+  _id: Scalars['GraphbackObjectID'];
+  _clientId?: Maybe<Scalars['GraphbackObjectID']>;
+  _version?: Maybe<Scalars['Int']>;
+  _lastUpdatedAt?: Maybe<Scalars['Int']>;
+  name?: Maybe<Scalars['String']>;
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createNote?: Maybe<Note>;
-  updateNote?: Maybe<Note>;
-  deleteNote?: Maybe<Note>;
-  createComment?: Maybe<Comment>;
-  updateComment?: Maybe<Comment>;
-  deleteComment?: Maybe<Comment>;
+  createTodo?: Maybe<Todo>;
+  updateTodo?: Maybe<Todo>;
+  deleteTodo?: Maybe<Todo>;
+  createUser?: Maybe<User>;
+  updateUser?: Maybe<User>;
+  deleteUser?: Maybe<User>;
+  createCactusSyncTimestamp?: Maybe<CactusSyncTimestamp>;
+  updateCactusSyncTimestamp?: Maybe<CactusSyncTimestamp>;
+  deleteCactusSyncTimestamp?: Maybe<CactusSyncTimestamp>;
 };
 
 
-export type MutationCreateNoteArgs = {
-  input: CreateNoteInput;
+export type MutationCreateTodoArgs = {
+  input: CreateTodoInput;
 };
 
 
-export type MutationUpdateNoteArgs = {
-  input: MutateNoteInput;
+export type MutationUpdateTodoArgs = {
+  input: MutateTodoInput;
 };
 
 
-export type MutationDeleteNoteArgs = {
-  input: MutateNoteInput;
+export type MutationDeleteTodoArgs = {
+  input: MutateTodoInput;
 };
 
 
-export type MutationCreateCommentArgs = {
-  input: CreateCommentInput;
+export type MutationCreateUserArgs = {
+  input: CreateUserInput;
 };
 
 
-export type MutationUpdateCommentArgs = {
-  input: MutateCommentInput;
+export type MutationUpdateUserArgs = {
+  input: MutateUserInput;
 };
 
 
-export type MutationDeleteCommentArgs = {
-  input: MutateCommentInput;
-};
-
-/**  @model  */
-export type Note = {
-  __typename?: 'Note';
-  _id: Scalars['GraphbackObjectID'];
-  title: Scalars['String'];
-  description?: Maybe<Scalars['String']>;
-  /**
-   * @oneToMany(field: 'note', key: 'noteId')
-   * @oneToMany(field: 'note')
-   */
-  comments: Array<Maybe<Comment>>;
+export type MutationDeleteUserArgs = {
+  input: MutateUserInput;
 };
 
 
-/**  @model  */
-export type NoteCommentsArgs = {
-  filter?: Maybe<CommentFilter>;
+export type MutationCreateCactusSyncTimestampArgs = {
+  input: CreateCactusSyncTimestampInput;
 };
 
-export type NoteFilter = {
-  _id?: Maybe<GraphbackObjectIdInput>;
-  title?: Maybe<StringInput>;
-  description?: Maybe<StringInput>;
-  and?: Maybe<Array<NoteFilter>>;
-  or?: Maybe<Array<NoteFilter>>;
-  not?: Maybe<NoteFilter>;
+
+export type MutationUpdateCactusSyncTimestampArgs = {
+  input: MutateCactusSyncTimestampInput;
 };
 
-export type NoteResultList = {
-  __typename?: 'NoteResultList';
-  items: Array<Maybe<Note>>;
-  offset?: Maybe<Scalars['Int']>;
-  limit?: Maybe<Scalars['Int']>;
-  count?: Maybe<Scalars['Int']>;
-};
 
-export type NoteSubscriptionFilter = {
-  and?: Maybe<Array<NoteSubscriptionFilter>>;
-  or?: Maybe<Array<NoteSubscriptionFilter>>;
-  not?: Maybe<NoteSubscriptionFilter>;
-  _id?: Maybe<GraphbackObjectIdInput>;
-  title?: Maybe<StringInput>;
-  description?: Maybe<StringInput>;
+export type MutationDeleteCactusSyncTimestampArgs = {
+  input: MutateCactusSyncTimestampInput;
 };
 
 export type OrderByInput = {
@@ -181,33 +216,46 @@ export type PageRequest = {
 
 export type Query = {
   __typename?: 'Query';
-  getDraftNotes?: Maybe<Array<Maybe<Note>>>;
-  getNote?: Maybe<Note>;
-  findNotes: NoteResultList;
-  getComment?: Maybe<Comment>;
-  findComments: CommentResultList;
+  getTodo?: Maybe<Todo>;
+  findTodos: TodoResultList;
+  getUser?: Maybe<User>;
+  findUsers: UserResultList;
+  getCactusSyncTimestamp?: Maybe<CactusSyncTimestamp>;
+  findCactusSyncTimestamps: CactusSyncTimestampResultList;
 };
 
 
-export type QueryGetNoteArgs = {
+export type QueryGetTodoArgs = {
   id: Scalars['GraphbackObjectID'];
 };
 
 
-export type QueryFindNotesArgs = {
-  filter?: Maybe<NoteFilter>;
+export type QueryFindTodosArgs = {
+  filter?: Maybe<TodoFilter>;
   page?: Maybe<PageRequest>;
   orderBy?: Maybe<OrderByInput>;
 };
 
 
-export type QueryGetCommentArgs = {
+export type QueryGetUserArgs = {
   id: Scalars['GraphbackObjectID'];
 };
 
 
-export type QueryFindCommentsArgs = {
-  filter?: Maybe<CommentFilter>;
+export type QueryFindUsersArgs = {
+  filter?: Maybe<UserFilter>;
+  page?: Maybe<PageRequest>;
+  orderBy?: Maybe<OrderByInput>;
+};
+
+
+export type QueryGetCactusSyncTimestampArgs = {
+  id: Scalars['GraphbackObjectID'];
+};
+
+
+export type QueryFindCactusSyncTimestampsArgs = {
+  filter?: Maybe<CactusSyncTimestampFilter>;
   page?: Maybe<PageRequest>;
   orderBy?: Maybe<OrderByInput>;
 };
@@ -232,40 +280,174 @@ export type StringInput = {
 
 export type Subscription = {
   __typename?: 'Subscription';
-  newNote: Note;
-  updatedNote: Note;
-  deletedNote: Note;
-  newComment: Comment;
-  updatedComment: Comment;
-  deletedComment: Comment;
+  newTodo: Todo;
+  updatedTodo: Todo;
+  deletedTodo: Todo;
+  newUser: User;
+  updatedUser: User;
+  deletedUser: User;
+  newCactusSyncTimestamp: CactusSyncTimestamp;
+  updatedCactusSyncTimestamp: CactusSyncTimestamp;
+  deletedCactusSyncTimestamp: CactusSyncTimestamp;
 };
 
 
-export type SubscriptionNewNoteArgs = {
-  filter?: Maybe<NoteSubscriptionFilter>;
+export type SubscriptionNewTodoArgs = {
+  filter?: Maybe<TodoSubscriptionFilter>;
 };
 
 
-export type SubscriptionUpdatedNoteArgs = {
-  filter?: Maybe<NoteSubscriptionFilter>;
+export type SubscriptionUpdatedTodoArgs = {
+  filter?: Maybe<TodoSubscriptionFilter>;
 };
 
 
-export type SubscriptionDeletedNoteArgs = {
-  filter?: Maybe<NoteSubscriptionFilter>;
+export type SubscriptionDeletedTodoArgs = {
+  filter?: Maybe<TodoSubscriptionFilter>;
 };
 
 
-export type SubscriptionNewCommentArgs = {
-  filter?: Maybe<CommentSubscriptionFilter>;
+export type SubscriptionNewUserArgs = {
+  filter?: Maybe<UserSubscriptionFilter>;
 };
 
 
-export type SubscriptionUpdatedCommentArgs = {
-  filter?: Maybe<CommentSubscriptionFilter>;
+export type SubscriptionUpdatedUserArgs = {
+  filter?: Maybe<UserSubscriptionFilter>;
 };
 
 
-export type SubscriptionDeletedCommentArgs = {
-  filter?: Maybe<CommentSubscriptionFilter>;
+export type SubscriptionDeletedUserArgs = {
+  filter?: Maybe<UserSubscriptionFilter>;
+};
+
+
+export type SubscriptionNewCactusSyncTimestampArgs = {
+  filter?: Maybe<CactusSyncTimestampSubscriptionFilter>;
+};
+
+
+export type SubscriptionUpdatedCactusSyncTimestampArgs = {
+  filter?: Maybe<CactusSyncTimestampSubscriptionFilter>;
+};
+
+
+export type SubscriptionDeletedCactusSyncTimestampArgs = {
+  filter?: Maybe<CactusSyncTimestampSubscriptionFilter>;
+};
+
+/**
+ * @model
+ * @cactusSync
+ * TODO: make directive hasId
+ * @hasId
+ */
+export type Todo = {
+  __typename?: 'Todo';
+  _id: Scalars['GraphbackObjectID'];
+  /**
+   * The id, which will be created, if
+   * the model was created offline
+   */
+  _clientId: Scalars['GraphbackObjectID'];
+  _version: Scalars['Int'];
+  _lastUpdatedAt: Scalars['Int'];
+  title?: Maybe<Scalars['String']>;
+  /**
+   * @manyToOne(field: 'todos', key: 'userId')
+   * @manyToOne(field: 'todos')
+   */
+  user?: Maybe<User>;
+};
+
+export type TodoFilter = {
+  _id?: Maybe<GraphbackObjectIdInput>;
+  _clientId?: Maybe<GraphbackObjectIdInput>;
+  _version?: Maybe<IntInput>;
+  _lastUpdatedAt?: Maybe<IntInput>;
+  title?: Maybe<StringInput>;
+  userId?: Maybe<GraphbackObjectIdInput>;
+  and?: Maybe<Array<TodoFilter>>;
+  or?: Maybe<Array<TodoFilter>>;
+  not?: Maybe<TodoFilter>;
+};
+
+export type TodoResultList = {
+  __typename?: 'TodoResultList';
+  items: Array<Maybe<Todo>>;
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  count?: Maybe<Scalars['Int']>;
+};
+
+export type TodoSubscriptionFilter = {
+  and?: Maybe<Array<TodoSubscriptionFilter>>;
+  or?: Maybe<Array<TodoSubscriptionFilter>>;
+  not?: Maybe<TodoSubscriptionFilter>;
+  _id?: Maybe<GraphbackObjectIdInput>;
+  _clientId?: Maybe<GraphbackObjectIdInput>;
+  _version?: Maybe<IntInput>;
+  _lastUpdatedAt?: Maybe<IntInput>;
+  title?: Maybe<StringInput>;
+};
+
+/**
+ * @model
+ * @cactusSync
+ */
+export type User = {
+  __typename?: 'User';
+  _id: Scalars['GraphbackObjectID'];
+  /**
+   * The id, which will be created, if
+   * the model was created offline
+   */
+  _clientId: Scalars['GraphbackObjectID'];
+  _version: Scalars['Int'];
+  _lastUpdatedAt: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+  /**
+   * @oneToMany(field: 'user', key: 'userId')
+   * @oneToMany(field: 'user')
+   */
+  todos: Array<Maybe<Todo>>;
+};
+
+
+/**
+ * @model
+ * @cactusSync
+ */
+export type UserTodosArgs = {
+  filter?: Maybe<TodoFilter>;
+};
+
+export type UserFilter = {
+  _id?: Maybe<GraphbackObjectIdInput>;
+  _clientId?: Maybe<GraphbackObjectIdInput>;
+  _version?: Maybe<IntInput>;
+  _lastUpdatedAt?: Maybe<IntInput>;
+  name?: Maybe<StringInput>;
+  and?: Maybe<Array<UserFilter>>;
+  or?: Maybe<Array<UserFilter>>;
+  not?: Maybe<UserFilter>;
+};
+
+export type UserResultList = {
+  __typename?: 'UserResultList';
+  items: Array<Maybe<User>>;
+  offset?: Maybe<Scalars['Int']>;
+  limit?: Maybe<Scalars['Int']>;
+  count?: Maybe<Scalars['Int']>;
+};
+
+export type UserSubscriptionFilter = {
+  and?: Maybe<Array<UserSubscriptionFilter>>;
+  or?: Maybe<Array<UserSubscriptionFilter>>;
+  not?: Maybe<UserSubscriptionFilter>;
+  _id?: Maybe<GraphbackObjectIdInput>;
+  _clientId?: Maybe<GraphbackObjectIdInput>;
+  _version?: Maybe<IntInput>;
+  _lastUpdatedAt?: Maybe<IntInput>;
+  name?: Maybe<StringInput>;
 };

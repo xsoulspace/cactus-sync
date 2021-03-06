@@ -1,3 +1,5 @@
+scalar GraphbackObjectID
+
 """
 @model
 @cactusSync
@@ -6,16 +8,16 @@ TODO: make directive hasId
 """
 type Todo {
   # TODO: replace type with ID
-  _id: string!
+  _id: GraphbackObjectID!
   """
   The id, which will be created, if
   the model was created offline
   """
-  _clientId: string
-  _version: number!
+  _clientId: GraphbackObjectID!
+  _version: Int!
   # TODO: replace type with Timestamp
-  _lastUpdatedAt: number!
-  title: string
+  _lastUpdatedAt: Int!
+  title: String
   """
   @manyToOne(field: 'todos')
   """
@@ -28,20 +30,20 @@ type Todo {
 """
 type User {
   # TODO: replace type with ID
-  _id: string
+  _id: GraphbackObjectID!
   """
   The id, which will be created, if
   the model was created offline
   """
-  _clientId: string
-  _version: number
+  _clientId: GraphbackObjectID!
+  _version: Int!
   # TODO: replace type with Timestamp
-  _lastUpdatedAt: number
-  name: string
+  _lastUpdatedAt: Int!
+  name: String
   """
   @oneToMany(field: 'user')
   """
-  todos: [User]!
+  todos: [Todo]!
 }
 
 """
@@ -52,29 +54,26 @@ FIXME: Maybe schema needs to work this way (first open, after offline):
 client queried CactusSyncTimestamp first.
 If new timestamps occured, then request changes
 """
-type CactusSyncTimestamp{
-  # TODO: replace type with ID
-  _id: string
+type CactusSyncTimestamp {
+  _id: GraphbackObjectID!
   """
   The id, which will be created, if
   the model was created offline
   """
-  _clientId: string
+  _clientId: GraphbackObjectID!
   # TODO: add Timestamp
   # TODO: must be indexed for fastest finds
-  timestamp: number
-  # FIXME:
-  changeType: DatabaseChangeType
+  timestamp: Int
+  changeType: DatabaseChangeType!
   # model __typename
-  modelTypename: string
-  # TODO: replace with ID
-  changedId: string
+  modelTypename: String
+  modelId: GraphbackObjectID!
 }
 """
 Named according to spec: https://graphql-rules.com/rules/naming-enum
 """
 enum DatabaseChangeType {
-  CREATE = 1,
-  UPDATE = 2,
-  DELETE = 3,
+  CREATE
+  UPDATE
+  DELETE
 }
