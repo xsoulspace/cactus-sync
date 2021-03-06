@@ -1,5 +1,7 @@
 import { Version } from 'dexie'
+import { ExecutionResult } from 'graphql-tools'
 import { CactusSync } from './CactusSync'
+import { GraphbackRunner } from './GraphbackRunner'
 
 interface DbModelInitI {
   // TODO:
@@ -33,13 +35,45 @@ export class DbModel<TModel> {
       new DbModel<TModel>({ ...arg, ...dbInit })
   }
   _dexieTableFields(): string {
-    // TODO: replace with graphql fields
+    // TODO: replace with graphql fields names for model
     return Object.keys(schemaModel)
   }
-  get table() {
-    return this.db.table<TModel, string>(this.__typename)
+  _graphqlRunner(): GraphbackRunner {
+    const runner = this.db.graphqlRunner
+    if (runner == null)
+      throw Error(
+        `Graphql runner is not defined! 
+        Maybe you forgot to run "CactusSync.init()"
+        before "CactusSync.createModel"`
+      )
+    return runner
   }
-  collection() {
-    return this.table.toCollection()
+  _execute() {
+    return this._graphqlRunner().execute
+  }
+  async save<TInput, TResult>(input: TInput) {
+    // TODO: implememt make mutation
+    const query: string = makeMutation(input)
+    return (await this._execute()(query)) as ExecutionResult<TResult>
+  }
+  async update<TInput, TResult>(input: TInput) {
+    // TODO: implememt make mutation
+    const query: string = makeMutation(input)
+    return (await this._execute()(query)) as ExecutionResult<TResult>
+  }
+  async remove<TInput, TResult>(input: TInput) {
+    // TODO: implememt make mutation
+    const query: string = makeMutation(input)
+    return (await this._execute()(query)) as ExecutionResult<TResult>
+  }
+  async find<TInput, TResult>(input: TInput) {
+    // TODO: implememt make mutation
+    const query: string = makeQuery(input)
+    return (await this._execute()(query)) as ExecutionResult<TResult>
+  }
+  async findOne<TInput, TResult>(input: TInput) {
+    // TODO: implememt make mutation
+    const query: string = makeQuery(input)
+    return (await this._execute()(query)) as ExecutionResult<TResult>
   }
 }

@@ -61,7 +61,7 @@ export class GraphbackRunner {
     })
   }
 
-  async graphqlExecute(query: string) {
+  async execute(query: string) {
     return await graphql(this.schema, query, null, this.context)
   }
 }
