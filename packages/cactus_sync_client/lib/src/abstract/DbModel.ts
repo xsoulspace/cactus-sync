@@ -34,10 +34,6 @@ export class DbModel<TModel> {
     return (dbInit: DbModelDbInitI) =>
       new DbModel<TModel>({ ...arg, ...dbInit })
   }
-  _dexieTableFields(): string {
-    // TODO: replace with graphql fields names for model
-    return Object.keys(schemaModel)
-  }
   _graphqlRunner(): GraphbackRunner {
     const runner = this.db.graphqlRunner
     if (runner == null)

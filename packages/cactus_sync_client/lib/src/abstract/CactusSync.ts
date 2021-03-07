@@ -7,7 +7,7 @@ import {
   IDeleteChange,
   IUpdateChange,
 } from 'dexie-observable/api'
-import Maybe from 'graphql/tsutils/Maybe'
+import { Maybe } from 'graphql-tools'
 import { DbModelBuilder } from './DbModel'
 import { GraphbackRunner } from './GraphbackRunner'
 
@@ -89,13 +89,18 @@ export class CactusSync extends Dexie {
    * @param modelBuilder
    * @returns
    */
-  static createModel<TModel>(modelBuilder: DbModelBuilder<TModel>) {
+  static attachModel<TModel>(modelBuilder: DbModelBuilder<TModel>) {
     const db = CactusSync.db
+    if (db == null)
+      throw Error(`
+      You don't have CactusSync db instance! Be aware: 
+      CactusSync.init(...) should be called before attachModel!`)
     const model = modelBuilder({ db, dbVersion: db.dbVersion })
-    // TODO: add cud hanlders to update remote server?
-    CactusSync.db.version(db.dbVersion).stores({
-      [model.__typename]: model._dexieTableFields(),
-    })
+    // TODO: Seems like all models can be created by graphback.
+    // then it make no sense
+    // CactusSync.db.version(db.dbVersion).stores({
+    //   [model.__typename]: model._dexieTableFields(),
+    // })
     return model
   }
 
