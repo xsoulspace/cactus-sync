@@ -1,8 +1,9 @@
+import { createDexieDbProvider } from '@graphback/runtime-dexie'
+import Dexie from 'dexie'
 import { buildGraphbackAPI, GraphbackContext } from 'graphback'
 import { graphql, GraphQLSchema } from 'graphql'
 import { loadConfigSync } from 'graphql-config'
-import { makeExecutableSchema } from 'graphql-tools'
-import { CactusSync } from './CactusSync'
+import { ExecutionResult, makeExecutableSchema } from 'graphql-tools'
 
 interface GraphbackRunnerI {
   context: (context?: any) => GraphbackContext
@@ -20,7 +21,7 @@ export class GraphbackRunner {
     this.context = context
     this.schema = schema
   }
-  static async init({ db }: { db: CactusSync }) {
+  static async init({ db }: { db: Dexie }) {
     const graphbackExtension = 'graphback'
     const config = loadConfigSync({
       extensions: [
@@ -38,7 +39,6 @@ export class GraphbackRunner {
     const { typeDefs, resolvers, contextCreator } = buildGraphbackAPI(
       modelDefs,
       {
-        // FIXME:
         dataProviderCreator: createDexieDbProvider(db),
       }
     )
@@ -61,7 +61,16 @@ export class GraphbackRunner {
     })
   }
 
-  async execute(query: string) {
-    return await graphql(this.schema, query, null, this.context)
+  async execute<
+    TType,
+    TResult extends ExecutionResult<TType> = ExecutionResult<TType>
+  >(query: string, variableValues?: any) {
+    return (await graphql(
+      this.schema,
+      query,
+      null,
+      this.context(),
+      variableValues
+    )) as TResult
   }
 }

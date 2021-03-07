@@ -28,7 +28,7 @@ export type CactusSyncTimestamp = {
    * The id, which will be created, if
    * the model was created offline
    */
-  _clientId: Scalars['GraphbackObjectID'];
+  _clientId?: Maybe<Scalars['GraphbackObjectID']>;
   timestamp?: Maybe<Scalars['Int']>;
   changeType: DatabaseChangeType;
   modelTypename?: Maybe<Scalars['String']>;
@@ -68,7 +68,7 @@ export type CactusSyncTimestampSubscriptionFilter = {
 };
 
 export type CreateCactusSyncTimestampInput = {
-  _clientId: Scalars['GraphbackObjectID'];
+  _clientId?: Maybe<Scalars['GraphbackObjectID']>;
   timestamp?: Maybe<Scalars['Int']>;
   changeType: DatabaseChangeType;
   modelTypename?: Maybe<Scalars['String']>;
@@ -76,7 +76,7 @@ export type CreateCactusSyncTimestampInput = {
 };
 
 export type CreateTodoInput = {
-  _clientId: Scalars['GraphbackObjectID'];
+  _clientId?: Maybe<Scalars['GraphbackObjectID']>;
   _version: Scalars['Int'];
   _lastUpdatedAt: Scalars['Int'];
   title?: Maybe<Scalars['String']>;
@@ -84,7 +84,7 @@ export type CreateTodoInput = {
 };
 
 export type CreateUserInput = {
-  _clientId: Scalars['GraphbackObjectID'];
+  _clientId?: Maybe<Scalars['GraphbackObjectID']>;
   _version: Scalars['Int'];
   _lastUpdatedAt: Scalars['Int'];
   name?: Maybe<Scalars['String']>;
@@ -349,7 +349,7 @@ export type Todo = {
    * The id, which will be created, if
    * the model was created offline
    */
-  _clientId: Scalars['GraphbackObjectID'];
+  _clientId?: Maybe<Scalars['GraphbackObjectID']>;
   _version: Scalars['Int'];
   _lastUpdatedAt: Scalars['Int'];
   title?: Maybe<Scalars['String']>;
@@ -402,7 +402,7 @@ export type User = {
    * The id, which will be created, if
    * the model was created offline
    */
-  _clientId: Scalars['GraphbackObjectID'];
+  _clientId?: Maybe<Scalars['GraphbackObjectID']>;
   _version: Scalars['Int'];
   _lastUpdatedAt: Scalars['Int'];
   name?: Maybe<Scalars['String']>;
