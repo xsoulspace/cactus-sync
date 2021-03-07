@@ -22,13 +22,18 @@
     "dist"
   ],
   "scripts": {
-    "test": "",
     "lint-fix": "",
     "build": "yarn clean && yarn compile",
     "clean": "rm -rf ./dist",
     "compile": "tsc -p tsconfig.build.json"
   },
-  "dependencies": {},
+  "dependencies": {
+    "graphql-metadata": "^0.7.6",
+    "graphql": "^15.5.0",
+    "@types/lodash": "^4.14.168",
+    "lodash": "^4.17.21",
+    "graphql-tools": "^7.0.4"
+  },
   "devDependencies": {
     "typescript": "^4.2.3",
     "eslint": "^7.18.0",

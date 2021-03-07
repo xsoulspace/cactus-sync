@@ -1,7 +1,7 @@
 /**
  * Generated class from GraphqlSchema
  */
-export type Model = {
+export type SchemaModel = {
   _id: string
   _version: number
   _lastUpdatedAt: number
