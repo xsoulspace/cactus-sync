@@ -13,7 +13,7 @@ type Todo {
   The id, which will be created, if
   the model was created offline
   """
-  _clientId: GraphbackObjectID!
+  _clientId: GraphbackObjectID
   _version: Int!
   # TODO: replace type with Timestamp
   _lastUpdatedAt: Int!
@@ -35,7 +35,7 @@ type User {
   The id, which will be created, if
   the model was created offline
   """
-  _clientId: GraphbackObjectID!
+  _clientId: GraphbackObjectID
   _version: Int!
   # TODO: replace type with Timestamp
   _lastUpdatedAt: Int!
@@ -60,7 +60,7 @@ type CactusSyncTimestamp {
   The id, which will be created, if
   the model was created offline
   """
-  _clientId: GraphbackObjectID!
+  _clientId: GraphbackObjectID
   # TODO: add Timestamp
   # TODO: must be indexed for fastest finds
   timestamp: Int

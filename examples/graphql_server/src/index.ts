@@ -7,10 +7,9 @@ import express from 'express'
 import { buildGraphbackAPI } from 'graphback'
 import { loadConfigSync } from 'graphql-config'
 import http from 'http'
-// FIXME: resolve as package
 import { createGraphQLWS } from '../../../packages/cactus_sync_server/lib'
 import { connectDB } from './db'
-import { noteResolvers } from './resolvers/noteResolvers'
+// import { noteResolvers } from './resolvers/noteResolvers'
 async function start() {
   const app = express()
 
@@ -38,7 +37,7 @@ async function start() {
 
   const apolloConfig: ApolloServerExpressConfig = {
     typeDefs,
-    resolvers: [resolvers, noteResolvers],
+    resolvers: [resolvers],
     context: contextCreator,
     uploads: false,
   }
@@ -49,9 +48,10 @@ async function start() {
   const httpServer = http.createServer(app)
   apolloServer.installSubscriptionHandlers(httpServer)
 
-  httpServer.listen({ port: 4000 }, () =>
+  httpServer.listen({ port: 4000 }, () => {
     createGraphQLWS(httpServer, apolloConfig)
-  )
+    console.log(`🚀  Server ready at http://localhost:4000/graphql`)
+  })
 }
 
 start().catch((err: any) => console.log(err))

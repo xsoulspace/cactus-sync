@@ -14,7 +14,7 @@ import { GraphbackRunner } from './GraphbackRunner'
 interface CactusSyncI {
   dbName?: Maybe<string>
   dbVersion?: Maybe<number>
-  dexieOptions: DexieOptions
+  dexieOptions?: Maybe<DexieOptions>
 }
 
 /**
@@ -60,7 +60,7 @@ export class CactusSync extends Dexie {
   dbVersion: number
   // include enumeration for models map
   constructor({ dbName, dexieOptions, dbVersion }: CactusSyncI) {
-    super(dbName ?? 'cactusSyncDb', dexieOptions)
+    super(dbName ?? 'cactusSyncDb', dexieOptions ?? undefined)
     const db = this
     this.dbVersion = dbVersion ?? 1
 
@@ -110,7 +110,7 @@ export class CactusSync extends Dexie {
   deleteHooks: Maybe<HandleModelChange<IDeleteChange>>[] = []
 
   // TODO: @deprecated?
-  handleOnCactusSyncChanges(changes: IDatabaseChange[], partial: boolean) {
+  handleOnCactusSyncChanges(changes: IDatabaseChange[], _partial: boolean) {
     for (const change of changes) {
       switch (change.type) {
         case DatabaseChangeType.Create: // CREATED
