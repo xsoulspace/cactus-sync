@@ -7,7 +7,10 @@ import express from 'express'
 import { buildGraphbackAPI } from 'graphback'
 import { loadConfigSync } from 'graphql-config'
 import http from 'http'
-import { createGraphQLWS } from '../../../packages/cactus_sync_server/lib'
+import {
+  createGraphQLWS,
+  CactusSyncPlugin,
+} from '../../../packages/cactus_sync_server/lib'
 import { connectDB } from './db'
 // import { noteResolvers } from './resolvers/noteResolvers'
 async function start() {
@@ -33,6 +36,7 @@ async function start() {
 
   const { typeDefs, resolvers, contextCreator } = buildGraphbackAPI(modelDefs, {
     dataProviderCreator: createMongoDbProvider(db),
+    plugins: [new CactusSyncPlugin()],
   })
 
   const apolloConfig: ApolloServerExpressConfig = {

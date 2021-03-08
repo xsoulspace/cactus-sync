@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Serge Iudin",
+    "email": "enfros2000@gmail.com"
   },
   "license": "MIT",
   "repository": {
