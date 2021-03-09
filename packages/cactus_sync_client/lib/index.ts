@@ -1,1 +1,1 @@
-export * from './src/CactusSync'
+export * from './src'

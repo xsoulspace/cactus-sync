@@ -1,4 +1,4 @@
-scalar GraphbackObjectID
+scalar ID
 
 """
 @model
@@ -8,12 +8,12 @@ TODO: make directive hasId
 """
 type Todo {
   # TODO: replace type with ID
-  _id: GraphbackObjectID!
+  id: ID!
   """
   The id, which will be created, if
   the model was created offline
   """
-  _clientId: GraphbackObjectID
+  _clientId: ID
   _version: Int!
   # TODO: replace type with Timestamp
   _lastUpdatedAt: Int!
@@ -30,12 +30,12 @@ type Todo {
 """
 type User {
   # TODO: replace type with ID
-  _id: GraphbackObjectID!
+  id: ID!
   """
   The id, which will be created, if
   the model was created offline
   """
-  _clientId: GraphbackObjectID
+  _clientId: ID
   _version: Int!
   # TODO: replace type with Timestamp
   _lastUpdatedAt: Int!
@@ -55,19 +55,19 @@ client queried CactusSyncTimestamp first.
 If new timestamps occured, then request changes
 """
 type CactusSyncTimestamp {
-  _id: GraphbackObjectID!
+  id: ID!
   """
   The id, which will be created, if
   the model was created offline
   """
-  _clientId: GraphbackObjectID
+  _clientId: ID
   # TODO: add Timestamp
   # TODO: must be indexed for fastest finds
   timestamp: Int
   changeType: DatabaseChangeType!
   # model __typename
   modelTypename: String
-  modelId: GraphbackObjectID!
+  modelId: ID!
 }
 """
 Named according to spec: https://graphql-rules.com/rules/naming-enum

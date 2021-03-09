@@ -55,16 +55,18 @@ export class GraphbackRunner {
       typeDefs,
       resolvers: [finalResolvers],
     })
+    const context = contextCreator()
     return new GraphbackRunner({
-      context: contextCreator(),
+      context,
       schema: executableGraphqlSchema,
     })
   }
 
   async execute<
     TType,
+    TVariables = any,
     TResult extends ExecutionResult<TType> = ExecutionResult<TType>
-  >(query: string, variableValues?: any) {
+  >(query: string, variableValues?: TVariables) {
     return (await graphql(
       this.schema,
       query,
