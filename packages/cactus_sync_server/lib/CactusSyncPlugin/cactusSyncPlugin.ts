@@ -5,10 +5,19 @@ import { IResolvers, IObjectTypeResolver } from '@graphql-tools/utils'
 import { GraphbackPlugin, GraphbackCoreMetadata } from 'graphback'
 import { GraphQLSchema } from 'graphql'
 import { SchemaComposer } from 'graphql-compose'
+import { ECactusOperationType, ICactusCallback } from './'
+import cactusSyncMethod from './cactusSyncMethod'
 
 export class CactusSyncPlugin extends GraphbackPlugin {
+  callbacks: ICactusCallback[]
+
   getPluginName() {
     return 'CactusSyncPlugin'
+  }
+
+  constructor(callbacks: ICactusCallback[]) {
+    super()
+    this.callbacks = callbacks
   }
 
   transformSchema(metadata: GraphbackCoreMetadata): GraphQLSchema {
@@ -32,42 +41,48 @@ export class CactusSyncPlugin extends GraphbackPlugin {
         args: any,
         context: GraphbackContext,
         info: GraphQLResolveInfo
-      ) => {
-        const crudService = context.graphback[modelName]
-
-        // use the model service created by Graphback to query the database
-        const items = await crudService.create(args, context, info)
-
-        return items
-      }
+      ) =>
+        await cactusSyncMethod(
+          _,
+          args,
+          context,
+          info,
+          modelName,
+          this.callbacks,
+          ECactusOperationType.CREATE
+        )
 
       queryObj[`update${modelName}`] = async (
         _: any,
         args: any,
         context: GraphbackContext,
         info: GraphQLResolveInfo
-      ) => {
-        const crudService = context.graphback[modelName]
-
-        // use the model service created by Graphback to query the database
-        const items = await crudService.update(args, context, info)
-
-        return items
-      }
+      ) =>
+        await cactusSyncMethod(
+          _,
+          args,
+          context,
+          info,
+          modelName,
+          this.callbacks,
+          ECactusOperationType.UPDATE
+        )
 
       queryObj[`delete${modelName}`] = async (
         _: any,
         args: any,
         context: GraphbackContext,
         info: GraphQLResolveInfo
-      ) => {
-        const crudService = context.graphback[modelName]
-
-        // use the model service created by Graphback to query the database
-        const items = await crudService.delete(args, context, info)
-
-        return items
-      }
+      ) =>
+        await cactusSyncMethod(
+          _,
+          args,
+          context,
+          info,
+          modelName,
+          this.callbacks,
+          ECactusOperationType.DELETE
+        )
     }
 
     resolvers.Mutation = queryObj
