@@ -21,6 +21,8 @@ export declare class DexieDBDataProvider<Type = any> implements GraphbackDataPro
     protected getTable(): import("dexie").Table<Type, string>;
     protected getSelectedFields(selectedFields: string[]): string[] | "*";
     protected fixObjectIdForDexie(data: Partial<Type>, idField: TableID): void;
+    protected validateForObjectId(data: Type): Type;
+    protected validateForObjectId(data: Type[]): Type[];
     /**
      * in case if we request all properties then just return all
      * @param data

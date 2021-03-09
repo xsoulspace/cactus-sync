@@ -3,10 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DexieDBDataProvider = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@graphback/core");
+const objectId_1 = require("../../graphback-core/src/scalars/objectId");
 const dexieQueryBuilder_1 = require("./dexieQueryBuilder");
 const createDexieIndexes_1 = require("./utils/createDexieIndexes");
 const isNotNull_1 = require("./utils/isNotNull");
-var ObjectID = require('bson-objectid');
 /**
  * Graphback provider that connnects to the Dexie database
  */
@@ -38,7 +38,7 @@ class DexieDBDataProvider {
             if (maybeId) {
                 const createdType = yield table.get(maybeId);
                 if (createdType)
-                    return createdType;
+                    return this.validateForObjectId(createdType);
             }
             throw new core_1.NoDataError(`Cannot create ${this.tableName}`);
         });
@@ -67,10 +67,10 @@ class DexieDBDataProvider {
                     const updated = yield table.get(maybeId);
                     if (updated) {
                         if (selectedFields) {
-                            return this.getSelectedFieldsFromType(selectedFields, updated);
+                            return this.validateForObjectId(this.getSelectedFieldsFromType(selectedFields, updated));
                         }
                         else {
-                            return updated;
+                            return this.validateForObjectId(updated);
                         }
                     }
                     return null;
@@ -90,8 +90,8 @@ class DexieDBDataProvider {
             try {
                 const table = this.getTable();
                 const id = data[idField.name];
+                const dbObj = yield table.get(id);
                 const dbType = yield (() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-                    const dbObj = yield table.get(id);
                     if (selectedFields && dbObj) {
                         return this.getSelectedFieldsFromType(selectedFields, dbObj);
                     }
@@ -99,7 +99,7 @@ class DexieDBDataProvider {
                 }))();
                 yield table.delete(id);
                 if (dbType)
-                    return dbType;
+                    return this.validateForObjectId(dbType);
                 throw Error();
             }
             catch (error) {
@@ -112,9 +112,9 @@ class DexieDBDataProvider {
             const table = this.getTable();
             const data = yield table.where(filter).first();
             if (data) {
-                return selectedFields
+                return this.validateForObjectId(selectedFields
                     ? this.getSelectedFieldsFromType(selectedFields, data)
-                    : data;
+                    : data);
             }
             throw new core_1.NoDataError(`Cannot find a result for ${this.tableName} with filter: ${JSON.stringify(filter)}`);
         });
@@ -150,7 +150,7 @@ class DexieDBDataProvider {
             }))();
             const data = this.usePage(this.sortQuery(result, args === null || args === void 0 ? void 0 : args.orderBy), args === null || args === void 0 ? void 0 : args.page);
             if (data)
-                return selectedFields ? this.getSelectedData(data, selectedFields) : data;
+                return this.validateForObjectId(selectedFields ? this.getSelectedData(data, selectedFields) : data);
             throw new core_1.NoDataError(`Cannot find all results for ${this.tableName} with filter: ${JSON.stringify(args === null || args === void 0 ? void 0 : args.filter)}`);
         });
     }
@@ -187,7 +187,7 @@ class DexieDBDataProvider {
                 idField,
                 provider: this,
             });
-            const result = yield (() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            let result = yield (() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 if (filterQuery == null || Object.keys(filterQuery).length == 0) {
                     return yield this.getTable().toArray();
                 }
@@ -199,6 +199,7 @@ class DexieDBDataProvider {
             const toUseSelectedFields = selectedFields != null &&
                 selectedFields.length != Object.keys((_a = result[0]) !== null && _a !== void 0 ? _a : {}).length;
             if (result) {
+                result = this.validateForObjectId(result);
                 // To not force check for every loop
                 // we divide mothod into two - with selected fields and without
                 const prepareResults = (pushFn) => {
@@ -244,22 +245,44 @@ class DexieDBDataProvider {
             // and auto increment is too simple. But IndexedDb not supported
             // ObjectId as primary key, so we will use id of IndexedDb
             // see more https://bugzilla.mozilla.org/show_bug.cgi?id=1357636
-            idField.value = ObjectID().id;
+            const newObjectId = objectId_1.parseObjectID(null);
+            idField.value = newObjectId.toHexString();
             data[idField.name] = idField.value;
         }
         else {
             // handle case if id already an objectId
-            const isValid = ObjectID.isValid(idField.value);
+            const isValid = objectId_1.isObjectID(idField.value);
             if (isValid) {
                 switch (typeof idField.value) {
                     case 'string':
                         // nothing to change
                         break;
                     case 'object':
-                        idField.value = idField.value.id;
+                        idField.value = idField.value.toHexString();
                         data[idField.name] = idField.value;
                 }
             }
+        }
+    }
+    validateForObjectId(data) {
+        const { idField } = core_1.getDatabaseArguments(this.tableMap);
+        if ((idField === null || idField === void 0 ? void 0 : idField.name) == null)
+            throw Error('Not found a name for primary key');
+        const validateEl = (el) => {
+            const id = el[idField.name];
+            if (typeof id == 'string') {
+                const isValid = objectId_1.parseObjectID(id);
+                if (isValid)
+                    el[idField.name] = objectId_1.parseObjectID(id);
+                return el;
+            }
+            return el;
+        };
+        if (Array.isArray(data)) {
+            return data.map((el) => validateEl(el));
+        }
+        else {
+            return validateEl(data);
         }
     }
     /**
@@ -289,7 +312,8 @@ class DexieDBDataProvider {
         return obj;
     }
     verifyMongoDBPrimaryKey(modelName, primaryKey) {
-        if (primaryKey.name === '_id' && primaryKey.type === 'GraphbackObjectID') {
+        if (primaryKey.name === '_id' &&
+            primaryKey.type.includes('GraphbackObjectID')) {
             return;
         }
         throw Error(`Model "${modelName}" must contain a "_id: GraphbackObjectID" primary key. Visit https://graphback.dev/docs/model/datamodel#mongodb to see how to set up one for your MongoDB model.`);
@@ -305,7 +329,7 @@ class DexieDBDataProvider {
         return true;
     }
     get indexedFieldsSet() {
-        const isOpen = this.db['_state']['isBeingOpened'];
+        const isOpen = this.db.isOpen();
         if (isOpen) {
             const table = this.getTable();
             const indexesSet = new Set(table.schema.indexes.map((el) => el.name));

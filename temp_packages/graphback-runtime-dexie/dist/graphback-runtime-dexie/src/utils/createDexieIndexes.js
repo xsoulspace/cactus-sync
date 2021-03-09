@@ -48,13 +48,14 @@ const getIndexedFieldsString = (indexes) => {
             }
         };
         const getFieldSymbol = () => {
+            let sym = '';
             for (const [field, value] of Object.entries(indexSpec)) {
-                if (field != 'name' && value != null) {
-                    const sym = getSymbol(field);
-                    return sym;
+                if (value != null) {
+                    const temp = getSymbol(field);
+                    sym = `${sym}${temp}`;
                 }
             }
-            return '';
+            return sym;
         };
         const indexName = indexSpec.name;
         const sym = getFieldSymbol();
@@ -124,17 +125,17 @@ function getIndexFields(baseType) {
             continue;
         }
         const fieldType = lodash_1.toString(JSON.parse(JSON.stringify(field.type)));
-        if (fieldType == 'GraphbackObjectID!') {
-            const maybeId = { name: field.name, unique: true };
+        if (fieldType.includes('GraphbackObjectID')) {
+            const maybeId = {
+                name: field.name,
+                unique: true,
+            };
             if (field.name === '_id' || field.name === 'id') {
                 res.push(maybeId);
             }
             else {
                 reserveFieldPrimaryKeys.push(maybeId);
             }
-        }
-        else if (fieldType.includes('GraphbackObjectID')) {
-            throw Error('Model has id but it not pointed as required. Use GraphbackObjectID! instead of GraphbackObjectID');
         }
     }
     if (res.length == 0) {

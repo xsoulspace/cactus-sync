@@ -2,8 +2,8 @@
   "name": "@graphback/runtime-dexie",
   "version": "1.1.2",
   "description": "Graphback runtime dexie",
-  "main": "dist/index.js",
-  "types": "types/index.d.ts",
+  "main": "dist/graphback-runtime-dexie/src/index.js",
+  "types": "types/graphback-runtime-dexie/src/index.d.ts",
   "typescript": {
     "definition": "types/index.d.ts"
   },
@@ -36,6 +36,7 @@
     "dexie": "^3.0.3",
     "escape-string-regexp": "4.0.0",
     "graphql-metadata": "0.7.6",
+    "bson": "4.2.2",
     "graphql-subscriptions": "1.1.0"
   },
   "peerDependencies": {
@@ -43,6 +44,7 @@
     "dexie": "^3.0.3"
   },
   "devDependencies": {
+    "fake-indexeddb": "^3.1.2",
     "@graphback/codegen-schema": "1.1.2",
     "@types/jest": "26.0.19",
     "@types/node": "12.19.9",

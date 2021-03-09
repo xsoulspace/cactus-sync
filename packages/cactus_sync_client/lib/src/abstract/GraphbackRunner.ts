@@ -55,8 +55,9 @@ export class GraphbackRunner {
       typeDefs,
       resolvers: [finalResolvers],
     })
+    const context = contextCreator()
     return new GraphbackRunner({
-      context: contextCreator(),
+      context,
       schema: executableGraphqlSchema,
     })
   }
