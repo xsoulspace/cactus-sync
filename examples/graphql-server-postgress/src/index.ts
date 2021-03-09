@@ -45,6 +45,7 @@ async function start() {
     typeDefs,
     resolvers: [resolvers],
     context: contextCreator,
+    uploads: false,
   }
   const apolloServer = new ApolloServer(apolloConfig)
 
