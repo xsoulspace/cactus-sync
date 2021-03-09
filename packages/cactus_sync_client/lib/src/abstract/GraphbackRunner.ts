@@ -64,8 +64,9 @@ export class GraphbackRunner {
 
   async execute<
     TType,
+    TVariables = any,
     TResult extends ExecutionResult<TType> = ExecutionResult<TType>
-  >(query: string, variableValues?: any) {
+  >(query: string, variableValues?: TVariables) {
     return (await graphql(
       this.schema,
       query,
