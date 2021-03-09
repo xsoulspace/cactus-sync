@@ -15,7 +15,6 @@ export default async function cactusSyncMethod(
 
   // use the model service created by Graphback to query the database
   const items = await crudService[operation](args, context, info)
-  console.log(items)
   for (const callback of callbacks) {
     await callback(_, args, context, info, items, modelName, operation)
   }

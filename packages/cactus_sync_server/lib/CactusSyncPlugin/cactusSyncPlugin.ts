@@ -86,7 +86,6 @@ export class CactusSyncPlugin extends GraphbackPlugin {
     }
 
     resolvers.Mutation = queryObj
-    console.log(resolvers)
     return resolvers
   }
 }
