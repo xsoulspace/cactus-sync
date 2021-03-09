@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateTableEntry = exports.convertFieldQueryToStringCondition = exports.runQuery = exports.buildQuery = exports.queryBuilder = exports.DexieFilterTypes = exports.GraphbackQueryOperator = exports.RootQueryOperator = void 0;
+exports.validateTableEntry = exports.convertFieldQueryToStringCondition = exports.runQuery = exports.buildQuery = exports.queryBuilder = exports.DexieFilterTypes = exports.GraphbackQueryOperator = exports.RootQueryOperatorSet = exports.RootQueryOperator = void 0;
 const escapeRegex = require("escape-string-regexp");
 const lodash_1 = require("lodash");
 var RootQueryOperator;
@@ -9,14 +9,14 @@ var RootQueryOperator;
     RootQueryOperator["or"] = "or";
     RootQueryOperator["not"] = "not";
 })(RootQueryOperator = exports.RootQueryOperator || (exports.RootQueryOperator = {}));
-const RootQueryOperatorSet = new Set(Object.keys(RootQueryOperator));
+exports.RootQueryOperatorSet = new Set(Object.keys(RootQueryOperator));
 // A map to transform Graphql operators to typescript
 const tsRootQueryOperator = {
     and: '&&',
     not: '!=',
     or: '||',
 };
-const isRootOperator = (key) => RootQueryOperatorSet.has(key);
+const isRootOperator = (key) => exports.RootQueryOperatorSet.has(key);
 var GraphbackQueryOperator;
 (function (GraphbackQueryOperator) {
     GraphbackQueryOperator["eq"] = "eq";
@@ -136,6 +136,7 @@ const runQuery = ({ provider, query, }) => {
     return result;
 };
 exports.runQuery = runQuery;
+const cleanUpDoubleQuotes = (str) => str.replace(/"([^"]+(?="))"/g, '$1');
 function convertFieldQueryToStringCondition({ condition, fieldQuery, tableValue, }) {
     let prePostfix = tsRootQueryOperator.and;
     const compareValue = fieldQuery.value;
@@ -147,10 +148,10 @@ function convertFieldQueryToStringCondition({ condition, fieldQuery, tableValue,
     let valueComparation = '';
     let isValidValue = false;
     if (fieldQuery.queryOperator != null) {
-        const strCompareValue = () => lodash_1.toString(fieldQuery.value);
+        const strCompareValue = cleanUpDoubleQuotes(lodash_1.toString(fieldQuery.value));
+        const strTableValue = cleanUpDoubleQuotes(lodash_1.toString(tableValue));
         const validateByMatch = (escaptedRegex) => {
             var _a;
-            const strTableValue = lodash_1.toString(tableValue);
             return (((_a = strTableValue.match(new RegExp(escaptedRegex, 'gim'))) !== null && _a !== void 0 ? _a : []).length > 0);
         };
         switch (fieldQuery.queryOperator) {
@@ -161,23 +162,31 @@ function convertFieldQueryToStringCondition({ condition, fieldQuery, tableValue,
             case GraphbackQueryOperator.lt:
             case GraphbackQueryOperator.ne:
                 const operator = tsGraphbackQueryOperator[fieldQuery.queryOperator];
-                valueComparation = `"${tableValue}" ${operator} "${compareValue}"`;
+                valueComparation = `"${strTableValue}" ${operator} "${strCompareValue}"`;
                 break;
             case GraphbackQueryOperator.in:
-                valueComparation = `"${tableValue}" ${prePostfix} "${compareValue}"`;
+                switch (prePostfix) {
+                    case tsRootQueryOperator.and:
+                    case tsRootQueryOperator.or:
+                        isValidValue = strTableValue == strCompareValue;
+                        break;
+                    default:
+                        valueComparation = `"${strTableValue}" ${prePostfix} "${strCompareValue}"`;
+                        break;
+                }
                 break;
             case GraphbackQueryOperator.between:
                 // if we here, then something went wrong because beetwen must be divided to le ge...
                 // abort
                 break;
             case GraphbackQueryOperator.contains:
-                isValidValue = validateByMatch(escapeRegex(strCompareValue()));
+                isValidValue = validateByMatch(escapeRegex(strCompareValue));
                 break;
             case GraphbackQueryOperator.endsWith:
-                isValidValue = validateByMatch(`${escapeRegex(strCompareValue())}$`);
+                isValidValue = validateByMatch(`${escapeRegex(strCompareValue)}$`);
                 break;
             case GraphbackQueryOperator.startsWith:
-                isValidValue = validateByMatch(`^${escapeRegex(strCompareValue())}`);
+                isValidValue = validateByMatch(`^${escapeRegex(strCompareValue)}`);
                 break;
             default:
                 throw Error(`Operator ${fieldQuery.queryOperator} is not supported!`);
@@ -234,7 +243,8 @@ function validateTableEntry({ tableEntry, queryEntires, }) {
     }
     const fnBody = `function(){return ${fnConditions.join(` `)};}`;
     const fn = new Function('return ' + fnBody);
-    return fn()();
+    const isValid = fn()();
+    return isValid;
 }
 exports.validateTableEntry = validateTableEntry;
 //# sourceMappingURL=dexieQueryBuilder.js.map

@@ -1,6 +1,6 @@
 import Dexie from 'dexie'
 import { GraphQLSchema } from 'graphql-compose/lib/graphql'
-import { Todo } from '../../../../../resources/generatedTypes'
+import { Todo, User } from '../../../../../resources/generatedTypes'
 import { GraphbackRunner } from './GraphbackRunner'
 
 Dexie.dependencies.indexedDB = require('fake-indexeddb')
@@ -13,6 +13,12 @@ interface UpdateTodoResult {
 }
 interface DeleteTodoResult {
   deleteTodo: Todo
+}
+interface CreateUserResult {
+  createUser: User
+}
+interface GetUserResult {
+  getUser: User
 }
 describe('graphback runner', () => {
   let db: Dexie
@@ -51,12 +57,10 @@ describe('graphback runner', () => {
     }
     expect(result.data?.createTodo).toEqual(expectingTodo)
   })
-  test('should verify CRUD', async () => {
-    const runner = await init()
-    const createMutation = `
+  const todoCreateMutation = `
       mutation{
         createTodo(input: {_version: 1, _lastUpdatedAt: 1244, title: "Hello World!"}){
-          _id
+          id
           _clientId
           _version
           _lastUpdatedAt
@@ -64,14 +68,17 @@ describe('graphback runner', () => {
         }
       }
     `
-    const created = await runner.execute<CreateTodoResult>(createMutation)
+  test('should verify CRUD', async () => {
+    const runner = await init()
+
+    const created = await runner.execute<CreateTodoResult>(todoCreateMutation)
     const createdTodo = created.data?.createTodo
     expect(createdTodo?.title).toEqual('Hello World!')
 
     const updateMutation = `
-      mutation($_version: Int, $_id: GraphbackObjectID!){
-        updateTodo(input: {_version: $_version, _id: $_id }){
-          _id
+      mutation($_version: Int, $id: ID!){
+        updateTodo(input: {_version: $_version, id: $id }){
+          id
           _clientId
           _version
           _lastUpdatedAt
@@ -80,16 +87,16 @@ describe('graphback runner', () => {
       }
     `
     const updated = await runner.execute<UpdateTodoResult>(updateMutation, {
-      _id: createdTodo?._id,
+      id: createdTodo?.id,
       _version: 2,
     })
     const updatedTodo = updated.data?.updateTodo
     expect(updatedTodo?._version).toEqual(2)
 
     const deleteMutation = `
-      mutation($_id: GraphbackObjectID!){
-        deleteTodo(input: {_id: $_id }){
-          _id
+      mutation($id: ID!){
+        deleteTodo(input: {id: $id }){
+          id
           _clientId
           _version
           _lastUpdatedAt
@@ -98,9 +105,77 @@ describe('graphback runner', () => {
       }
     `
     const deleted = await runner.execute<DeleteTodoResult>(deleteMutation, {
-      _id: updatedTodo?._id,
+      id: updatedTodo?.id,
     })
     const deletedTodo = deleted.data?.deleteTodo
     expect(deletedTodo?._version).toEqual(2)
+  })
+  test('should verify relationships', async () => {
+    const runner = await init()
+    const createdTodo = await runner.execute<CreateTodoResult>(
+      todoCreateMutation
+    )
+    expect(createdTodo.data?.createTodo.title).toEqual('Hello World!')
+    const userCreateMutation = `
+      mutation{
+        createUser(input: {_version: 1, _lastUpdatedAt: 1244, name: "Spiderman"}){
+          id
+          _clientId
+          _version
+          _lastUpdatedAt
+          name
+        }
+      }
+    `
+    const createdUser = await runner.execute<CreateUserResult>(
+      userCreateMutation
+    )
+    expect(createdUser.data?.createUser.name).toEqual('Spiderman')
+
+    const updateTodoMutation = `
+      mutation($userId: ID!, $id: ID!){
+        updateTodo(input: {userId: $userId, id: $id }){
+          id
+          _clientId
+          _version
+          _lastUpdatedAt
+          title
+          user {
+            id
+            name
+          }
+        }
+      }
+    `
+    const updatedTodo = await runner.execute<UpdateTodoResult>(
+      updateTodoMutation,
+      {
+        id: createdTodo?.data?.createTodo.id,
+        userId: createdUser.data?.createUser.id.toString(),
+      }
+    )
+    expect(updatedTodo?.data?.updateTodo.user?.name).toEqual('Spiderman')
+
+    const getUserQuery = `
+      query($id : ID!){
+        getUser(id: $id){
+          id
+          _clientId
+          _version
+          _lastUpdatedAt
+          name
+          todos {
+            id
+            title
+          }
+        }
+      }
+    `
+    const userResult = await runner.execute<GetUserResult>(getUserQuery, {
+      id: createdUser.data?.createUser.id,
+    })
+    const user = userResult.data?.getUser
+    expect(user?.todos.length).toEqual(1)
+    expect(user?.todos[0]?.title).toEqual('Hello World!')
   })
 })

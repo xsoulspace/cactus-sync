@@ -3,16 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DexieDBDataProvider = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@graphback/core");
-const objectId_1 = require("../../graphback-core/src/scalars/objectId");
 const dexieQueryBuilder_1 = require("./dexieQueryBuilder");
 const createDexieIndexes_1 = require("./utils/createDexieIndexes");
 const isNotNull_1 = require("./utils/isNotNull");
+const objectId_1 = require("./utils/objectId");
 /**
  * Graphback provider that connnects to the Dexie database
  */
 class DexieDBDataProvider {
     constructor(model, db) {
-        this.verifyMongoDBPrimaryKey(model.graphqlType.name, model.primaryKey);
+        this.verifyDBPrimaryKey(model.graphqlType.name, model.primaryKey);
         this.db = db;
         this.tableMap = core_1.buildModelTableMap(model.graphqlType);
         this.tableName = this.tableMap.tableName;
@@ -32,13 +32,13 @@ class DexieDBDataProvider {
             const { data: createData, idField } = core_1.getDatabaseArguments(this.tableMap, data);
             if (idField == null)
                 throw Error('no idField found');
-            this.fixObjectIdForDexie(createData, idField);
+            this.addObjectId(createData, idField);
             const table = this.getTable();
             const maybeId = yield table.add(createData);
             if (maybeId) {
                 const createdType = yield table.get(maybeId);
                 if (createdType)
-                    return this.validateForObjectId(createdType);
+                    return createdType;
             }
             throw new core_1.NoDataError(`Cannot create ${this.tableName}`);
         });
@@ -51,7 +51,6 @@ class DexieDBDataProvider {
                 throw new core_1.NoDataError(`Cannot update ${this.tableName} - missing ID field`);
             if (castUpdatedData == null)
                 throw new core_1.NoDataError(`Cannot update ${this.tableName} - missing updating data`);
-            this.fixObjectIdForDexie(castUpdatedData, idField);
             const table = this.getTable();
             const maybeId = yield (() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 if (this.verifyTypeIntegrity(castUpdatedData)) {
@@ -67,10 +66,10 @@ class DexieDBDataProvider {
                     const updated = yield table.get(maybeId);
                     if (updated) {
                         if (selectedFields) {
-                            return this.validateForObjectId(this.getSelectedFieldsFromType(selectedFields, updated));
+                            return this.getSelectedFieldsFromType(selectedFields, updated);
                         }
                         else {
-                            return this.validateForObjectId(updated);
+                            return updated;
                         }
                     }
                     return null;
@@ -86,7 +85,6 @@ class DexieDBDataProvider {
             const { idField } = core_1.getDatabaseArguments(this.tableMap, data);
             if ((idField === null || idField === void 0 ? void 0 : idField.value) == null)
                 throw new core_1.NoDataError(`Cannot delete ${this.tableName} - missing ID field`);
-            this.fixObjectIdForDexie(data, idField);
             try {
                 const table = this.getTable();
                 const id = data[idField.name];
@@ -99,7 +97,7 @@ class DexieDBDataProvider {
                 }))();
                 yield table.delete(id);
                 if (dbType)
-                    return this.validateForObjectId(dbType);
+                    return dbType;
                 throw Error();
             }
             catch (error) {
@@ -112,9 +110,9 @@ class DexieDBDataProvider {
             const table = this.getTable();
             const data = yield table.where(filter).first();
             if (data) {
-                return this.validateForObjectId(selectedFields
+                return selectedFields
                     ? this.getSelectedFieldsFromType(selectedFields, data)
-                    : data);
+                    : data;
             }
             throw new core_1.NoDataError(`Cannot find a result for ${this.tableName} with filter: ${JSON.stringify(filter)}`);
         });
@@ -134,8 +132,24 @@ class DexieDBDataProvider {
             const { idField } = core_1.getDatabaseArguments(this.tableMap);
             if (idField == null)
                 throw Error('cannot find idField');
+            const isQuery = (maybeQuery) => {
+                if (maybeQuery == null)
+                    return false;
+                for (const key of Object.keys(maybeQuery)) {
+                    if (this.fieldSet.has(key))
+                        return true;
+                    if (dexieQueryBuilder_1.RootQueryOperatorSet.has(key))
+                        return true;
+                }
+                return false;
+            };
+            const getQuery = () => {
+                if (args === null || args === void 0 ? void 0 : args.filter)
+                    return args === null || args === void 0 ? void 0 : args.filter;
+                return isQuery(args) ? args : null;
+            };
             const filterQuery = dexieQueryBuilder_1.buildQuery({
-                filter: args === null || args === void 0 ? void 0 : args.filter,
+                filter: getQuery(),
                 idField,
                 provider: this,
             });
@@ -150,7 +164,7 @@ class DexieDBDataProvider {
             }))();
             const data = this.usePage(this.sortQuery(result, args === null || args === void 0 ? void 0 : args.orderBy), args === null || args === void 0 ? void 0 : args.page);
             if (data)
-                return this.validateForObjectId(selectedFields ? this.getSelectedData(data, selectedFields) : data);
+                return selectedFields ? this.getSelectedData(data, selectedFields) : data;
             throw new core_1.NoDataError(`Cannot find all results for ${this.tableName} with filter: ${JSON.stringify(args === null || args === void 0 ? void 0 : args.filter)}`);
         });
     }
@@ -199,7 +213,7 @@ class DexieDBDataProvider {
             const toUseSelectedFields = selectedFields != null &&
                 selectedFields.length != Object.keys((_a = result[0]) !== null && _a !== void 0 ? _a : {}).length;
             if (result) {
-                result = this.validateForObjectId(result);
+                // result = this.validateForObjectId(result)
                 // To not force check for every loop
                 // we divide mothod into two - with selected fields and without
                 const prepareResults = (pushFn) => {
@@ -238,7 +252,7 @@ class DexieDBDataProvider {
     getSelectedFields(selectedFields) {
         return (selectedFields === null || selectedFields === void 0 ? void 0 : selectedFields.length) ? selectedFields : '*';
     }
-    fixObjectIdForDexie(data, idField) {
+    addObjectId(data, idField) {
         // getting id field name
         if (idField.value == null) {
             // if id is empty generate new one, as Dexie will no generate it
@@ -262,27 +276,6 @@ class DexieDBDataProvider {
                         data[idField.name] = idField.value;
                 }
             }
-        }
-    }
-    validateForObjectId(data) {
-        const { idField } = core_1.getDatabaseArguments(this.tableMap);
-        if ((idField === null || idField === void 0 ? void 0 : idField.name) == null)
-            throw Error('Not found a name for primary key');
-        const validateEl = (el) => {
-            const id = el[idField.name];
-            if (typeof id == 'string') {
-                const isValid = objectId_1.parseObjectID(id);
-                if (isValid)
-                    el[idField.name] = objectId_1.parseObjectID(id);
-                return el;
-            }
-            return el;
-        };
-        if (Array.isArray(data)) {
-            return data.map((el) => validateEl(el));
-        }
-        else {
-            return validateEl(data);
         }
     }
     /**
@@ -311,12 +304,17 @@ class DexieDBDataProvider {
         }
         return obj;
     }
-    verifyMongoDBPrimaryKey(modelName, primaryKey) {
-        if (primaryKey.name === '_id' &&
-            primaryKey.type.includes('GraphbackObjectID')) {
+    verifyDBPrimaryKey(modelName, primaryKey) {
+        if (primaryKey.name === '_id' && primaryKey.type === 'GraphbackObjectID') {
+            throw Error(`Model "${modelName}" must contain a "id: ID!" primary key instead of _id: GraphbackObjectID!. 
+      If you use are using MongoDb - it not supported.
+      Visit https://graphback.dev/docs/model/datamodel#postgres to see how to 
+      set up one for your Postgres model.`);
+        }
+        if (primaryKey.name === 'id' && primaryKey.type === 'ID') {
             return;
         }
-        throw Error(`Model "${modelName}" must contain a "_id: GraphbackObjectID" primary key. Visit https://graphback.dev/docs/model/datamodel#mongodb to see how to set up one for your MongoDB model.`);
+        throw Error(`Model "${modelName}" must contain a "id: ID!" primary key. Visit https://graphback.dev/docs/model/datamodel#postgres to see how to set up one for your Postgres model.`);
     }
     verifyTypeIntegrity(data) {
         const fields = Object.keys(data);

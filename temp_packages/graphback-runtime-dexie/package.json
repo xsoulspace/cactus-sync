@@ -2,8 +2,8 @@
   "name": "@graphback/runtime-dexie",
   "version": "1.1.2",
   "description": "Graphback runtime dexie",
-  "main": "dist/graphback-runtime-dexie/src/index.js",
-  "types": "types/graphback-runtime-dexie/src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "types/index.d.ts",
   "typescript": {
     "definition": "types/index.d.ts"
   },

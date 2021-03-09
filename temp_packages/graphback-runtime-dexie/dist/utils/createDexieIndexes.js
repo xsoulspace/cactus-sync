@@ -125,7 +125,7 @@ function getIndexFields(baseType) {
             continue;
         }
         const fieldType = lodash_1.toString(JSON.parse(JSON.stringify(field.type)));
-        if (fieldType.includes('GraphbackObjectID')) {
+        if (fieldType.includes('GraphbackObjectID') || fieldType.includes('ID')) {
             const maybeId = {
                 name: field.name,
                 unique: true,

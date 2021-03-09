@@ -7,6 +7,7 @@ export declare enum RootQueryOperator {
     'or' = "or",
     'not' = "not"
 }
+export declare const RootQueryOperatorSet: Set<string>;
 export declare enum GraphbackQueryOperator {
     'eq' = "eq",
     'ne' = "ne",
@@ -75,6 +76,6 @@ export declare function validateTableEntry<TType = any>({ tableEntry, queryEntir
         DexieQueryMapParam['fieldName'],
         Maybe<Maybe<DexieQueryMapParam>[]>
     ][];
-}): any;
+}): boolean;
 export {};
 //# sourceMappingURL=dexieQueryBuilder.d.ts.map

@@ -20,9 +20,7 @@ export declare class DexieDBDataProvider<Type = any> implements GraphbackDataPro
     batchRead(relationField: string, ids: string[], filter?: QueryFilter, selectedFields?: string[]): Promise<Type[][]>;
     protected getTable(): import("dexie").Table<Type, string>;
     protected getSelectedFields(selectedFields: string[]): string[] | "*";
-    protected fixObjectIdForDexie(data: Partial<Type>, idField: TableID): void;
-    protected validateForObjectId(data: Type): Type;
-    protected validateForObjectId(data: Type[]): Type[];
+    protected addObjectId(data: Partial<Type>, idField: TableID): void;
     /**
      * in case if we request all properties then just return all
      * @param data
@@ -31,7 +29,7 @@ export declare class DexieDBDataProvider<Type = any> implements GraphbackDataPro
      */
     protected getSelectedData(data: Maybe<Type>[], selectedFields: string[]): Type[];
     protected getSelectedFieldsFromType(selectedFields: string[], type: Type): Type;
-    private verifyMongoDBPrimaryKey;
+    private verifyDBPrimaryKey;
     protected verifyTypeIntegrity(data: Partial<Type>): data is Type;
     protected get indexedFieldsSet(): Set<unknown>;
     protected isFieldIndexed(fieldName: string): boolean;
