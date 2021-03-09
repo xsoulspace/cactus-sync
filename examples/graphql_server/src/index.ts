@@ -36,7 +36,7 @@ async function start() {
 
   const { typeDefs, resolvers, contextCreator } = buildGraphbackAPI(modelDefs, {
     dataProviderCreator: createMongoDbProvider(db),
-    plugins: [new CactusSyncPlugin()],
+    plugins: [new CactusSyncPlugin([])],
   })
 
   const apolloConfig: ApolloServerExpressConfig = {
