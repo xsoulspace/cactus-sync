@@ -1,2 +1,2 @@
 export * from './createGraphQLWS'
-export { CactusSyncPlugin } from './cactusSyncPlugin'
+export * from './CactusSyncPlugin'

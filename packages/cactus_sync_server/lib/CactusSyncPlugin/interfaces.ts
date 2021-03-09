@@ -24,5 +24,7 @@ export declare type ICactusCallback<
   args: TArgs,
   context: TContext,
   info: TInfo,
+  queryResult: any,
+  modelName: string,
   type: ECactusOperationType
 ) => Promise<ExpressContext>

@@ -10,6 +10,7 @@ import http from 'http'
 import {
   createGraphQLWS,
   CactusSyncPlugin,
+  cactusSyncTimestampCallback,
 } from '../../../packages/cactus_sync_server/lib'
 import { connectDB } from './db'
 // import { noteResolvers } from './resolvers/noteResolvers'
@@ -36,7 +37,7 @@ async function start() {
 
   const { typeDefs, resolvers, contextCreator } = buildGraphbackAPI(modelDefs, {
     dataProviderCreator: createMongoDbProvider(db),
-    plugins: [new CactusSyncPlugin([])],
+    plugins: [new CactusSyncPlugin([cactusSyncTimestampCallback])],
   })
 
   const apolloConfig: ApolloServerExpressConfig = {
