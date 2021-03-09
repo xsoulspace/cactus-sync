@@ -1,15 +1,16 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('dotenv').config()
-import { createMongoDbProvider } from '@graphback/runtime-mongo'
+import { createKnexDbProvider } from '@graphback/runtime-knex'
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
 import cors from 'cors'
 import express from 'express'
 import { buildGraphbackAPI } from 'graphback'
 import { loadConfigSync } from 'graphql-config'
+import { migrateDB, removeNonSafeOperationsFilter } from 'graphql-migrations'
 import http from 'http'
 import { createGraphQLWS } from '../../../packages/cactus_sync_server/lib'
-import { connectDB } from './db'
-// import { noteResolvers } from './resolvers/noteResolvers'
+import { connectDB, loadDBConfig } from './db'
+
 async function start() {
   const app = express()
 
@@ -26,20 +27,24 @@ async function start() {
 
   const projectConfig = config.getDefault()
   const graphbackConfig = projectConfig.extension(graphbackExtension)
-
   const modelDefs = projectConfig.loadSchemaSync(graphbackConfig.model)
 
-  const db = await connectDB()
+  const db = connectDB()
+  const dbConfig = loadDBConfig()
 
   const { typeDefs, resolvers, contextCreator } = buildGraphbackAPI(modelDefs, {
-    dataProviderCreator: createMongoDbProvider(db),
+    dataProviderCreator: createKnexDbProvider(db),
   })
 
+  migrateDB(dbConfig, typeDefs, {
+    operationFilter: removeNonSafeOperationsFilter,
+  }).then(() => {
+    console.log('Migrated database')
+  })
   const apolloConfig: ApolloServerExpressConfig = {
     typeDefs,
     resolvers: [resolvers],
     context: contextCreator,
-    uploads: false,
   }
   const apolloServer = new ApolloServer(apolloConfig)
 

@@ -25,31 +25,32 @@
     "lint-fix": "",
     "build": "yarn clean && yarn compile",
     "clean": "rm -rf ./dist",
-    "compile": "tsc -p tsconfig.build.json"
+    "compile": "tsc -p tsconfig.build.json",
+    "upgrade": "yarn yarn-upgrade-all"
   },
   "dependencies": {
+    "@graphql-tools/merge": "^6.2.10",
+    "@graphback/runtime-dexie": "./temp_packages/graphback-runtime-dexie",
     "dexie": "^3.0.3",
     "dexie-observable": "^3.0.0-beta.10",
-    "uuid4": "^2.0.2",
-    "graphql-metadata": "^0.7.6",
+    "graphback": "^1.1.2",
     "graphql": "^15.5.0",
     "graphql-config": "^3.2.0",
+    "graphql-metadata": "^0.7.6",
     "graphql-tools": "^7.0.4",
-    "@graphql-tools/merge": "^6.2.10",
-    "graphback": "^1.1.2",
-    "@graphback/runtime-dexie": "./temp_packages/graphback-runtime-dexie"
+    "uuid4": "^2.0.2"
   },
   "devDependencies": {
-    "fake-indexeddb": "^3.1.2",
-    "typescript": "^4.2.3",
-    "eslint": "^7.18.0",
     "@types/jest": "^26.0.20",
-    "ts-jest": "^26.5.3",
-    "jest": "^26.6.3",
-    "@typescript-eslint/eslint-plugin": "^4.13.0",
-    "@typescript-eslint/parser": "^4.13.0",
+    "@typescript-eslint/eslint-plugin": "^4.17.0",
+    "@typescript-eslint/parser": "^4.17.0",
+    "eslint": "^7.21.0",
     "eslint-plugin-prettier": "^3.3.1",
+    "fake-indexeddb": "^3.1.2",
+    "jest": "^26.6.3",
     "prettier": "^2.2.1",
+    "ts-jest": "^26.5.3",
+    "typescript": "^4.2.3",
     "yarn-upgrade-all": "^0.5.4"
   }
 }
