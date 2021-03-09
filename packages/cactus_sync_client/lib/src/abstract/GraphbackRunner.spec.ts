@@ -14,6 +14,9 @@ interface UpdateTodoResult {
 interface DeleteTodoResult {
   deleteTodo: Todo
 }
+interface FindTodoResult {
+  findTodos: { items: Todo[] }
+}
 interface CreateUserResult {
   createUser: User
 }
@@ -36,7 +39,7 @@ describe('graphback runner', () => {
     expect(runner.context).toBeTruthy()
     expect(runner.schema).toBeInstanceOf(GraphQLSchema)
   })
-  test('should create and get', async () => {
+  test('can create and get', async () => {
     const runner = await init()
     const createMutation = `
       mutation{
@@ -68,7 +71,7 @@ describe('graphback runner', () => {
         }
       }
     `
-  test('should verify CRUD', async () => {
+  test('can make CRUD', async () => {
     const runner = await init()
 
     const created = await runner.execute<CreateTodoResult>(todoCreateMutation)
@@ -110,7 +113,7 @@ describe('graphback runner', () => {
     const deletedTodo = deleted.data?.deleteTodo
     expect(deletedTodo?._version).toEqual(2)
   })
-  test('should verify relationships', async () => {
+  test('can make relationships', async () => {
     const runner = await init()
     const createdTodo = await runner.execute<CreateTodoResult>(
       todoCreateMutation
@@ -177,5 +180,31 @@ describe('graphback runner', () => {
     const user = userResult.data?.getUser
     expect(user?.todos.length).toEqual(1)
     expect(user?.todos[0]?.title).toEqual('Hello World!')
+  })
+  test('can find with no parameters', async () => {
+    const runner = await init()
+    const createdTodo = await runner.execute<CreateTodoResult>(
+      todoCreateMutation
+    )
+    expect(createdTodo.data?.createTodo.title).toEqual('Hello World!')
+    const findTodosQuery = `
+      query{
+        findTodos{
+          items {
+            id
+            _clientId
+            _version
+            _lastUpdatedAt
+            title
+          }
+        }
+      }
+    `
+    const findTodosResult = await runner.execute<FindTodoResult>(findTodosQuery)
+
+    expect(findTodosResult.data?.findTodos.items.length).toEqual(1)
+    expect(findTodosResult.data?.findTodos.items[0].title).toEqual(
+      'Hello World!'
+    )
   })
 })
