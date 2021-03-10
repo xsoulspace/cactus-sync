@@ -1,6 +1,6 @@
 {
   "name": "@xsoulspace/cactus-sync-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sharp and simple as cactus offline-first client library to sync with graphql server..",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -37,19 +37,19 @@
     "@graphql-tools/merge": "^6.2.10",
     "dexie": "^3.0.3",
     "dexie-observable": "^3.0.0-beta.10",
+    "endent": "^2.0.1",
     "graphback": "^1.1.2",
     "graphql": "^15.5.0",
     "graphql-config": "^3.2.0",
     "graphql-metadata": "^0.7.6",
-    "graphql-tools": "^7.0.4",
     "graphql-tag": "^2.11.0",
+    "graphql-tools": "^7.0.4",
     "uuid4": "^2.0.2",
-    "vue": "^3.0.6",
-    "endent": "^2.0.1"
+    "vue": "^3.0.6"
   },
   "peerDependencies": {
-    "vue": "^3.x.x",
-    "endent": "^2.x.x"
+    "endent": "^2.x.x",
+    "vue": "^3.x.x"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "1.21.2",
