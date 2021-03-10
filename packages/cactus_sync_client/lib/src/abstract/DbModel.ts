@@ -1,5 +1,9 @@
 import { Version } from 'dexie'
-import { ExecutionResult } from 'graphql-tools'
+import { Maybe } from 'graphql-tools'
+import {
+  DefautlGqlOperations,
+  getDefautlGqlOperations,
+} from '../graphql/DefautlGqlOperations'
 import { CactusSync } from './CactusSync'
 import { GraphbackRunner } from './GraphbackRunner'
 
@@ -19,22 +23,34 @@ interface DbModelI extends DbModelInitI, DbModelDbInitI {}
 
 export type DbModelBuilder<TModel> = (arg: DbModelDbInitI) => DbModel<TModel>
 
+type OperationInput<TInput> = { input: TInput; gql?: Maybe<string> }
+type FindInput<TFilter, TPageRequest, TOrderByInput> = {
+  filter?: Maybe<TFilter>
+  pageRequest?: Maybe<TPageRequest>
+  orderBy?: Maybe<TOrderByInput>
+}
+
 export class DbModel<TModel> {
-  __typename: string
+  modelName: string
+  protected _defaultGqlOperations: DefautlGqlOperations
   db: CactusSync
-  schemaModel: unknown
+  protected _schemaModel: unknown
   constructor({ schemaModel, db, upgrade, dbVersion }: DbModelI) {
     this.db = db
-    this.schemaModel = schemaModel
-    // TODO: get from schema model?
-    this.__typename = ''
+    this._schemaModel = schemaModel
+    const modelFields = ['']
+    this.modelName = ''
+    this._defaultGqlOperations = getDefautlGqlOperations({
+      modelFields,
+      modelName: this.modelName,
+    })
     if (upgrade) upgrade(db.version(dbVersion).upgrade)
   }
   static init<TModel>(arg: DbModelInitI): DbModelBuilder<TModel> {
     return (dbInit: DbModelDbInitI) =>
       new DbModel<TModel>({ ...arg, ...dbInit })
   }
-  _graphqlRunner(): GraphbackRunner {
+  protected _graphqlRunner(): GraphbackRunner {
     const runner = this.db.graphqlRunner
     if (runner == null)
       throw Error(
@@ -44,32 +60,69 @@ export class DbModel<TModel> {
       )
     return runner
   }
-  _execute() {
-    return this._graphqlRunner().execute
+  protected _execute<TVariables, TResult>(
+    query: string,
+    variableValues?: TVariables | undefined
+  ) {
+    return this._graphqlRunner().execute<TModel, TVariables, TResult>(
+      query,
+      variableValues
+    )
   }
-  async save<TInput, TResult>(input: TInput) {
-    // TODO: implememt make mutation
-    const query: string = makeMutation(input)
-    return (await this._execute()(query)) as ExecutionResult<TResult>
+  protected _executeMiddleware<TInput, TResult>(
+    arg: OperationInput<TInput>,
+    defaultGql: string
+  ) {
+    const { input, gql } = arg
+    const result = this._execute<TInput, TResult>(gql ?? defaultGql, input)
+    return result
   }
-  async update<TInput, TResult>(input: TInput) {
-    // TODO: implememt make mutation
-    const query: string = makeMutation(input)
-    return (await this._execute()(query)) as ExecutionResult<TResult>
+  async add<TInput, TResult>(input: TInput, gql: Maybe<string>) {
+    return this._executeMiddleware<TInput, TResult>(
+      {
+        gql,
+        input,
+      },
+      this._defaultGqlOperations.create
+    )
   }
-  async remove<TInput, TResult>(input: TInput) {
-    // TODO: implememt make mutation
-    const query: string = makeMutation(input)
-    return (await this._execute()(query)) as ExecutionResult<TResult>
+  async update<TInput, TResult>(input: TInput, gql: Maybe<string>) {
+    return this._executeMiddleware<TInput, TResult>(
+      {
+        gql,
+        input,
+      },
+      this._defaultGqlOperations.update
+    )
   }
-  async find<TInput, TResult>(input: TInput) {
-    // TODO: implememt make mutation
-    const query: string = makeQuery(input)
-    return (await this._execute()(query)) as ExecutionResult<TResult>
+  async remove<TInput, TResult>(input: TInput, gql: Maybe<string>) {
+    return this._executeMiddleware<TInput, TResult>(
+      {
+        gql,
+        input,
+      },
+      this._defaultGqlOperations.delete
+    )
   }
-  async findOne<TInput, TResult>(input: TInput) {
-    // TODO: implememt make mutation
-    const query: string = makeQuery(input)
-    return (await this._execute()(query)) as ExecutionResult<TResult>
+  async get<TInput, TResult>(input: TInput, gql: Maybe<string>) {
+    return this._executeMiddleware<TInput, TResult>(
+      {
+        gql,
+        input,
+      },
+      this._defaultGqlOperations.get
+    )
+  }
+  async find<
+    TFilter,
+    TResult,
+    TPageRequest = Maybe<unknown>,
+    TOrderByInput = Maybe<unknown>,
+    TFilterInput = FindInput<TFilter, TPageRequest, TOrderByInput>
+  >(arg: TFilterInput, gql?: Maybe<string>) {
+    return this._execute<TFilterInput, TResult>(
+      gql ?? this._defaultGqlOperations.find,
+      arg
+    )
   }
 }

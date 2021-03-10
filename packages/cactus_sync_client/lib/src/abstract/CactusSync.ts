@@ -1,12 +1,4 @@
 import Dexie, { DexieOptions } from 'dexie'
-import 'dexie-observable'
-import {
-  DatabaseChangeType,
-  ICreateChange,
-  IDatabaseChange,
-  IDeleteChange,
-  IUpdateChange,
-} from 'dexie-observable/api'
 import { Maybe } from 'graphql-tools'
 import { DbModelBuilder } from './DbModel'
 import { GraphbackRunner } from './GraphbackRunner'
@@ -15,27 +7,6 @@ interface CactusSyncI {
   dbName?: Maybe<string>
   dbVersion?: Maybe<number>
   dexieOptions?: Maybe<DexieOptions>
-}
-
-/**
- * Function type to run remote server create/update/delete after local db change
- */
-export type HandleModelChange<TIDatabaseChange extends IDatabaseChange> = ({
-  change,
-}: {
-  change: TIDatabaseChange
-}) => void
-
-const useRunHooks = <TIDatabaseChange extends IDatabaseChange>({
-  hooks,
-  change,
-}: {
-  change: TIDatabaseChange
-  hooks: Maybe<HandleModelChange<TIDatabaseChange>>[]
-}) => {
-  for (const hook of hooks) {
-    if (hook) hook({ change })
-  }
 }
 
 /**
@@ -66,7 +37,6 @@ export class CactusSync extends Dexie {
 
     db.version(this.dbVersion)
     // maybe will need to @deprecate
-    db.on('changes', this.handleOnCactusSyncChanges)
   }
   /**
    * Start point to initialize CactusSyncDb to add new models
@@ -85,7 +55,6 @@ export class CactusSync extends Dexie {
   /**
    * Start point to include Model into db
    * Model must be created from GraphQl schema
-   * //TODO: add cud hanlders to update remote server?
    * @param modelBuilder
    * @returns
    */
@@ -96,41 +65,6 @@ export class CactusSync extends Dexie {
       You don't have CactusSync db instance! Be aware: 
       CactusSync.init(...) should be called before attachModel!`)
     const model = modelBuilder({ db, dbVersion: db.dbVersion })
-    // TODO: Seems like all models can be created by graphback.
-    // then it make no sense
-    // CactusSync.db.version(db.dbVersion).stores({
-    //   [model.__typename]: model._dexieTableFields(),
-    // })
     return model
-  }
-
-  // TODO: @deprecated?
-  createHooks: Maybe<HandleModelChange<ICreateChange>>[] = []
-  updateHooks: Maybe<HandleModelChange<IUpdateChange>>[] = []
-  deleteHooks: Maybe<HandleModelChange<IDeleteChange>>[] = []
-
-  // TODO: @deprecated?
-  handleOnCactusSyncChanges(changes: IDatabaseChange[], _partial: boolean) {
-    for (const change of changes) {
-      switch (change.type) {
-        case DatabaseChangeType.Create: // CREATED
-          console.log('An object was created: ' + JSON.stringify(change.obj))
-          useRunHooks({ change, hooks: this.createHooks })
-          break
-        case DatabaseChangeType.Update: // UPDATED
-          console.log(
-            'An object with key ' +
-              change.key +
-              ' was updated with modifications: ' +
-              JSON.stringify(change?.mods)
-          )
-          useRunHooks({ change, hooks: this.updateHooks })
-          break
-        case DatabaseChangeType.Delete: // DELETED
-          console.log('An object was deleted: ' + JSON.stringify(change.oldObj))
-          useRunHooks({ change, hooks: this.deleteHooks })
-          break
-      }
-    }
   }
 }
