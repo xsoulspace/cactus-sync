@@ -1,4 +1,4 @@
-import { CactusSync } from './CactusSync'
+import { CactusSync } from '../../lib'
 CactusSync.dependencies.indexedDB = require('fake-indexeddb')
 CactusSync.dependencies.IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 describe('CactusSync', () => {

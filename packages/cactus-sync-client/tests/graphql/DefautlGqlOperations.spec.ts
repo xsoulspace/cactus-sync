@@ -1,5 +1,5 @@
 import gql from 'graphql-tag'
-import { getDefautlGqlOperations, gqlToFields } from './DefautlGqlOperations'
+import { getDefautlGqlOperations, gqlToFields } from '../../lib'
 
 const normilizeString = (str: string) => str.trim().replace(/\s+/g, ' ')
 

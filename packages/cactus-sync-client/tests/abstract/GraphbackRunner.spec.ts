@@ -1,7 +1,7 @@
 import Dexie from 'dexie'
 import { GraphQLSchema } from 'graphql-compose/lib/graphql'
-import { Todo, User } from '../../../../../resources/generatedTypes'
-import { GraphbackRunner } from './GraphbackRunner'
+import { Todo, User } from '../../../../resources/generatedTypes'
+import { GraphbackRunner } from '../../lib'
 
 Dexie.dependencies.indexedDB = require('fake-indexeddb')
 Dexie.dependencies.IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')

@@ -1,11 +1,11 @@
 module.exports = {
-  roots: ['<rootDir>/lib'],
+  roots: ['<rootDir>'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
-  testRegex: '(/lib/.*.(test|spec)).(jsx?|tsx?)$',
+  testRegex: '(/.*.(test|spec)).(jsx?|tsx?)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   collectCoverage: true,
-  coveragePathIgnorePatterns: ['(lib/.*.mock).(jsx?|tsx?)$'],
+  coveragePathIgnorePatterns: ['(/.*.mock).(jsx?|tsx?)$'],
   verbose: true,
 }

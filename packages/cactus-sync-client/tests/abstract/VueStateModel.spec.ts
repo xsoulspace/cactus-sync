@@ -8,17 +8,15 @@ import {
   QueryFindTodosArgs,
   QueryGetTodoArgs,
   Todo,
-} from '../../../../../resources/generatedTypes'
-import { CactusModel } from './CactusModel'
-import { CactusSync } from './CactusSync'
-import { VueStateModel } from './VueStateModel'
+} from '../../../../resources/generatedTypes'
+import { CactusModel, CactusSync, VueStateModel } from '../../lib'
 CactusSync.dependencies.indexedDB = require('fake-indexeddb')
 CactusSync.dependencies.IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
 describe('VueStateModel', () => {
   const schemaPath = path.resolve(
     __dirname,
-    '../../../../../resources/schema.graphql'
+    '../../../../resources/schema.graphql'
   )
   let schema: GraphQLSchema
   let cactusSync: CactusSync
