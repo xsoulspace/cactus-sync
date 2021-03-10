@@ -3,7 +3,7 @@ import Dexie from 'dexie'
 import { buildGraphbackAPI, GraphbackContext } from 'graphback'
 import { graphql, GraphQLSchema } from 'graphql'
 import { loadConfigSync } from 'graphql-config'
-import { ExecutionResult, makeExecutableSchema } from 'graphql-tools'
+import { ExecutionResult, makeExecutableSchema, Maybe } from 'graphql-tools'
 
 interface GraphbackRunnerI {
   context: GraphbackContext
@@ -65,7 +65,8 @@ export class GraphbackRunner {
   async execute<
     TType,
     TVariables = any,
-    TResult extends ExecutionResult<TType> = ExecutionResult<TType>
+    TResult = Maybe<TType>,
+    TExecutionResult extends ExecutionResult<TResult> = ExecutionResult<TResult>
   >(query: string, variableValues?: TVariables) {
     return (await graphql(
       this.schema,
@@ -73,6 +74,6 @@ export class GraphbackRunner {
       null,
       this.context,
       variableValues
-    )) as TResult
+    )) as TExecutionResult
   }
 }

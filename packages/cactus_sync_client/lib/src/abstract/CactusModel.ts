@@ -1,4 +1,6 @@
 import { Version } from 'dexie'
+import { GraphQLFieldMap } from 'graphql'
+import { GraphQLObjectType } from 'graphql-compose/lib/graphql'
 import { Maybe } from 'graphql-tools'
 import {
   DefautlGqlOperations,
@@ -7,21 +9,22 @@ import {
 import { CactusSync } from './CactusSync'
 import { GraphbackRunner } from './GraphbackRunner'
 
-interface DbModelInitI {
-  // TODO:
-  schemaModel: unknown
+interface CactusModelInitI {
+  graphqlModelType: GraphQLObjectType
   // TODO: upgrade for versions like hooks?
   upgrade?(upgrade: Version['upgrade']): void
 }
 
-interface DbModelDbInitI {
+interface CactusModelDbInitI {
   db: CactusSync
   dbVersion: number
 }
 
-interface DbModelI extends DbModelInitI, DbModelDbInitI {}
+interface CactusModelI extends CactusModelInitI, CactusModelDbInitI {}
 
-export type DbModelBuilder<TModel> = (arg: DbModelDbInitI) => DbModel<TModel>
+export type CactusModelBuilder<TModel> = (
+  arg: CactusModelDbInitI
+) => CactusModel<TModel>
 
 type OperationInput<TInput> = { input: TInput; gql?: Maybe<string> }
 type FindInput<TFilter, TPageRequest, TOrderByInput> = {
@@ -30,25 +33,46 @@ type FindInput<TFilter, TPageRequest, TOrderByInput> = {
   orderBy?: Maybe<TOrderByInput>
 }
 
-export class DbModel<TModel> {
+export class CactusModel<TModel> {
   modelName: string
   protected _defaultGqlOperations: DefautlGqlOperations
+  protected _modelFields: (keyof TModel)[]
   db: CactusSync
-  protected _schemaModel: unknown
-  constructor({ schemaModel, db, upgrade, dbVersion }: DbModelI) {
+  protected _graphqlModelType: GraphQLObjectType
+  /**
+   * We will remove any relationships by default for safety
+   * User anyway in anytime may call it with custom gql
+   * @param fields
+   * @returns
+   */
+  protected _getModelFieldNames(fields: GraphQLFieldMap<any, any>) {
+    return Object.values(fields)
+      .filter(
+        (el) =>
+          !el.description?.includes('manyToOne') &&
+          !el.description?.includes('oneToMany') &&
+          !el.description?.includes('oneToOne')
+      )
+      .map((el) => el.name) as (keyof TModel)[]
+  }
+  constructor({ graphqlModelType, db, upgrade, dbVersion }: CactusModelI) {
+    const fields = graphqlModelType.getFields()
+    if (fields == null)
+      throw Error(`no fields defined for ${graphqlModelType.name} model`)
+    this._modelFields = this._getModelFieldNames(fields)
     this.db = db
-    this._schemaModel = schemaModel
-    const modelFields = ['']
-    this.modelName = ''
+    this._graphqlModelType = graphqlModelType
+    this.modelName = graphqlModelType.name
     this._defaultGqlOperations = getDefautlGqlOperations({
-      modelFields,
+      modelFields: this._modelFields,
       modelName: this.modelName,
     })
     if (upgrade) upgrade(db.version(dbVersion).upgrade)
   }
-  static init<TModel>(arg: DbModelInitI): DbModelBuilder<TModel> {
-    return (dbInit: DbModelDbInitI) =>
-      new DbModel<TModel>({ ...arg, ...dbInit })
+
+  static init<TModel>(arg: CactusModelInitI): CactusModelBuilder<TModel> {
+    return (dbInit: CactusModelDbInitI) =>
+      new CactusModel<TModel>({ ...arg, ...dbInit })
   }
   protected _graphqlRunner(): GraphbackRunner {
     const runner = this.db.graphqlRunner
@@ -77,7 +101,7 @@ export class DbModel<TModel> {
     const result = this._execute<TInput, TResult>(gql ?? defaultGql, input)
     return result
   }
-  async add<TInput, TResult>(input: TInput, gql: Maybe<string>) {
+  async add<TInput, TResult = TModel>(input: TInput, gql?: Maybe<string>) {
     return this._executeMiddleware<TInput, TResult>(
       {
         gql,
@@ -86,7 +110,7 @@ export class DbModel<TModel> {
       this._defaultGqlOperations.create
     )
   }
-  async update<TInput, TResult>(input: TInput, gql: Maybe<string>) {
+  async update<TInput, TResult>(input: TInput, gql?: Maybe<string>) {
     return this._executeMiddleware<TInput, TResult>(
       {
         gql,
@@ -95,7 +119,7 @@ export class DbModel<TModel> {
       this._defaultGqlOperations.update
     )
   }
-  async remove<TInput, TResult>(input: TInput, gql: Maybe<string>) {
+  async remove<TInput, TResult>(input: TInput, gql?: Maybe<string>) {
     return this._executeMiddleware<TInput, TResult>(
       {
         gql,
@@ -104,7 +128,7 @@ export class DbModel<TModel> {
       this._defaultGqlOperations.delete
     )
   }
-  async get<TInput, TResult>(input: TInput, gql: Maybe<string>) {
+  async get<TInput, TResult>(input: TInput, gql?: Maybe<string>) {
     return this._executeMiddleware<TInput, TResult>(
       {
         gql,
@@ -119,10 +143,10 @@ export class DbModel<TModel> {
     TPageRequest = Maybe<unknown>,
     TOrderByInput = Maybe<unknown>,
     TFilterInput = FindInput<TFilter, TPageRequest, TOrderByInput>
-  >(arg: TFilterInput, gql?: Maybe<string>) {
+  >(arg?: Maybe<TFilterInput>, gql?: Maybe<string>) {
     return this._execute<TFilterInput, TResult>(
       gql ?? this._defaultGqlOperations.find,
-      arg
+      arg ?? undefined
     )
   }
 }

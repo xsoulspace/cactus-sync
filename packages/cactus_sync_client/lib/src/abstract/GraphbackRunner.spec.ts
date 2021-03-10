@@ -34,7 +34,7 @@ describe('graphback runner', () => {
     await db?.delete()
   })
 
-  test('should init', async () => {
+  test('can init graphql runtime context and schema', async () => {
     const runner = await init()
     expect(runner.context).toBeTruthy()
     expect(runner.schema).toBeInstanceOf(GraphQLSchema)

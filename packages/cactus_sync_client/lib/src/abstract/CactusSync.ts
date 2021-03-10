@@ -1,6 +1,13 @@
 import Dexie, { DexieOptions } from 'dexie'
+import {
+  DatabaseChangeType,
+  ICreateChange,
+  IDatabaseChange,
+  IDeleteChange,
+  IUpdateChange,
+} from 'dexie-observable/api'
 import { Maybe } from 'graphql-tools'
-import { DbModelBuilder } from './DbModel'
+import { CactusModelBuilder } from './CactusModel'
 import { GraphbackRunner } from './GraphbackRunner'
 
 interface CactusSyncI {
@@ -8,7 +15,26 @@ interface CactusSyncI {
   dbVersion?: Maybe<number>
   dexieOptions?: Maybe<DexieOptions>
 }
+/**
+ * Function type to run after CactusSync(Dexie) change
+ */
+export type HandleModelChange<TIDatabaseChange extends IDatabaseChange> = ({
+  change,
+}: {
+  change: TIDatabaseChange
+}) => void
 
+const useRunHooks = <TIDatabaseChange extends IDatabaseChange>({
+  hooks,
+  change,
+}: {
+  change: TIDatabaseChange
+  hooks: Maybe<HandleModelChange<TIDatabaseChange>>[]
+}) => {
+  for (const hook of hooks) {
+    if (hook) hook({ change })
+  }
+}
 /**
  * To init class use `CactusSync.init()`
  *
@@ -58,7 +84,7 @@ export class CactusSync extends Dexie {
    * @param modelBuilder
    * @returns
    */
-  static attachModel<TModel>(modelBuilder: DbModelBuilder<TModel>) {
+  static attachModel<TModel>(modelBuilder: CactusModelBuilder<TModel>) {
     const db = CactusSync.db
     if (db == null)
       throw Error(`
@@ -66,5 +92,33 @@ export class CactusSync extends Dexie {
       CactusSync.init(...) should be called before attachModel!`)
     const model = modelBuilder({ db, dbVersion: db.dbVersion })
     return model
+  }
+
+  createHooks: Maybe<HandleModelChange<ICreateChange>>[] = []
+  updateHooks: Maybe<HandleModelChange<IUpdateChange>>[] = []
+  deleteHooks: Maybe<HandleModelChange<IDeleteChange>>[] = []
+
+  handleOnCactusSyncChanges(changes: IDatabaseChange[], _partial: boolean) {
+    for (const change of changes) {
+      switch (change.type) {
+        case DatabaseChangeType.Create: // CREATED
+          console.log('An object was created: ' + JSON.stringify(change.obj))
+          useRunHooks({ change, hooks: this.createHooks })
+          break
+        case DatabaseChangeType.Update: // UPDATED
+          console.log(
+            'An object with key ' +
+              change.key +
+              ' was updated with modifications: ' +
+              JSON.stringify(change?.mods)
+          )
+          useRunHooks({ change, hooks: this.updateHooks })
+          break
+        case DatabaseChangeType.Delete: // DELETED
+          console.log('An object was deleted: ' + JSON.stringify(change.oldObj))
+          useRunHooks({ change, hooks: this.deleteHooks })
+          break
+      }
+    }
   }
 }
