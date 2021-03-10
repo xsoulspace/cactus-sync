@@ -5,6 +5,8 @@ import {
   MutationCreateTodoArgs,
   MutationDeleteTodoArgs,
   MutationUpdateTodoArgs,
+  QueryFindTodosArgs,
+  QueryGetTodoArgs,
   Todo,
 } from '../../../../../resources/generatedTypes'
 import { CactusModel } from './CactusModel'
@@ -14,7 +16,10 @@ CactusSync.dependencies.indexedDB = require('fake-indexeddb')
 CactusSync.dependencies.IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
 describe('VueStateModel', () => {
-  const schemaPath = path.resolve('resources/schema.graphql')
+  const schemaPath = path.resolve(
+    __dirname,
+    '../../../../../resources/schema.graphql'
+  )
   let schema: GraphQLSchema
   let cactusSync: CactusSync
 
@@ -42,7 +47,11 @@ describe('VueStateModel', () => {
           MutationUpdateTodoArgs,
           { updateTodo: Maybe<Todo> },
           MutationDeleteTodoArgs,
-          { deleteTodo: Maybe<Todo> }
+          { deleteTodo: Maybe<Todo> },
+          QueryGetTodoArgs,
+          { getTodo: Maybe<Todo> },
+          QueryFindTodosArgs,
+          { findTodos: { items: Maybe<Todo>[] } }
         >({ graphqlModelType: todoType })
       )
       const todoState = new VueStateModel({ cactusModel: model })
@@ -69,7 +78,14 @@ describe('VueStateModel', () => {
       expect(updatedTodo.title).toEqual('Hey too!')
       expect(updatedTodo._version).toEqual(2)
       expect(updatedTodo._lastUpdatedAt).toEqual(date)
+      const getTodo = await todoState.get({
+        id: todo.id,
+      })
+      expect(getTodo.data?.getTodo?.title).toEqual('Hey too!')
 
+      const findTodo = await todoState.find()
+      expect(findTodo.data?.findTodos.items.length).toEqual(1)
+      expect(findTodo.data?.findTodos.items[0]?.title).toEqual('Hey too!')
       const removedTodo = await todoState.remove({
         input: {
           id: todo.id,

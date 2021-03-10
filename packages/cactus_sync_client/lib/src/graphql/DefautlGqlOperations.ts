@@ -47,7 +47,9 @@ ${returnFields}
     find: `
 query find${modelName}($filter: ${modelName}Filter, $page: PageRequest, $orderBy: OrderByInput) {
   find${modelName}s(filter: $filter, page: $page, orderBy: $orderBy) {
+    items{
 ${returnFields}
+    }
   }
 }`,
   }
