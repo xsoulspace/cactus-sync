@@ -1,6 +1,6 @@
 import endent from 'endent'
 import { GraphQLSchema, isObjectType } from 'graphql-compose/lib/graphql'
-import { toPluralName } from '../utils'
+import { toPluralName } from '../utils/Naming'
 interface PluginConfig {
   withVueState?: boolean
   schemaTypesPath?: string
