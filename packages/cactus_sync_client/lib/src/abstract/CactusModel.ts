@@ -10,7 +10,7 @@ import { CactusSync } from './CactusSync'
 import { GraphbackRunner } from './GraphbackRunner'
 
 interface CactusModelInitI {
-  graphqlModelType: GraphQLObjectType
+  graphqlModelType: Maybe<GraphQLObjectType>
   // TODO: upgrade for versions like hooks?
   upgrade?(upgrade: Version['upgrade']): void
 }
@@ -113,6 +113,10 @@ export class CactusModel<
       .map((el) => el.name) as (keyof TModel)[]
   }
   constructor({ graphqlModelType, db, upgrade, dbVersion }: CactusModelI) {
+    if (graphqlModelType == null)
+      throw Error(
+        'graphqlModelType for CactusModel is not defined. Check type that you put in init functon'
+      )
     const fields = graphqlModelType.getFields()
     if (fields == null)
       throw Error(`no fields defined for ${graphqlModelType.name} model`)

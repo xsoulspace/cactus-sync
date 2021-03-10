@@ -1,5 +1,5 @@
 {
-  "name": "@xsoulspace/cactus_sync_client",
+  "name": "@xsoulspace/cactus-sync-client",
   "version": "0.1.0",
   "description": "Sharp and simple as cactus offline-first client library to sync with graphql server..",
   "main": "dist/index.js",
@@ -26,11 +26,13 @@
     "build": "yarn clean && yarn compile",
     "clean": "rm -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
-    "upgrade": "yarn yarn-upgrade-all"
+    "upgrade": "yarn yarn-upgrade-all",
+    "generate": "graphql-codegen --config codegen.yml",
+    "dev-genhooks": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate"
   },
   "dependencies": {
-    "@graphql-tools/merge": "^6.2.10",
     "@graphback/runtime-dexie": "./temp_packages/graphback-runtime-dexie",
+    "@graphql-tools/merge": "^6.2.10",
     "dexie": "^3.0.3",
     "dexie-observable": "^3.0.0-beta.10",
     "graphback": "^1.1.2",
@@ -39,12 +41,15 @@
     "graphql-metadata": "^0.7.6",
     "graphql-tools": "^7.0.4",
     "uuid4": "^2.0.2",
-    "vue": "^3.0.6"
+    "vue": "^3.0.6",
+    "endent": "^2.0.1"
   },
   "peerDependencies": {
-    "vue": "^3.x.x"
+    "vue": "^3.x.x",
+    "endent": "^2.x.x"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "1.21.2",
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.17.0",
     "@typescript-eslint/parser": "^4.17.0",

@@ -1,0 +1,10 @@
+overwrite: true
+schema: "../../resources/schema.graphql"
+config:
+  withVueState: true
+  cactusSyncConfigPath: '../lib/src/abstract/CactusSync'
+  schemaTypesPath: '../../../resources/generatedTypes'
+generates:
+  generated/hooks.ts:
+    plugins:
+      - "./lib/src/templates/GenerateCactusModelPlugin.js"
