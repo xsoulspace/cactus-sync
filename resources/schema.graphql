@@ -65,7 +65,9 @@ type CactusSyncTimestamp {
   # TODO: must be indexed for fastest finds
   timestamp: Int
   changeType: DatabaseChangeType!
-  # model __typename
+  """
+  model __typename
+  """
   modelTypename: String
   modelId: ID!
 }
