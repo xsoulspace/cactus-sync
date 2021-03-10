@@ -1,5 +1,6 @@
 import endent from 'endent'
 import { GraphQLSchema, isObjectType } from 'graphql-compose/lib/graphql'
+import { toPluralName } from '../utils'
 interface PluginConfig {
   withVueState?: boolean
   schemaTypesPath?: string
@@ -35,10 +36,10 @@ module.exports = {
     const fragments: string[] = []
     for (const type of types) {
       const name = type.name
-      const isSystemType = name.includes('_')
+      const isSystemType = name.includes('_') || name.toLowerCase() == 'query'
       if (isSystemType) continue
       const camelName = toCamelCase(name)
-
+      const pluralName = toPluralName(name)
       // ============ Generic generation =================
 
       const mutationCreateArgs = `MutationCreate${name}Args`
@@ -53,7 +54,7 @@ module.exports = {
       const queryGetArgs = `QueryGet${name}Args`
       const queryGetResult = `{ get${name}: Maybe<${name}> }`
 
-      const queryFindArgs = `QueryFind${name}sArgs`
+      const queryFindArgs = `QueryFind${pluralName}Args`
       const queryFindResult = `${name}ResultList`
 
       const args = [
