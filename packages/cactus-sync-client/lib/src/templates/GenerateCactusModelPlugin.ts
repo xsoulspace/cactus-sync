@@ -119,7 +119,7 @@ module.exports = {
       if (withVueState) {
         modelStr = endent`
           ${modelStr}
-          export const use${name}State = new VueStateModel({ cactusModel: ${modelName} })
+          export const use${name}State = () => new VueStateModel({ cactusModel: ${modelName} })
         `
       }
       exportModelStrings.push(modelStr)
