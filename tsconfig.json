@@ -4,7 +4,8 @@
     "module": "commonjs",
     "baseUrl": "./packages",
     "paths": {
-      "@xsoulspace/cactus-sync": ["cactus-sync/lib"]
+      "@xsoulspace/cactus-sync-client": ["cactus-sync-client/lib"],
+      "@xsoulspace/cactus-sync-server": ["cactus-sync-server/lib"]
     }
   }
 }

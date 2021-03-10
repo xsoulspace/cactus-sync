@@ -8,7 +8,7 @@ import { buildGraphbackAPI } from 'graphback'
 import { loadConfigSync } from 'graphql-config'
 import { migrateDB, removeNonSafeOperationsFilter } from 'graphql-migrations'
 import http from 'http'
-import { createGraphQLWS } from '../../../packages/cactus_sync_server/lib'
+import { createGraphQLWS } from '../../../packages/cactus-sync-server/lib'
 import { connectDB, loadDBConfig } from './db'
 
 async function start() {

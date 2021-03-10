@@ -24,8 +24,8 @@
   "scripts": {
     "lint-fix": "",
     "build": "yarn clean && yarn compile",
-    "clean": "rm -rf ./dist",
-    "compile": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf ./dist ./coverage ./generated",
+    "compile": "tsc  tsconfig.build.json",
     "upgrade": "yarn yarn-upgrade-all",
     "generate": "graphql-codegen --config codegen.yml",
     "dev-genhooks": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate"
