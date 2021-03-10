@@ -1,9 +1,10 @@
 import { Version } from 'dexie'
-import { GraphQLFieldMap } from 'graphql'
+import { DocumentNode, GraphQLFieldMap } from 'graphql'
 import { GraphQLObjectType } from 'graphql-compose/lib/graphql'
 import { ExecutionResult, Maybe } from 'graphql-tools'
 import {
   DefautlGqlOperations,
+  DefautlGqlOperationType,
   getDefautlGqlOperations,
 } from '../graphql/DefautlGqlOperations'
 import { CactusSync } from './CactusSync'
@@ -11,6 +12,7 @@ import { GraphbackRunner } from './GraphbackRunner'
 
 interface CactusModelInitI {
   graphqlModelType: Maybe<GraphQLObjectType>
+  defaultModelFragment?: Maybe<DocumentNode>
   // TODO: upgrade for versions like hooks?
   upgrade?(upgrade: Version['upgrade']): void
 }
@@ -54,17 +56,27 @@ export type CactusModelBuilder<
   TOrderByInput
 >
 
-type OperationInput<TInput> = { input: TInput; gql?: Maybe<string> }
 type FindInput<TFilter, TPageRequest, TOrderByInput> = {
   filter?: Maybe<TFilter>
   pageRequest?: Maybe<TPageRequest>
   orderBy?: Maybe<TOrderByInput>
 }
 
+type OperationFunctionGql = {
+  stringGql?: Maybe<string>
+  fragmentGql?: Maybe<DocumentNode>
+}
+
+type OperationInput<TInput> = {
+  input: TInput
+  gql?: Maybe<OperationFunctionGql>
+}
+
 export type OperationFunction<TInput, TResult> = (
   input: TInput,
-  gql?: Maybe<string>
+  gql?: Maybe<OperationFunctionGql>
 ) => Promise<ExecutionResult<TResult>>
+
 export type QueryOperationFunction<
   TFilter,
   TResult,
@@ -73,7 +85,7 @@ export type QueryOperationFunction<
   TFilterInput = FindInput<TFilter, TPageRequest, TOrderByInput>
 > = (
   arg?: Maybe<TFilterInput>,
-  gql?: Maybe<string>
+  gql?: Maybe<OperationFunctionGql>
 ) => Promise<ExecutionResult<TResult>>
 
 export class CactusModel<
@@ -94,6 +106,7 @@ export class CactusModel<
   modelName: string
   protected _defaultGqlOperations: DefautlGqlOperations
   protected _modelFields: (keyof TModel)[]
+  defaultModelFragment?: Maybe<DocumentNode>
   db: CactusSync
   protected _graphqlModelType: GraphQLObjectType
   /**
@@ -112,11 +125,18 @@ export class CactusModel<
       )
       .map((el) => el.name) as (keyof TModel)[]
   }
-  constructor({ graphqlModelType, db, upgrade, dbVersion }: CactusModelI) {
+  constructor({
+    graphqlModelType,
+    db,
+    upgrade,
+    dbVersion,
+    defaultModelFragment,
+  }: CactusModelI) {
     if (graphqlModelType == null)
       throw Error(
         'graphqlModelType for CactusModel is not defined. Check type that you put in init functon'
       )
+    this.defaultModelFragment = defaultModelFragment
     const fields = graphqlModelType.getFields()
     if (fields == null)
       throw Error(`no fields defined for ${graphqlModelType.name} model`)
@@ -184,58 +204,73 @@ export class CactusModel<
       variableValues
     )
   }
-  protected async _executeMiddleware<TInput, TResult>(
-    arg: OperationInput<TInput>,
-    defaultGql: string
-  ) {
-    const { input, gql } = arg
-    const result = await this._execute<TInput, TResult>(
-      gql ?? defaultGql,
-      input
-    )
+  protected async _executeMiddleware<TInput, TResult>(arg: {
+    operationInput: OperationInput<TInput>
+    operationType: DefautlGqlOperationType
+  }) {
+    const { operationType, operationInput } = arg
+    const { input, gql } = operationInput
+    /**
+     * If we receive fragmentGql, we concat it with default query
+     * If we receive stringGql we replace default by stringGql
+     * If class has default fragment it will be use it
+     * And then it will be use default fields
+     */
+    const finalGql = (() => {
+      if (gql?.stringGql) return gql.stringGql
+      const fragment = gql?.fragmentGql ?? this.defaultModelFragment
+      if (fragment) {
+        return getDefautlGqlOperations({
+          modelName: this.modelName,
+          modelFragment: fragment,
+        })[operationType]
+      }
+      return this._defaultGqlOperations[operationType]
+    })()
+    const result = await this._execute<TInput, TResult>(finalGql, input)
     return result
   }
   add: OperationFunction<TCreateInput, TCreateResult> = async (input, gql) => {
-    return await this._executeMiddleware(
-      {
+    return await this._executeMiddleware({
+      operationInput: {
         gql,
         input,
       },
-      this._defaultGqlOperations.create
-    )
+      operationType: DefautlGqlOperationType.create,
+    })
   }
   update: OperationFunction<TUpdateInput, TUpdateResult> = async (
     input,
     gql
   ) => {
-    return await this._executeMiddleware(
-      {
+    return await this._executeMiddleware({
+      operationInput: {
         gql,
         input,
       },
-      this._defaultGqlOperations.update
-    )
+      operationType: DefautlGqlOperationType.update,
+    })
   }
   remove: OperationFunction<TDeleteInput, TDeleteResult> = async (
     input,
     gql
   ) => {
-    return await this._executeMiddleware(
-      {
+    return await this._executeMiddleware({
+      operationInput: {
         gql,
         input,
       },
-      this._defaultGqlOperations.delete
-    )
+      operationType: DefautlGqlOperationType.remove,
+    })
   }
   get: OperationFunction<TGetInput, TGetResult> = async (input, gql) => {
-    return await this._executeMiddleware(
-      {
+    return await this._executeMiddleware({
+      operationInput: {
         gql,
         input,
       },
-      this._defaultGqlOperations.get
-    )
+      operationType: DefautlGqlOperationType.get,
+    })
   }
   find: QueryOperationFunction<
     TFindInput,
@@ -243,9 +278,12 @@ export class CactusModel<
     TPageRequest,
     TOrderByInput
   > = async (arg, gql) => {
-    return await this._execute(
-      gql ?? this._defaultGqlOperations.find,
-      arg ?? undefined
-    )
+    return await this._executeMiddleware({
+      operationInput: {
+        gql,
+        input: arg ?? undefined,
+      },
+      operationType: DefautlGqlOperationType.find,
+    })
   }
 }

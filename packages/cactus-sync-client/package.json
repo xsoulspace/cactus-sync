@@ -40,6 +40,7 @@
     "graphql-config": "^3.2.0",
     "graphql-metadata": "^0.7.6",
     "graphql-tools": "^7.0.4",
+    "graphql-tag": "^2.11.0",
     "uuid4": "^2.0.2",
     "vue": "^3.0.6",
     "endent": "^2.0.1"
