@@ -1,5 +1,4 @@
 scalar ID
-
 """
 @model
 @cactusSync
@@ -16,7 +15,7 @@ type Todo {
   _clientId: ID
   _version: Int!
   # TODO: replace type with Timestamp
-  _lastUpdatedAt: Int!
+  _lastUpdatedAt: String!
   title: String
   """
   @manyToOne(field: 'todos')
@@ -38,7 +37,7 @@ type User {
   _clientId: ID
   _version: Int!
   # TODO: replace type with Timestamp
-  _lastUpdatedAt: Int!
+  _lastUpdatedAt: String!
   name: String
   """
   @oneToMany(field: 'user')
@@ -63,7 +62,7 @@ type CactusSyncTimestamp {
   _clientId: ID
   # TODO: add Timestamp
   # TODO: must be indexed for fastest finds
-  timestamp: Int
+  timestamp: String
   changeType: DatabaseChangeType!
   """
   model __typename

@@ -28,10 +28,12 @@ describe('CactusModel', () => {
     await cactusSync?.delete()
   })
 
-  test('can init with default gql operations', async () => {
+  beforeAll(async () => {
     schema = await loadSchema(schemaPath, {
       loaders: [new GraphQLFileLoader()],
     })
+  })
+  test('can init with default gql operations', async () => {
     const type = schema.getType('Todo')
     cactusSync = new CactusSync({})
     if (isObjectType(type)) {
@@ -88,7 +90,7 @@ describe('CactusModel', () => {
 
       const createResult = await todoModel.add({
         input: {
-          _lastUpdatedAt: 1,
+          _lastUpdatedAt: '1',
           _version: 1,
           title: 'Hello World!',
         },
@@ -97,7 +99,7 @@ describe('CactusModel', () => {
 
       const userResult = await userModel.add({
         input: {
-          _lastUpdatedAt: 1,
+          _lastUpdatedAt: '1',
           _version: 1,
           name: 'Spiderman',
         },
@@ -111,7 +113,7 @@ describe('CactusModel', () => {
       const updateResult = await todoModel.update({
         input: {
           id: todoId,
-          _lastUpdatedAt: 1,
+          _lastUpdatedAt: '1',
           _version: 1,
           title: 'Hello World! With spiderman!',
           userId,

@@ -55,7 +55,7 @@ describe('graphback runner', () => {
     const expectingTodo: Partial<Todo> = {
       _clientId: null,
       _version: 1,
-      _lastUpdatedAt: 1244,
+      _lastUpdatedAt: '1244',
       title: 'Hello World!',
     }
     expect(result.data?.createTodo).toEqual(expectingTodo)

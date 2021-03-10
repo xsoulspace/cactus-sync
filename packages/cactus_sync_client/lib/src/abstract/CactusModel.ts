@@ -61,11 +61,11 @@ type FindInput<TFilter, TPageRequest, TOrderByInput> = {
   orderBy?: Maybe<TOrderByInput>
 }
 
-type OperationFunction<TInput, TResult> = (
+export type OperationFunction<TInput, TResult> = (
   input: TInput,
   gql?: Maybe<string>
 ) => Promise<ExecutionResult<TResult>>
-type QueryOperationFunction<
+export type QueryOperationFunction<
   TFilter,
   TResult,
   TPageRequest = Maybe<unknown>,
