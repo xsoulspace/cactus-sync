@@ -23,12 +23,14 @@
   ],
   "scripts": {
     "lint-fix": "",
-    "build": "yarn clean && yarn compile",
+    "build": "yarn clean && yarn compile && yarn copy && yarn genmodels",
     "clean": "rm -rf ./dist ./coverage ./generated",
     "compile": "tsc -p tsconfig.build.json",
+    "copy": "cp -r ./lib/src/templates ./dist/src",
+    "genmodels": "tsc ./dist/src/templates/GenerateCactusModelPlugin.ts && rm -rf ./dist/src/templates/GenerateCactusModelPlugin.ts ./dist/src/templates/index.ts",
     "upgrade": "yarn yarn-upgrade-all",
     "generate": "graphql-codegen --config codegen.yml",
-    "dev-genhooks": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js"
+    "dev-genmodels": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js"
   },
   "dependencies": {
     "@graphback/runtime-dexie": "./temp_packages/graphback-runtime-dexie",
