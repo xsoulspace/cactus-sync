@@ -7,7 +7,9 @@ import {
   MutationCreateTodoArgs,
   MutationCreateUserArgs,
   MutationDeleteTodoArgs,
+  MutationDeleteUserArgs,
   MutationUpdateTodoArgs,
+  MutationUpdateUserArgs,
   QueryGetUserArgs,
   Todo,
   User,
@@ -18,7 +20,10 @@ CactusSync.dependencies.indexedDB = require('fake-indexeddb')
 CactusSync.dependencies.IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
 describe('CactusModel', () => {
-  const schemaPath = path.resolve('resources/schema.graphql')
+  const schemaPath = path.resolve(
+    __dirname,
+    '../../../../../resources/schema.graphql'
+  )
   let schema: GraphQLSchema
   let cactusSync: CactusSync
 
@@ -26,10 +31,12 @@ describe('CactusModel', () => {
     await cactusSync?.delete()
   })
 
-  test('can init with default gql operations', async () => {
+  beforeAll(async () => {
     schema = await loadSchema(schemaPath, {
       loaders: [new GraphQLFileLoader()],
     })
+  })
+  test('can init with default gql operations', async () => {
     const type = schema.getType('Todo')
     cactusSync = new CactusSync({})
     if (isObjectType(type)) {
@@ -57,33 +64,45 @@ describe('CactusModel', () => {
     if (CactusSync.db) cactusSync = CactusSync.db
     if (isObjectType(todoType) && isObjectType(userType)) {
       const todoModel = CactusSync.attachModel(
-        CactusModel.init<Todo>({ graphqlModelType: todoType })
+        CactusModel.init<
+          Todo,
+          MutationCreateTodoArgs,
+          { createTodo: Maybe<Todo> },
+          MutationUpdateTodoArgs,
+          { updateTodo: Maybe<Todo> },
+          MutationDeleteTodoArgs,
+          { deleteTodo: Maybe<Todo> }
+        >({ graphqlModelType: todoType })
       )
       expect(todoModel.modelName).toEqual('Todo')
 
       const userModel = CactusSync.attachModel(
-        CactusModel.init<User>({ graphqlModelType: userType })
+        CactusModel.init<
+          User,
+          MutationCreateUserArgs,
+          { createUser: Maybe<User> },
+          MutationUpdateUserArgs,
+          { updateUser: Maybe<User> },
+          MutationDeleteUserArgs,
+          { deleteUser: Maybe<User> },
+          QueryGetUserArgs,
+          { getUser: Maybe<User> }
+        >({ graphqlModelType: userType })
       )
       expect(userModel.modelName).toEqual('User')
 
-      const createResult = await todoModel.add<
-        MutationCreateTodoArgs,
-        { createTodo: Maybe<Todo> }
-      >({
+      const createResult = await todoModel.add({
         input: {
-          _lastUpdatedAt: 1,
+          _lastUpdatedAt: '1',
           _version: 1,
           title: 'Hello World!',
         },
       })
       expect(createResult.data?.createTodo?.title).toEqual('Hello World!')
 
-      const userResult = await userModel.add<
-        MutationCreateUserArgs,
-        { createUser: Maybe<User> }
-      >({
+      const userResult = await userModel.add({
         input: {
-          _lastUpdatedAt: 1,
+          _lastUpdatedAt: '1',
           _version: 1,
           name: 'Spiderman',
         },
@@ -94,13 +113,10 @@ describe('CactusModel', () => {
       if (todoId == null) throw Error('todoId should exist')
       const userId = user?.id
       if (userId == null) throw Error('userId should exist')
-      const updateResult = await todoModel.update<
-        MutationUpdateTodoArgs,
-        { updateTodo: Maybe<Todo> }
-      >({
+      const updateResult = await todoModel.update({
         input: {
           id: todoId,
-          _lastUpdatedAt: 1,
+          _lastUpdatedAt: '1',
           _version: 1,
           title: 'Hello World! With spiderman!',
           userId,
@@ -109,10 +125,7 @@ describe('CactusModel', () => {
       expect(updateResult.data?.updateTodo?.title).toEqual(
         'Hello World! With spiderman!'
       )
-      const getUserResult = await userModel.get<
-        QueryGetUserArgs,
-        { getUser: Maybe<User> }
-      >(
+      const getUserResult = await userModel.get(
         {
           id: userId,
         },
@@ -135,10 +148,7 @@ describe('CactusModel', () => {
         'Hello World! With spiderman!'
       )
 
-      const deleteResult = await todoModel.remove<
-        MutationDeleteTodoArgs,
-        { deleteTodo: Maybe<Todo> }
-      >(
+      const deleteResult = await todoModel.remove(
         {
           input: {
             id: todoId,

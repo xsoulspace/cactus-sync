@@ -34,8 +34,10 @@ title
     expect(operations.find).toBe(`
 query findTestModel($filter: TestModelFilter, $page: PageRequest, $orderBy: OrderByInput) {
   findTestModels(filter: $filter, page: $page, orderBy: $orderBy) {
+    items{
 id
 title
+    }
   }
 }`)
 

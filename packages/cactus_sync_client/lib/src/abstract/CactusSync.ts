@@ -84,7 +84,37 @@ export class CactusSync extends Dexie {
    * @param modelBuilder
    * @returns
    */
-  static attachModel<TModel>(modelBuilder: CactusModelBuilder<TModel>) {
+  static attachModel<
+    TModel,
+    TCreateInput,
+    TCreateResult,
+    TUpdateInput,
+    TUpdateResult,
+    TDeleteInput,
+    TDeleteResult,
+    TGetInput,
+    TGetResult,
+    TFindInput,
+    TFindResult,
+    TPageRequest,
+    TOrderByInput
+  >(
+    modelBuilder: CactusModelBuilder<
+      TModel,
+      TCreateInput,
+      TCreateResult,
+      TUpdateInput,
+      TUpdateResult,
+      TDeleteInput,
+      TDeleteResult,
+      TGetInput,
+      TGetResult,
+      TFindInput,
+      TFindResult,
+      TPageRequest,
+      TOrderByInput
+    >
+  ) {
     const db = CactusSync.db
     if (db == null)
       throw Error(`

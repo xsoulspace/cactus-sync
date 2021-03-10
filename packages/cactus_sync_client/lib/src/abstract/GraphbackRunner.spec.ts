@@ -43,7 +43,7 @@ describe('graphback runner', () => {
     const runner = await init()
     const createMutation = `
       mutation{
-        createTodo(input: {_version: 1, _lastUpdatedAt: 1244, title: "Hello World!"}){
+        createTodo(input: {_version: 1, _lastUpdatedAt: "1244", title: "Hello World!"}){
           _clientId,
           _version,
           _lastUpdatedAt
@@ -55,14 +55,14 @@ describe('graphback runner', () => {
     const expectingTodo: Partial<Todo> = {
       _clientId: null,
       _version: 1,
-      _lastUpdatedAt: 1244,
+      _lastUpdatedAt: '1244',
       title: 'Hello World!',
     }
     expect(result.data?.createTodo).toEqual(expectingTodo)
   })
   const todoCreateMutation = `
       mutation{
-        createTodo(input: {_version: 1, _lastUpdatedAt: 1244, title: "Hello World!"}){
+        createTodo(input: {_version: 1, _lastUpdatedAt: "1244", title: "Hello World!"}){
           id
           _clientId
           _version
@@ -121,7 +121,7 @@ describe('graphback runner', () => {
     expect(createdTodo.data?.createTodo.title).toEqual('Hello World!')
     const userCreateMutation = `
       mutation{
-        createUser(input: {_version: 1, _lastUpdatedAt: 1244, name: "Spiderman"}){
+        createUser(input: {_version: 1, _lastUpdatedAt: "1244", name: "Spiderman"}){
           id
           _clientId
           _version

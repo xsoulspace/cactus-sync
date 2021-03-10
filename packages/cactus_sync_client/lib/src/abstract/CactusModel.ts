@@ -1,7 +1,7 @@
 import { Version } from 'dexie'
 import { GraphQLFieldMap } from 'graphql'
 import { GraphQLObjectType } from 'graphql-compose/lib/graphql'
-import { Maybe } from 'graphql-tools'
+import { ExecutionResult, Maybe } from 'graphql-tools'
 import {
   DefautlGqlOperations,
   getDefautlGqlOperations,
@@ -20,11 +20,39 @@ interface CactusModelDbInitI {
   dbVersion: number
 }
 
-interface CactusModelI extends CactusModelInitI, CactusModelDbInitI {}
+export interface CactusModelI extends CactusModelInitI, CactusModelDbInitI {}
 
-export type CactusModelBuilder<TModel> = (
+export type CactusModelBuilder<
+  TModel,
+  TCreateInput,
+  TCreateResult,
+  TUpdateInput,
+  TUpdateResult,
+  TDeleteInput,
+  TDeleteResult,
+  TGetInput,
+  TGetResult,
+  TFindInput,
+  TFindResult,
+  TPageRequest,
+  TOrderByInput
+> = (
   arg: CactusModelDbInitI
-) => CactusModel<TModel>
+) => CactusModel<
+  TModel,
+  TCreateInput,
+  TCreateResult,
+  TUpdateInput,
+  TUpdateResult,
+  TDeleteInput,
+  TDeleteResult,
+  TGetInput,
+  TGetResult,
+  TFindInput,
+  TFindResult,
+  TPageRequest,
+  TOrderByInput
+>
 
 type OperationInput<TInput> = { input: TInput; gql?: Maybe<string> }
 type FindInput<TFilter, TPageRequest, TOrderByInput> = {
@@ -33,7 +61,36 @@ type FindInput<TFilter, TPageRequest, TOrderByInput> = {
   orderBy?: Maybe<TOrderByInput>
 }
 
-export class CactusModel<TModel> {
+export type OperationFunction<TInput, TResult> = (
+  input: TInput,
+  gql?: Maybe<string>
+) => Promise<ExecutionResult<TResult>>
+export type QueryOperationFunction<
+  TFilter,
+  TResult,
+  TPageRequest = Maybe<unknown>,
+  TOrderByInput = Maybe<unknown>,
+  TFilterInput = FindInput<TFilter, TPageRequest, TOrderByInput>
+> = (
+  arg?: Maybe<TFilterInput>,
+  gql?: Maybe<string>
+) => Promise<ExecutionResult<TResult>>
+
+export class CactusModel<
+  TModel,
+  TCreateInput,
+  TCreateResult,
+  TUpdateInput,
+  TUpdateResult,
+  TDeleteInput,
+  TDeleteResult,
+  TGetInput,
+  TGetResult,
+  TFindInput,
+  TFindResult,
+  TPageRequest,
+  TOrderByInput
+> {
   modelName: string
   protected _defaultGqlOperations: DefautlGqlOperations
   protected _modelFields: (keyof TModel)[]
@@ -70,9 +127,39 @@ export class CactusModel<TModel> {
     if (upgrade) upgrade(db.version(dbVersion).upgrade)
   }
 
-  static init<TModel>(arg: CactusModelInitI): CactusModelBuilder<TModel> {
+  static init<
+    TModel,
+    TCreateInput = Maybe<TModel>,
+    TCreateResult = Maybe<TModel>,
+    TUpdateInput = Maybe<TModel>,
+    TUpdateResult = Maybe<TModel>,
+    TDeleteInput = Maybe<TModel>,
+    TDeleteResult = Maybe<TModel>,
+    TGetInput = Maybe<TModel>,
+    TGetResult = Maybe<TModel>,
+    TFindInput = Maybe<TModel>,
+    TFindResult = Maybe<TModel>,
+    TPageRequest = Maybe<unknown>,
+    TOrderByInput = Maybe<unknown>
+  >(
+    arg: CactusModelInitI
+  ): CactusModelBuilder<
+    TModel,
+    TCreateInput,
+    TCreateResult,
+    TUpdateInput,
+    TUpdateResult,
+    TDeleteInput,
+    TDeleteResult,
+    TGetInput,
+    TGetResult,
+    TFindInput,
+    TFindResult,
+    TPageRequest,
+    TOrderByInput
+  > {
     return (dbInit: CactusModelDbInitI) =>
-      new CactusModel<TModel>({ ...arg, ...dbInit })
+      new CactusModel({ ...arg, ...dbInit })
   }
   protected _graphqlRunner(): GraphbackRunner {
     const runner = this.db.graphqlRunner
@@ -84,25 +171,28 @@ export class CactusModel<TModel> {
       )
     return runner
   }
-  protected _execute<TVariables, TResult>(
+  protected async _execute<TVariables, TResult>(
     query: string,
     variableValues?: TVariables | undefined
   ) {
-    return this._graphqlRunner().execute<TModel, TVariables, TResult>(
+    return await this._graphqlRunner().execute<TModel, TVariables, TResult>(
       query,
       variableValues
     )
   }
-  protected _executeMiddleware<TInput, TResult>(
+  protected async _executeMiddleware<TInput, TResult>(
     arg: OperationInput<TInput>,
     defaultGql: string
   ) {
     const { input, gql } = arg
-    const result = this._execute<TInput, TResult>(gql ?? defaultGql, input)
+    const result = await this._execute<TInput, TResult>(
+      gql ?? defaultGql,
+      input
+    )
     return result
   }
-  async add<TInput, TResult = TModel>(input: TInput, gql?: Maybe<string>) {
-    return this._executeMiddleware<TInput, TResult>(
+  add: OperationFunction<TCreateInput, TCreateResult> = async (input, gql) => {
+    return await this._executeMiddleware(
       {
         gql,
         input,
@@ -110,8 +200,11 @@ export class CactusModel<TModel> {
       this._defaultGqlOperations.create
     )
   }
-  async update<TInput, TResult>(input: TInput, gql?: Maybe<string>) {
-    return this._executeMiddleware<TInput, TResult>(
+  update: OperationFunction<TUpdateInput, TUpdateResult> = async (
+    input,
+    gql
+  ) => {
+    return await this._executeMiddleware(
       {
         gql,
         input,
@@ -119,8 +212,11 @@ export class CactusModel<TModel> {
       this._defaultGqlOperations.update
     )
   }
-  async remove<TInput, TResult>(input: TInput, gql?: Maybe<string>) {
-    return this._executeMiddleware<TInput, TResult>(
+  remove: OperationFunction<TDeleteInput, TDeleteResult> = async (
+    input,
+    gql
+  ) => {
+    return await this._executeMiddleware(
       {
         gql,
         input,
@@ -128,8 +224,8 @@ export class CactusModel<TModel> {
       this._defaultGqlOperations.delete
     )
   }
-  async get<TInput, TResult>(input: TInput, gql?: Maybe<string>) {
-    return this._executeMiddleware<TInput, TResult>(
+  get: OperationFunction<TGetInput, TGetResult> = async (input, gql) => {
+    return await this._executeMiddleware(
       {
         gql,
         input,
@@ -137,14 +233,13 @@ export class CactusModel<TModel> {
       this._defaultGqlOperations.get
     )
   }
-  async find<
-    TFilter,
-    TResult,
-    TPageRequest = Maybe<unknown>,
-    TOrderByInput = Maybe<unknown>,
-    TFilterInput = FindInput<TFilter, TPageRequest, TOrderByInput>
-  >(arg?: Maybe<TFilterInput>, gql?: Maybe<string>) {
-    return this._execute<TFilterInput, TResult>(
+  find: QueryOperationFunction<
+    TFindInput,
+    TFindResult,
+    TPageRequest,
+    TOrderByInput
+  > = async (arg, gql) => {
+    return await this._execute(
       gql ?? this._defaultGqlOperations.find,
       arg ?? undefined
     )
