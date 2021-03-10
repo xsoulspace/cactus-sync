@@ -28,11 +28,11 @@ export class VueStateModel<
   TPageRequest,
   TOrderByInput
 > {
-  protected _state: Ref<Maybe<TModel>[]> = ref([])
+  state: Ref<Maybe<TModel>[]> = ref([])
   protected get _stateIndexes() {
     const map: Map<string, number> = new Map()
-    for (let i = 0; i < this._state.value.length; i++) {
-      const el = this._state.value[i]
+    for (let i = 0; i < this.state.value.length; i++) {
+      const el = this.state.value[i]
       if (el) {
         const id = el['id']
         map.set(id, i)
@@ -99,10 +99,10 @@ export class VueStateModel<
       const index = this._stateIndexes.get(id)
       if (index != null) {
         remove
-          ? this._state.value.splice(index, 1)
-          : this._state.value.splice(index, 1, model)
+          ? this.state.value.splice(index, 1)
+          : this.state.value.splice(index, 1, model)
       } else {
-        this._state.value.push(model)
+        this.state.value.push(model)
       }
     }
   }
@@ -113,7 +113,7 @@ export class VueStateModel<
     for (const findModels of Object.values(data)) {
       if (findModels == null) continue
       const items = findModels['items']
-      this._state.value = items
+      this.state.value = items
     }
   }
   add: OperationFunction<TCreateInput, TCreateResult> = async (input, gql) => {
@@ -153,9 +153,9 @@ export class VueStateModel<
     return result
   }
   get list() {
-    return this._state.value
+    return this.state.value
   }
   set list(value: Maybe<TModel>[]) {
-    this._state.value = value
+    this.state.value = value
   }
 }
