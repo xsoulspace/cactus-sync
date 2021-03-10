@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "lint-fix": "",
-    "build": "yarn clean && yarn compile && yarn copy && yarn genmodels && yarn generate",
+    "build": "yarn clean && yarn compile && yarn copy && yarn genmodels && yarn generate && yarn version --patch",
     "clean": "rm -rf ./dist ./coverage ./generated",
     "compile": "tsc -p tsconfig.build.json",
     "copy": "cp -r ./lib/src/templates/GenerateCactusModelPlugin.ts ./dist/src/templates",
