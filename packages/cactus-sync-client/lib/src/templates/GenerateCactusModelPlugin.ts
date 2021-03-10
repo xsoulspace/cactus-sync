@@ -4,6 +4,8 @@ interface PluginConfig {
   withVueState?: boolean
   cactusSyncConfigPath?: string
   schemaTypesPath?: string
+  useDefaultFragments?: boolean
+  defaultFragmentsPath?: string
 }
 
 const toCamelCase = (str: string) => {
@@ -15,11 +17,17 @@ module.exports = {
   plugin: async (schema: GraphQLSchema, _documents, config: PluginConfig) => {
     // ============== Config settings ======================
 
-    const { withVueState, cactusSyncConfigPath, schemaTypesPath } = config
+    const {
+      withVueState,
+      cactusSyncConfigPath,
+      schemaTypesPath,
+      useDefaultFragments,
+      defaultFragmentsPath,
+    } = config
     const importVueStateModel = withVueState ? ', VueStateModel' : ''
     const configPath = cactusSyncConfigPath ?? '../config'
     const typesPath = schemaTypesPath ?? './generatedTypes'
-
+    const fragmentsPath = defaultFragmentsPath ?? '../gql'
     // ============ Filtering types only ====================
 
     const types = Object.values(schema.getTypeMap()).filter((el) =>
@@ -27,7 +35,7 @@ module.exports = {
     )
     const exportModelStrings: string[] = []
     const typesModels: string[] = []
-
+    const fragments: string[] = []
     for (const type of types) {
       const name = type.name
       const isSystemType = name.includes('_')
@@ -64,7 +72,15 @@ module.exports = {
       const modelName = `${camelName}Model`
 
       // ============ Model generation ====================
-
+      const defaultFragmentName = `${name}Fragment`
+      const defaultFragment = (() => {
+        if (useDefaultFragments) {
+          fragments.push(defaultFragmentName)
+          return `, defaultModelFragment: ${defaultFragmentName}`
+        } else {
+          return ''
+        }
+      })()
       let modelStr = endent`
       export const ${modelName}= CactusSync.attachModel(
         CactusModel.init<
@@ -81,7 +97,7 @@ module.exports = {
           ${queryFindResult},
           PageRequest, 
           OrderByInput
-        >({ graphqlModelType: schema.getType('${name}') as Maybe<GraphQLObjectType> })
+        >({ graphqlModelType: schema.getType('${name}') as Maybe<GraphQLObjectType> ${defaultFragment}})
       )
       `
       if (withVueState) {
@@ -94,7 +110,11 @@ module.exports = {
     }
 
     const modelsExportStr = exportModelStrings.join('\n')
-
+    const fragmentsImportStr = useDefaultFragments
+      ? `
+    import {${fragments.join(',')}} from '${fragmentsPath}'
+    `
+      : ''
     return endent`
     
       /* eslint-disable */
@@ -102,6 +122,7 @@ module.exports = {
       import { ${typesModels.join(
         ' , '
       )}, PageRequest, OrderByInput} from '${typesPath}'
+      ${fragmentsImportStr}
       import path from 'path'
       import { CactusModel ${importVueStateModel} } from '@xsoulspace/cactus-sync-client'
       import { GraphQLFileLoader, loadSchemaSync, Maybe } from 'graphql-tools'

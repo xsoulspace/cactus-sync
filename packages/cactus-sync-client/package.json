@@ -28,7 +28,7 @@
     "compile": "tsc -p tsconfig.build.json",
     "upgrade": "yarn yarn-upgrade-all",
     "generate": "graphql-codegen --config codegen.yml",
-    "dev-genhooks": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate"
+    "dev-genhooks": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js"
   },
   "dependencies": {
     "@graphback/runtime-dexie": "./temp_packages/graphback-runtime-dexie",

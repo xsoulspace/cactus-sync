@@ -4,6 +4,7 @@ config:
   withVueState: true
   cactusSyncConfigPath: '../lib/src/abstract/CactusSync'
   schemaTypesPath: '../../../resources/generatedTypes'
+  useDefaultFragments: true
 generates:
   generated/hooks.ts:
     plugins:
