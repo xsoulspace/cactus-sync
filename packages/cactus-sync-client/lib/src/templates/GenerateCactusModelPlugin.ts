@@ -18,7 +18,6 @@ const toPluralName = (str: string) => {
       return `${str}s`
   }
 }
-
 interface PluginConfig {
   withVueState?: boolean
   schemaTypesPath?: string
@@ -120,6 +119,21 @@ module.exports = {
         modelStr = endent`
           ${modelStr}
           export const use${name}State = () => new VueStateModel({ cactusModel: ${modelName} })
+          export type ${name}State = VueStateModel<
+              ${name},
+              ${mutationCreateArgs},
+              ${mutationCreateResult},
+              ${mutationUpdateArgs},
+              ${mutationUpdateResult},
+              ${mutationDeleteArgs},
+              ${mutationDeleteResult},
+              ${queryGetArgs},
+              ${queryGetResult},
+              ${queryFindArgs},
+              ${queryFindResult},
+              PageRequest, 
+              OrderByInput
+            >
         `
       }
       exportModelStrings.push(modelStr)
