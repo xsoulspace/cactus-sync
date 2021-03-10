@@ -1,6 +1,24 @@
 import endent from 'endent'
 import { GraphQLSchema, isObjectType } from 'graphql-compose/lib/graphql'
-import { toPluralName } from '../utils/Naming'
+// NOTE: Do not change this function directly. First change it in utils/Naming, run tests
+// and only then apply here
+const toPluralName = (str: string) => {
+  const lastLetter = str.substr(str.length - 1).toLowerCase()
+  let newStr = str.toString()
+  switch (lastLetter) {
+    case 'h':
+      newStr = `${newStr}es`
+      return newStr
+    case 'y':
+      newStr = newStr.substr(0, newStr.length - 1)
+      newStr = `${newStr}ies`
+      return newStr
+
+    default:
+      return `${str}s`
+  }
+}
+
 interface PluginConfig {
   withVueState?: boolean
   schemaTypesPath?: string
@@ -109,9 +127,7 @@ module.exports = {
 
     const modelsExportStr = exportModelStrings.join('\n')
     const fragmentsImportStr = useDefaultFragments
-      ? `
-    import {${fragments.join(',\n')}} from '${fragmentsPath}'
-    `
+      ? endent`import {${fragments.join(',\n')}} from '${fragmentsPath}'`
       : ''
     return endent`
     

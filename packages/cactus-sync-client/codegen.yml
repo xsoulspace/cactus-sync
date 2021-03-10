@@ -8,4 +8,4 @@ config:
 generates:
   generated/hooks.ts:
     plugins:
-      - "./lib/src/templates/GenerateCactusModelPlugin.js"
+      - "./dist/src/templates/GenerateCactusModelPlugin.js"

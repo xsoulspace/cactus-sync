@@ -23,11 +23,11 @@
   ],
   "scripts": {
     "lint-fix": "",
-    "build": "yarn clean && yarn compile && yarn copy && yarn genmodels",
+    "build": "yarn clean && yarn compile && yarn copy && yarn genmodels && yarn generate",
     "clean": "rm -rf ./dist ./coverage ./generated",
     "compile": "tsc -p tsconfig.build.json",
-    "copy": "cp -r ./lib/src/templates ./dist/src",
-    "genmodels": "tsc ./dist/src/templates/GenerateCactusModelPlugin.ts && rm -rf ./dist/src/templates/GenerateCactusModelPlugin.ts ./dist/src/templates/index.ts",
+    "copy": "cp -r ./lib/src/templates/GenerateCactusModelPlugin.ts ./dist/src/templates",
+    "genmodels": "tsc ./dist/src/templates/GenerateCactusModelPlugin.ts && rm -rf ./dist/src/templates/GenerateCactusModelPlugin.ts",
     "upgrade": "yarn yarn-upgrade-all",
     "generate": "graphql-codegen --config codegen.yml",
     "dev-genmodels": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js"
