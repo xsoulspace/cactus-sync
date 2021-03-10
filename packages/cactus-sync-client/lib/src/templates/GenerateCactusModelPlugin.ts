@@ -2,7 +2,6 @@ import endent from 'endent'
 import { GraphQLSchema, isObjectType } from 'graphql-compose/lib/graphql'
 interface PluginConfig {
   withVueState?: boolean
-  cactusSyncConfigPath?: string
   schemaTypesPath?: string
   useDefaultFragments?: boolean
   defaultFragmentsPath?: string
@@ -112,19 +111,18 @@ module.exports = {
     const modelsExportStr = exportModelStrings.join('\n')
     const fragmentsImportStr = useDefaultFragments
       ? `
-    import {${fragments.join(',')}} from '${fragmentsPath}'
+    import {${fragments.join(',\n')}} from '${fragmentsPath}'
     `
       : ''
     return endent`
     
       /* eslint-disable */
-      import { CactusSync } from '${configPath}'
       import { ${typesModels.join(
-        ' , '
+        ' ,\n '
       )}, PageRequest, OrderByInput} from '${typesPath}'
       ${fragmentsImportStr}
       import path from 'path'
-      import { CactusModel ${importVueStateModel} } from '@xsoulspace/cactus-sync-client'
+      import { CactusSync, CactusModel ${importVueStateModel} } from '@xsoulspace/cactus-sync-client'
       import { GraphQLFileLoader, loadSchemaSync, Maybe } from 'graphql-tools'
       import { GraphQLObjectType } from 'graphql'
       
