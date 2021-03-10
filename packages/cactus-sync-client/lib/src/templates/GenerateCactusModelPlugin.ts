@@ -18,13 +18,11 @@ module.exports = {
 
     const {
       withVueState,
-      cactusSyncConfigPath,
       schemaTypesPath,
       useDefaultFragments,
       defaultFragmentsPath,
     } = config
     const importVueStateModel = withVueState ? ', VueStateModel' : ''
-    const configPath = cactusSyncConfigPath ?? '../config'
     const typesPath = schemaTypesPath ?? './generatedTypes'
     const fragmentsPath = defaultFragmentsPath ?? '../gql'
     // ============ Filtering types only ====================
