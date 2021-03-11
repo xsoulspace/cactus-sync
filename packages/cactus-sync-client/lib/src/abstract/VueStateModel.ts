@@ -96,7 +96,7 @@ export class VueStateModel<
     for (const model of Object.values(data)) {
       if (model == null) continue
       const id = model['id']
-      const index = this._stateIndexes.get(id)
+      const index = this.stateIndexes.get(id)
       if (index != null) {
         remove
           ? this.state.value.splice(index, 1)
