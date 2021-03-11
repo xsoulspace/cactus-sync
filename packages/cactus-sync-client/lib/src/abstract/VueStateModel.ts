@@ -29,7 +29,7 @@ export class VueStateModel<
   TOrderByInput
 > {
   state: Ref<Maybe<TModel>[]> = ref([])
-  protected get _stateIndexes() {
+  get stateIndexes() {
     const map: Map<string, number> = new Map()
     for (let i = 0; i < this.state.value.length; i++) {
       const el = this.state.value[i]
