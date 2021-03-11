@@ -1,6 +1,6 @@
 {
   "name": "@xsoulspace/cactus-sync-client",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Sharp and simple as cactus offline-first client library to sync with graphql server..",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -30,11 +30,11 @@
     "genmodels": "tsc ./dist/src/templates/GenerateCactusModelPlugin.ts && rm -rf ./dist/src/templates/GenerateCactusModelPlugin.ts",
     "upgrade": "yarn yarn-upgrade-all",
     "generate": "graphql-codegen --config codegen.yml",
-    "dev-genmodels": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js"
+    "dev-genmodels": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js",
+    "esbuild": "vite build && tsc --emitDeclarationOnly"
   },
   "dependencies": {
     "@graphback/runtime-dexie": "./temp_packages/graphback-runtime-dexie",
-    "@graphql-tools/merge": "^6.2.10",
     "dexie": "^3.0.3",
     "dexie-observable": "^3.0.0-beta.10",
     "endent": "^2.0.1",
@@ -48,6 +48,7 @@
     "vue": "^3.0.6"
   },
   "peerDependencies": {
+    "@graphql-tools": "^7.x.x",
     "endent": "^2.x.x",
     "vue": "^3.x.x"
   },
