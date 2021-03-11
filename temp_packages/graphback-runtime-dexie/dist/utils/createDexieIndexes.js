@@ -4,7 +4,6 @@ exports.findDexieTableFieldIndex = exports.getRelationIndex = exports.getCustomI
 const tslib_1 = require("tslib");
 const core_1 = require("@graphback/core");
 const graphql_metadata_1 = require("graphql-metadata");
-const lodash_1 = require("lodash");
 function findAndCreateIndexes({ baseType, db, tableName, }) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const indexes = getIndexFields(baseType);
@@ -124,7 +123,7 @@ function getIndexFields(baseType) {
             res.push(customIndex);
             continue;
         }
-        const fieldType = lodash_1.toString(JSON.parse(JSON.stringify(field.type)));
+        const fieldType = JSON.stringify(field.type);
         if (fieldType.includes('GraphbackObjectID') || fieldType.includes('ID')) {
             const maybeId = {
                 name: field.name,

@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateTableEntry = exports.convertFieldQueryToStringCondition = exports.runQuery = exports.buildQuery = exports.queryBuilder = exports.DexieFilterTypes = exports.GraphbackQueryOperator = exports.RootQueryOperatorSet = exports.RootQueryOperator = void 0;
 const escapeRegex = require("escape-string-regexp");
-const lodash_1 = require("lodash");
 var RootQueryOperator;
 (function (RootQueryOperator) {
     RootQueryOperator["and"] = "and";
@@ -136,6 +135,18 @@ const runQuery = ({ provider, query, }) => {
     return result;
 };
 exports.runQuery = runQuery;
+const toString = (anything) => {
+    switch (typeof anything) {
+        case 'string':
+            return anything;
+        case 'boolean':
+        case 'number':
+        case 'symbol':
+            return anything.toString();
+        default:
+            return JSON.stringify(anything);
+    }
+};
 const cleanUpDoubleQuotes = (str) => str.replace(/"([^"]+(?="))"/g, '$1');
 function convertFieldQueryToStringCondition({ condition, fieldQuery, tableValue, }) {
     let prePostfix = tsRootQueryOperator.and;
@@ -148,8 +159,8 @@ function convertFieldQueryToStringCondition({ condition, fieldQuery, tableValue,
     let valueComparation = '';
     let isValidValue = false;
     if (fieldQuery.queryOperator != null) {
-        const strCompareValue = cleanUpDoubleQuotes(lodash_1.toString(fieldQuery.value));
-        const strTableValue = cleanUpDoubleQuotes(lodash_1.toString(tableValue));
+        const strCompareValue = cleanUpDoubleQuotes(toString(fieldQuery.value));
+        const strTableValue = cleanUpDoubleQuotes(toString(tableValue));
         const validateByMatch = (escaptedRegex) => {
             var _a;
             return (((_a = strTableValue.match(new RegExp(escaptedRegex, 'gim'))) !== null && _a !== void 0 ? _a : []).length > 0);
