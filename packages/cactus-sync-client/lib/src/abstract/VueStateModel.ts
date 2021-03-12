@@ -1,5 +1,5 @@
 import { ApolloQueryResult, FetchResult } from '@apollo/client/core'
-import { reactive, Ref, ref } from 'vue'
+import { computed, reactive } from 'vue'
 import { Maybe } from './BasicTypes'
 import {
   CactusModel,
@@ -30,12 +30,13 @@ export class VueStateModel<
   TOrderByInput
 > {
   private _reactiveState: Maybe<TModel>[] = reactive([])
-  get state() {
-    return ref(this._reactiveState) as Ref<Maybe<TModel>[]>
-  }
-  set state(value) {
+  private _setReactiveState(value: Maybe<TModel>[]) {
     this._reactiveState.length = 0
-    this._reactiveState.push(...value.value)
+    this._reactiveState.push(...value)
+    console.log({ 'new state': this._reactiveState })
+  }
+  get state() {
+    return computed(() => this._reactiveState)
   }
   get stateIndexes() {
     const map: Map<string, number> = new Map()
@@ -123,9 +124,9 @@ export class VueStateModel<
     for (const findModels of Object.values(data)) {
       if (findModels == null) continue
       const items = findModels['items']
-
+      console.log({ 'items received': items })
       if (items) {
-        this.state.value = items
+        this._setReactiveState(items)
         return
       }
     }
