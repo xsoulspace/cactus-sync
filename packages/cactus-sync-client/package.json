@@ -26,7 +26,7 @@
     "build": "yarn clean && yarn compile && yarn copy && yarn genmodels && yarn generate",
     "clean": "rm -rf ./dist ./coverage ./generated",
     "compile": "tsc -p tsconfig.build.json",
-    "copy": "cp -r ./lib/src/templates/GenerateCactusModelPlugin.ts ./dist/src/templates",
+    "copy": "mkdir ./dist/src/templates && cp -r ./lib/src/templates/GenerateCactusModelPlugin.ts ./dist/src/templates",
     "genmodels": "tsc ./dist/src/templates/GenerateCactusModelPlugin.ts && rm -rf ./dist/src/templates/GenerateCactusModelPlugin.ts",
     "upgrade": "yarn yarn-upgrade-all",
     "generate": "graphql-codegen --config codegen.yml",
