@@ -11,12 +11,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xsoulspace/cactus-sync.git"
+    "url": "git+https://github.com/xsoulspace/cactus_sync/tree/next/packages/cactus-sync-client"
   },
   "bugs": {
     "url": "https://github.com/xsoulspace/cactus-sync/issues"
   },
-  "homepage": "https://github.com/xsoulspace/cactus-sync#readme",
+  "homepage": "https://github.com/xsoulspace/cactus_sync/tree/next/packages/cactus-sync-client#readme",
   "private": false,
   "files": [
     "dist"
