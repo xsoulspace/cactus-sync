@@ -23,34 +23,42 @@
   ],
   "scripts": {
     "lint-fix": "",
-    "build": "yarn clean && yarn compile && yarn copy && yarn genmodels && yarn generate && yarn version --patch",
+    "build": "yarn clean && yarn compile && yarn copy && yarn genmodels && yarn generate",
     "clean": "rm -rf ./dist ./coverage ./generated",
     "compile": "tsc -p tsconfig.build.json",
     "copy": "cp -r ./lib/src/templates/GenerateCactusModelPlugin.ts ./dist/src/templates",
     "genmodels": "tsc ./dist/src/templates/GenerateCactusModelPlugin.ts && rm -rf ./dist/src/templates/GenerateCactusModelPlugin.ts",
     "upgrade": "yarn yarn-upgrade-all",
     "generate": "graphql-codegen --config codegen.yml",
-    "dev-genmodels": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js",
-    "esbuild": "vite build && tsc --emitDeclarationOnly"
+    "dev-genmodels": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js"
   },
   "dependencies": {
+    "@apollo/client": "^3.3.11",
     "@graphback/runtime-dexie": "./temp_packages/graphback-runtime-dexie",
+    "apollo-link-queue": "^3.0.0",
+    "bson-ext": "^2.0.5",
     "dexie": "^3.0.3",
     "dexie-observable": "^3.0.0-beta.10",
     "endent": "^2.0.1",
-    "graphback": "^1.1.2",
     "graphql": "^15.5.0",
     "graphql-config": "^3.2.0",
     "graphql-metadata": "^0.7.6",
     "graphql-tag": "^2.11.0",
     "graphql-tools": "^7.0.4",
-    "uuid4": "^2.0.2",
     "vue": "^3.0.6"
   },
   "peerDependencies": {
-    "@graphql-tools": "^7.x.x",
-    "endent": "^2.x.x",
-    "vue": "^3.x.x"
+    "@graphback/runtime-dexie": "./temp_packages/graphback-runtime-dexie",
+    "bson-ext": "^2.0.5",
+    "dexie": "^3.0.3",
+    "dexie-observable": "^3.0.0-beta.10",
+    "endent": "^2.0.1",
+    "graphql": "^15.5.0",
+    "graphql-config": "^3.2.0",
+    "graphql-metadata": "^0.7.6",
+    "graphql-tag": "^2.11.0",
+    "graphql-tools": "^7.0.4",
+    "vue": "^3.0.6"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "1.21.2",

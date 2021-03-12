@@ -1,5 +1,5 @@
 import Dexie from 'dexie'
-import { GraphQLSchema } from 'graphql-compose/lib/graphql'
+import { GraphQLSchema } from 'graphql'
 import { Todo, User } from '../../../../resources/generatedTypes'
 import { GraphbackRunner } from '../../lib'
 

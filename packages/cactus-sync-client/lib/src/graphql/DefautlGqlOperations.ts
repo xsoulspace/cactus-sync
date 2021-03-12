@@ -1,4 +1,4 @@
-import { DocumentNode, print } from 'graphql-compose/lib/graphql'
+import { DocumentNode, print } from 'graphql'
 import { Maybe } from 'graphql-tools'
 
 export enum DefautlGqlOperationType {

@@ -1,5 +1,5 @@
 import endent from 'endent'
-import { GraphQLSchema, isObjectType } from 'graphql-compose/lib/graphql'
+import { GraphQLSchema, isObjectType } from 'graphql'
 // NOTE: Do not change this function directly. First change it in utils/Naming, run tests
 // and only then apply here
 const toPluralName = (str: string) => {

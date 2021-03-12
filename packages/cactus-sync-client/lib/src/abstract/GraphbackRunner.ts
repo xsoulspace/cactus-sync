@@ -11,6 +11,12 @@ interface GraphbackRunnerI {
 }
 
 /**
+ * @deprecated
+ * It is not works on client side :(
+ *
+ * May possibly solve via WASM or Express
+ * running in client somehow
+ *
  * To initialize `GraphbackRunner` use
  * `GraphbackRunner.init(...)`
  */

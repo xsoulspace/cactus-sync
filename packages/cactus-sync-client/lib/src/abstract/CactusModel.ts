@@ -1,14 +1,23 @@
+import {
+  ApolloQueryResult,
+  FetchResult,
+  OperationVariables,
+} from '@apollo/client'
 import { Version } from 'dexie'
-import { DocumentNode, GraphQLFieldMap } from 'graphql'
-import { GraphQLObjectType } from 'graphql-compose/lib/graphql'
-import { ExecutionResult, Maybe } from 'graphql-tools'
+import {
+  DocumentNode,
+  ExecutionResult,
+  GraphQLFieldMap,
+  GraphQLObjectType,
+} from 'graphql'
 import {
   DefautlGqlOperations,
   DefautlGqlOperationType,
   getDefautlGqlOperations,
 } from '../graphql/DefautlGqlOperations'
+import { ApolloRunner, ApolloRunnerExecute } from './ApolloRunner'
+import { Maybe } from './BasicTypes'
 import { CactusSync } from './CactusSync'
-import { GraphbackRunner } from './GraphbackRunner'
 
 interface CactusModelInitI {
   graphqlModelType: Maybe<GraphQLObjectType>
@@ -26,18 +35,18 @@ export interface CactusModelI extends CactusModelInitI, CactusModelDbInitI {}
 
 export type CactusModelBuilder<
   TModel,
-  TCreateInput,
-  TCreateResult,
-  TUpdateInput,
-  TUpdateResult,
-  TDeleteInput,
-  TDeleteResult,
-  TGetInput,
-  TGetResult,
-  TFindInput,
-  TFindResult,
-  TPageRequest,
-  TOrderByInput
+  TCreateInput = OperationVariables,
+  TCreateResult = FetchResult<TModel>,
+  TUpdateInput = OperationVariables,
+  TUpdateResult = FetchResult<TModel>,
+  TDeleteInput = OperationVariables,
+  TDeleteResult = FetchResult<TModel>,
+  TGetInput = OperationVariables,
+  TGetResult = ApolloQueryResult<TModel>,
+  TFindInput = OperationVariables,
+  TFindResult = ApolloQueryResult<TModel>,
+  TPageRequest = Maybe<unknown>,
+  TOrderByInput = Maybe<unknown>
 > = (
   arg: CactusModelDbInitI
 ) => CactusModel<
@@ -89,19 +98,19 @@ export type QueryOperationFunction<
 ) => Promise<ExecutionResult<TResult>>
 
 export class CactusModel<
-  TModel,
-  TCreateInput,
-  TCreateResult,
-  TUpdateInput,
-  TUpdateResult,
-  TDeleteInput,
-  TDeleteResult,
-  TGetInput,
-  TGetResult,
-  TFindInput,
-  TFindResult,
-  TPageRequest,
-  TOrderByInput
+  TModel = any,
+  TCreateInput = OperationVariables,
+  TCreateResult = FetchResult<TModel>,
+  TUpdateInput = OperationVariables,
+  TUpdateResult = FetchResult<TModel>,
+  TDeleteInput = OperationVariables,
+  TDeleteResult = FetchResult<TModel>,
+  TGetInput = OperationVariables,
+  TGetResult = ApolloQueryResult<TModel>,
+  TFindInput = OperationVariables,
+  TFindResult = ApolloQueryResult<TModel>,
+  TPageRequest = Maybe<unknown>,
+  TOrderByInput = Maybe<unknown>
 > {
   modelName: string
   protected _defaultGqlOperations: DefautlGqlOperations
@@ -153,16 +162,16 @@ export class CactusModel<
 
   static init<
     TModel,
-    TCreateInput = Maybe<TModel>,
-    TCreateResult = Maybe<TModel>,
-    TUpdateInput = Maybe<TModel>,
-    TUpdateResult = Maybe<TModel>,
-    TDeleteInput = Maybe<TModel>,
-    TDeleteResult = Maybe<TModel>,
-    TGetInput = Maybe<TModel>,
-    TGetResult = Maybe<TModel>,
-    TFindInput = Maybe<TModel>,
-    TFindResult = Maybe<TModel>,
+    TCreateInput,
+    TCreateResult,
+    TUpdateInput,
+    TUpdateResult,
+    TDeleteInput,
+    TDeleteResult,
+    TGetInput,
+    TGetResult,
+    TFindInput,
+    TFindResult,
     TPageRequest = Maybe<unknown>,
     TOrderByInput = Maybe<unknown>
   >(
@@ -185,38 +194,34 @@ export class CactusModel<
     return (dbInit: CactusModelDbInitI) =>
       new CactusModel({ ...arg, ...dbInit })
   }
-  protected _graphqlRunner(): GraphbackRunner {
+  protected _graphqlRunner(): ApolloRunner<any> {
     const runner = this.db.graphqlRunner
     if (runner == null)
       throw Error(
         `Graphql runner is not defined! 
-        Maybe you forgot to run "CactusSync.init()"
+        Try to run "CactusSync.init()" in your app root
         before "CactusSync.createModel"`
       )
     return runner
   }
   protected async _execute<TVariables, TResult>(
-    query: string,
-    variableValues?: TVariables | undefined
+    arg: ApolloRunnerExecute<TVariables>
   ) {
-    return await this._graphqlRunner().execute<TModel, TVariables, TResult>(
-      query,
-      variableValues
-    )
+    return await this._graphqlRunner().execute<TModel, TVariables, TResult>(arg)
   }
   protected async _executeMiddleware<TInput, TResult>(arg: {
     operationInput: OperationInput<TInput>
     operationType: DefautlGqlOperationType
   }) {
     const { operationType, operationInput } = arg
-    const { input, gql } = operationInput
+    const { input: variableValues, gql } = operationInput
     /**
      * If we receive fragmentGql, we concat it with default query
      * If we receive stringGql we replace default by stringGql
      * If class has default fragment it will be use it
      * And then it will be use default fields
      */
-    const finalGql = (() => {
+    const query = (() => {
       if (gql?.stringGql) return gql.stringGql
       const fragment = gql?.fragmentGql ?? this.defaultModelFragment
       if (fragment) {
@@ -227,7 +232,11 @@ export class CactusModel<
       }
       return this._defaultGqlOperations[operationType]
     })()
-    const result = await this._execute<TInput, TResult>(finalGql, input)
+    const result = await this._execute<TInput, TResult>({
+      variableValues,
+      query,
+      operationType,
+    })
     return result
   }
   add: OperationFunction<TCreateInput, TCreateResult> = async (input, gql) => {
@@ -285,5 +294,17 @@ export class CactusModel<
       },
       operationType: DefautlGqlOperationType.find,
     })
+  }
+
+  /// ================= Replication section ========================
+
+  async startReplication() {
+    return await this.db.startModelReplication({ modelName: this.modelName })
+  }
+  async stopReplication() {
+    return await this.db.startModelReplication({ modelName: this.modelName })
+  }
+  get isReplicating(): boolean {
+    return this.db.isModelReplicating({ modelName: this.modelName })
   }
 }

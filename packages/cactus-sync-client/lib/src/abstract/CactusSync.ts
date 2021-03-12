@@ -1,3 +1,9 @@
+import {
+  ApolloClientOptions,
+  ApolloQueryResult,
+  FetchResult,
+  OperationVariables,
+} from '@apollo/client/core'
 import Dexie, { DexieOptions } from 'dexie'
 import {
   DatabaseChangeType,
@@ -6,14 +12,19 @@ import {
   IDeleteChange,
   IUpdateChange,
 } from 'dexie-observable/api'
+import { GraphQLSchema } from 'graphql-compose/lib/graphql'
 import { Maybe } from 'graphql-tools'
-import { CactusModelBuilder } from './CactusModel'
-import { GraphbackRunner } from './GraphbackRunner'
+import { ApolloRunner } from './ApolloRunner'
+import { CactusModel, CactusModelBuilder } from './CactusModel'
 
 interface CactusSyncI {
   dbName?: Maybe<string>
   dbVersion?: Maybe<number>
   dexieOptions?: Maybe<DexieOptions>
+}
+interface CactusSyncInitI<TCacheShape> extends CactusSyncI {
+  schema: GraphQLSchema
+  apolloOptions: ApolloClientOptions<TCacheShape>
 }
 /**
  * Function type to run after CactusSync(Dexie) change
@@ -35,12 +46,14 @@ const useRunHooks = <TIDatabaseChange extends IDatabaseChange>({
     if (hook) hook({ change })
   }
 }
+type ModelReplicationI = { modelName: CactusModel['modelName'] }
+
 /**
  * To init class use `CactusSync.init()`
  *
  * This is main class to init db
  * */
-export class CactusSync extends Dexie {
+export class CactusSync<TCacheShape = any> extends Dexie {
   /**
    * This is running Dexie db instance
    * To initialize db use:
@@ -53,7 +66,7 @@ export class CactusSync extends Dexie {
    */
   static db?: Maybe<CactusSync>
 
-  graphqlRunner?: Maybe<GraphbackRunner>
+  graphqlRunner?: Maybe<ApolloRunner<TCacheShape>>
   dbVersion: number
   // include enumeration for models map
   constructor({ dbName, dexieOptions, dbVersion }: CactusSyncI) {
@@ -72,10 +85,22 @@ export class CactusSync extends Dexie {
    *
    * @param arg
    */
-  static async init(arg: CactusSyncI) {
-    CactusSync.db = new CactusSync(arg)
-    CactusSync.db.graphqlRunner = await GraphbackRunner.init({
+  static async init<TCacheShape>({
+    schema,
+    apolloOptions,
+    dbName,
+    dbVersion,
+    dexieOptions,
+  }: CactusSyncInitI<TCacheShape>) {
+    CactusSync.db = new CactusSync<TCacheShape>({
+      dbName,
+      dbVersion,
+      dexieOptions,
+    })
+    CactusSync.db.graphqlRunner = await ApolloRunner.init({
       db: CactusSync.db,
+      options: apolloOptions,
+      schema,
     })
   }
   /**
@@ -86,18 +111,18 @@ export class CactusSync extends Dexie {
    */
   static attachModel<
     TModel,
-    TCreateInput,
-    TCreateResult,
-    TUpdateInput,
-    TUpdateResult,
-    TDeleteInput,
-    TDeleteResult,
-    TGetInput,
-    TGetResult,
-    TFindInput,
-    TFindResult,
-    TPageRequest,
-    TOrderByInput
+    TCreateInput = OperationVariables,
+    TCreateResult = FetchResult<TModel>,
+    TUpdateInput = OperationVariables,
+    TUpdateResult = FetchResult<TModel>,
+    TDeleteInput = OperationVariables,
+    TDeleteResult = FetchResult<TModel>,
+    TGetInput = OperationVariables,
+    TGetResult = ApolloQueryResult<TModel>,
+    TFindInput = OperationVariables,
+    TFindResult = ApolloQueryResult<TModel>,
+    TPageRequest = Maybe<unknown>,
+    TOrderByInput = Maybe<unknown>
   >(
     modelBuilder: CactusModelBuilder<
       TModel,
@@ -121,8 +146,64 @@ export class CactusSync extends Dexie {
       You don't have CactusSync db instance! Be aware: 
       CactusSync.init(...) should be called before attachModel!`)
     const model = modelBuilder({ db, dbVersion: db.dbVersion })
+    db.models.set(model.modelName, model)
     return model
   }
+
+  /// ============== Replication section ================
+
+  models: Map<
+    CactusModel['modelName'],
+    Maybe<
+      CactusModel<
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any,
+        any
+      >
+    >
+  > = new Map()
+  replicatingModels: Set<CactusModel['modelName']> = new Set()
+  async startModelReplication({
+    modelName,
+  }: ModelReplicationI): Promise<boolean> {
+    const isReplicating = this.isModelReplicating({ modelName })
+    if (isReplicating) {
+      // TODO: start subscribing via graphqlRunner
+
+      // TODO: fetch all items and write to Dexie via graphqlRunner
+      this.replicatingModels.add(modelName)
+    }
+    return this.isModelReplicating({ modelName })
+  }
+  async stopModelReplication({
+    modelName,
+  }: ModelReplicationI): Promise<boolean> {
+    const isReplicating = this.isModelReplicating({ modelName })
+    if (isReplicating) {
+      // TODO: stop subscribing via graphqlRunner
+      this.replicatingModels.delete(modelName)
+    }
+    return this.isModelReplicating({ modelName })
+  }
+  isModelReplicating({ modelName }: ModelReplicationI): boolean {
+    return this.replicatingModels.has(modelName)
+  }
+
+  /// ============== OFFLINE / ONLINE ================
+
+  // TODO: handle https://www.npmjs.com/package/apollo-link-queue
+
+  /// ============== Dexie subscriptions ================
 
   createHooks: Maybe<HandleModelChange<ICreateChange>>[] = []
   updateHooks: Maybe<HandleModelChange<IUpdateChange>>[] = []

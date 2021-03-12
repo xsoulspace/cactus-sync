@@ -1,6 +1,6 @@
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { loadSchema } from '@graphql-tools/load'
-import { GraphQLSchema, isObjectType } from 'graphql-compose/lib/graphql'
+import { GraphQLSchema, isObjectType } from 'graphql'
 import gql from 'graphql-tag'
 import { Maybe } from 'graphql-tools'
 import path from 'path'
