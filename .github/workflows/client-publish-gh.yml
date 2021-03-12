@@ -1,0 +1,36 @@
+name: Node.js Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 12
+  #     - run: npm i
+  #     - run: npm test
+
+  publish-gpr:
+    # needs: build
+    runs-on: ubuntu-latest
+    env: 
+      working-directory: ./packages/cactus-sync-client
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://npm.pkg.github.com/
+      - run: npm i
+        working-directory: ${{env.working-directory}}
+      - run: npm run build
+        working-directory: ${{env.working-directory}}
+      - run: npm publish
+        working-directory: ${{env.working-directory}}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GH_PACKAGE}}
