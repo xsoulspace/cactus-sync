@@ -11,10 +11,12 @@ import {
   GraphQLObjectType,
 } from 'graphql'
 import {
-  DefautlGqlOperations,
-  DefautlGqlOperationType,
-  getDefautlGqlOperations,
-} from '../graphql/DefautlGqlOperations'
+  AllGqlOperationsType,
+  DefaultGqlOperations,
+  DefaultGqlOperationType,
+  getDefaultGqlOperations,
+  SubscribeGqlOperationType,
+} from '../graphql/DefaultGqlOperations'
 import { ApolloRunner, ApolloRunnerExecute } from './ApolloRunner'
 import { Maybe } from './BasicTypes'
 import { CactusSync } from './CactusSync'
@@ -113,7 +115,7 @@ export class CactusModel<
   TOrderByInput = Maybe<unknown>
 > {
   modelName: string
-  protected _defaultGqlOperations: DefautlGqlOperations
+  protected _defaultGqlOperations: DefaultGqlOperations
   protected _modelFields: (keyof TModel)[]
   defaultModelFragment?: Maybe<DocumentNode>
   db: CactusSync
@@ -153,7 +155,7 @@ export class CactusModel<
     this.db = db
     this._graphqlModelType = graphqlModelType
     this.modelName = graphqlModelType.name
-    this._defaultGqlOperations = getDefautlGqlOperations({
+    this._defaultGqlOperations = getDefaultGqlOperations({
       modelFields: this._modelFields,
       modelName: this.modelName,
     })
@@ -209,9 +211,29 @@ export class CactusModel<
   ) {
     return await this._graphqlRunner().execute<TModel, TVariables, TResult>(arg)
   }
+
+  protected _resolveGql({
+    fragmentGql,
+    stringGql,
+    operationType,
+  }: {
+    operationType: AllGqlOperationsType
+    fragmentGql?: Maybe<DocumentNode>
+    stringGql?: Maybe<string>
+  }) {
+    if (stringGql) return stringGql
+    const fragment = fragmentGql ?? this.defaultModelFragment
+    if (fragment) {
+      return getDefaultGqlOperations({
+        modelName: this.modelName,
+        modelFragment: fragment,
+      })[operationType]
+    }
+    return this._defaultGqlOperations[operationType]
+  }
   protected async _executeMiddleware<TInput, TResult>(arg: {
     operationInput: OperationInput<TInput>
-    operationType: DefautlGqlOperationType
+    operationType: DefaultGqlOperationType
   }) {
     const { operationType, operationInput } = arg
     const { input: variableValues, gql } = operationInput
@@ -221,17 +243,11 @@ export class CactusModel<
      * If class has default fragment it will be use it
      * And then it will be use default fields
      */
-    const query = (() => {
-      if (gql?.stringGql) return gql.stringGql
-      const fragment = gql?.fragmentGql ?? this.defaultModelFragment
-      if (fragment) {
-        return getDefautlGqlOperations({
-          modelName: this.modelName,
-          modelFragment: fragment,
-        })[operationType]
-      }
-      return this._defaultGqlOperations[operationType]
-    })()
+    const query = this._resolveGql({
+      operationType,
+      fragmentGql: gql?.fragmentGql,
+      stringGql: gql?.stringGql,
+    })
     const result = await this._execute<TInput, TResult>({
       variableValues,
       query,
@@ -245,7 +261,7 @@ export class CactusModel<
         gql,
         input,
       },
-      operationType: DefautlGqlOperationType.create,
+      operationType: DefaultGqlOperationType.create,
     })
   }
   update: OperationFunction<TUpdateInput, TUpdateResult> = async (
@@ -257,7 +273,7 @@ export class CactusModel<
         gql,
         input,
       },
-      operationType: DefautlGqlOperationType.update,
+      operationType: DefaultGqlOperationType.update,
     })
   }
   remove: OperationFunction<TDeleteInput, TDeleteResult> = async (
@@ -269,7 +285,7 @@ export class CactusModel<
         gql,
         input,
       },
-      operationType: DefautlGqlOperationType.remove,
+      operationType: DefaultGqlOperationType.remove,
     })
   }
   get: OperationFunction<TGetInput, TGetResult> = async (input, gql) => {
@@ -278,7 +294,7 @@ export class CactusModel<
         gql,
         input,
       },
-      operationType: DefautlGqlOperationType.get,
+      operationType: DefaultGqlOperationType.get,
     })
   }
   find: QueryOperationFunction<
@@ -292,17 +308,30 @@ export class CactusModel<
         gql,
         input: arg ?? undefined,
       },
-      operationType: DefautlGqlOperationType.find,
+      operationType: DefaultGqlOperationType.find,
     })
   }
 
   /// ================= Replication section ========================
-
+  protected get _allReplicationQueries() {
+    const queries = Object.values(SubscribeGqlOperationType).map((type) =>
+      this._resolveGql({
+        operationType: type,
+      })
+    )
+    return queries
+  }
   async startReplication() {
-    return await this.db.startModelReplication({ modelName: this.modelName })
+    return await this.db.startModelReplication({
+      modelName: this.modelName,
+      queries: this._allReplicationQueries,
+    })
   }
   async stopReplication() {
-    return await this.db.startModelReplication({ modelName: this.modelName })
+    return await this.db.startModelReplication({
+      modelName: this.modelName,
+      queries: this._allReplicationQueries,
+    })
   }
   get isReplicating(): boolean {
     return this.db.isModelReplicating({ modelName: this.modelName })

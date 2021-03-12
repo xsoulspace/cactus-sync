@@ -5,14 +5,21 @@ import {
 } from '@apollo/client/core'
 import Dexie from 'dexie'
 import { GraphQLSchema, parse } from 'graphql'
-import { DefautlGqlOperationType } from '../graphql'
+import { DefaultGqlOperationType } from '../graphql'
 import { Maybe } from './BasicTypes'
+import { CactusModel } from './CactusModel'
+import { ModelNameReplicationI } from './CactusSync'
 export type ApolloRunnerExecute<TVariables extends OperationVariables> = {
   query: string
   variableValues?: TVariables
-  operationType: DefautlGqlOperationType
+  operationType: Exclude<
+    DefaultGqlOperationType,
+    'subscribeNew' | 'subscribeUpdated' | 'subscribeDeleted'
+  >
 }
-
+interface ApolloRunnerSubscribes extends ModelNameReplicationI {
+  queries: string[]
+}
 interface ApolloRunnerI<TCacheShape> {
   apollo: ApolloClient<TCacheShape>
   schema: GraphQLSchema
@@ -49,19 +56,52 @@ export class ApolloRunner<TCacheShape> {
     TResult = Maybe<TType>
   >({ query, variableValues, operationType }: ApolloRunnerExecute<TVariables>) {
     switch (operationType) {
-      case DefautlGqlOperationType.create:
-      case DefautlGqlOperationType.update:
-      case DefautlGqlOperationType.remove:
+      case DefaultGqlOperationType.create:
+      case DefaultGqlOperationType.update:
+      case DefaultGqlOperationType.remove:
         return await this.apollo.mutate<TResult, TVariables>({
           mutation: parse(query),
           variables: variableValues,
         })
-      case DefautlGqlOperationType.get:
-      case DefautlGqlOperationType.find:
+      case DefaultGqlOperationType.get:
+      case DefaultGqlOperationType.find:
         return await this.apollo.query<TResult, TVariables>({
           query: parse(query),
           variables: variableValues,
         })
     }
+  }
+  modelSubscriptions: Map<CactusModel['modelName'], unknown[]> = new Map()
+  getModelSubscriptions({ modelName }: ModelNameReplicationI) {
+    return this.modelSubscriptions.get(modelName) ?? []
+  }
+  setModelSubscriptions({
+    modelName,
+    subscriptions,
+  }: {
+    modelName: CactusModel['modelName']
+    subscriptions: unknown[]
+  }) {
+    this.modelSubscriptions.set(modelName, subscriptions)
+  }
+  // TODO:
+  subscribe({ queries, modelName }: ApolloRunnerSubscribes) {
+    const subscriptions: unknown[] =
+      this.modelSubscriptions.get(modelName) ?? []
+    if (subscriptions.length > 0) {
+      // unsubscribe first
+      this.unsubscribe({ modelName })
+      // cleanup
+      subscriptions.length = 0
+    }
+    for (const query of queries) {
+      const subscripton = this.apollo.subscribe({ query: parse(query) })
+      subscriptions.push(subscripton)
+    }
+    this.setModelSubscriptions({ subscriptions, modelName })
+  }
+  // TODO:
+  unsubscribe({ modelName }: ModelNameReplicationI) {
+    this.setModelSubscriptions({ modelName, subscriptions: [] })
   }
 }

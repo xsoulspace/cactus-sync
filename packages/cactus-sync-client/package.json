@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.3.11",
-    "@graphback/runtime-dexie": "./temp_packages/graphback-runtime-dexie",
+    "@xsoulspace/cactus-sync-dexie-runtime": "",
     "apollo-link-queue": "^3.0.0",
     "bson-ext": "^2.0.5",
     "dexie": "^3.0.3",
@@ -48,16 +48,8 @@
     "vue": "^3.0.6"
   },
   "peerDependencies": {
-    "@graphback/runtime-dexie": "./temp_packages/graphback-runtime-dexie",
-    "bson-ext": "^2.0.5",
-    "dexie": "^3.0.3",
-    "dexie-observable": "^3.0.0-beta.10",
-    "endent": "^2.0.1",
+    "@apollo/client": "^3.3.11",
     "graphql": "^15.5.0",
-    "graphql-config": "^3.2.0",
-    "graphql-metadata": "^0.7.6",
-    "graphql-tag": "^2.11.0",
-    "graphql-tools": "^7.0.4",
     "vue": "^3.0.6"
   },
   "devDependencies": {

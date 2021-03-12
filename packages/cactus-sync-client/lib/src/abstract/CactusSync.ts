@@ -46,8 +46,12 @@ const useRunHooks = <TIDatabaseChange extends IDatabaseChange>({
     if (hook) hook({ change })
   }
 }
-type ModelReplicationI = { modelName: CactusModel['modelName'] }
-
+export interface ModelReplicationI extends ModelNameReplicationI {
+  queries: string[]
+}
+export type ModelNameReplicationI = {
+  modelName: CactusModel['modelName']
+}
 /**
  * To init class use `CactusSync.init()`
  *
@@ -175,12 +179,11 @@ export class CactusSync<TCacheShape = any> extends Dexie {
   replicatingModels: Set<CactusModel['modelName']> = new Set()
   async startModelReplication({
     modelName,
+    queries,
   }: ModelReplicationI): Promise<boolean> {
     const isReplicating = this.isModelReplicating({ modelName })
     if (isReplicating) {
-      // TODO: start subscribing via graphqlRunner
-
-      // TODO: fetch all items and write to Dexie via graphqlRunner
+      this.graphqlRunner?.subscribe({ modelName, queries })
       this.replicatingModels.add(modelName)
     }
     return this.isModelReplicating({ modelName })
@@ -190,12 +193,12 @@ export class CactusSync<TCacheShape = any> extends Dexie {
   }: ModelReplicationI): Promise<boolean> {
     const isReplicating = this.isModelReplicating({ modelName })
     if (isReplicating) {
-      // TODO: stop subscribing via graphqlRunner
+      this.graphqlRunner?.unsubscribe({ modelName })
       this.replicatingModels.delete(modelName)
     }
     return this.isModelReplicating({ modelName })
   }
-  isModelReplicating({ modelName }: ModelReplicationI): boolean {
+  isModelReplicating({ modelName }: ModelNameReplicationI): boolean {
     return this.replicatingModels.has(modelName)
   }
 

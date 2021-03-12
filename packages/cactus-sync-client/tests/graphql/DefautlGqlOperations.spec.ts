@@ -1,11 +1,11 @@
 import gql from 'graphql-tag'
-import { getDefautlGqlOperations, gqlToFields } from '../../lib'
+import { getDefaultGqlOperations, gqlToFields } from '../../lib'
 
 const normilizeString = (str: string) => str.trim().replace(/\s+/g, ' ')
 
-describe('DefautlGqlOperations', () => {
+describe('DefaultGqlOperations', () => {
   test('can create correct gql requests (CUDGF)', () => {
-    const operations = getDefautlGqlOperations({
+    const operations = getDefaultGqlOperations({
       modelFields: ['id', 'title'],
       modelName: 'TestModel',
     })
