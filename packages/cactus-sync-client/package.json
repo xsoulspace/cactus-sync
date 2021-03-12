@@ -34,7 +34,6 @@
   },
   "dependencies": {
     "@apollo/client": "^3.3.11",
-    "@xsoulspace/cactus-sync-dexie-runtime": "",
     "apollo-link-queue": "^3.0.0",
     "bson-ext": "^2.0.5",
     "dexie": "^3.0.3",
@@ -44,7 +43,6 @@
     "graphql-config": "^3.2.0",
     "graphql-metadata": "^0.7.6",
     "graphql-tag": "^2.11.0",
-    "graphql-tools": "^7.0.4",
     "vue": "^3.0.6"
   },
   "peerDependencies": {
@@ -53,6 +51,7 @@
     "vue": "^3.0.6"
   },
   "devDependencies": {
+    "graphql-tools": "^7.0.4",
     "@graphql-codegen/cli": "1.21.2",
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.17.0",

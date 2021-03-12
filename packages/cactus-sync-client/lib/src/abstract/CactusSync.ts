@@ -12,7 +12,7 @@ import {
   IDeleteChange,
   IUpdateChange,
 } from 'dexie-observable/api'
-import { GraphQLSchema } from 'graphql-compose/lib/graphql'
+import { GraphQLSchema } from 'graphql'
 import { ApolloRunner } from './ApolloRunner'
 import { Maybe } from './BasicTypes'
 import { CactusModel, CactusModelBuilder } from './CactusModel'

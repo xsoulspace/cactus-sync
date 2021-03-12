@@ -1,4 +1,4 @@
-import { ApolloQueryResult, FetchResult } from '@apollo/client'
+import { ApolloQueryResult, FetchResult } from '@apollo/client/core'
 import { Ref, ref } from 'vue'
 import { Maybe } from './BasicTypes'
 import {

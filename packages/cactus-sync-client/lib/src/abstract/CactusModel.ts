@@ -2,7 +2,7 @@ import {
   ApolloQueryResult,
   FetchResult,
   OperationVariables,
-} from '@apollo/client'
+} from '@apollo/client/core'
 import { Version } from 'dexie'
 import {
   DocumentNode,
