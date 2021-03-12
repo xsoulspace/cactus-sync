@@ -1,5 +1,5 @@
 import { ApolloQueryResult, FetchResult } from '@apollo/client/core'
-import { Ref, ref } from 'vue'
+import { reactive, Ref, ref } from 'vue'
 import { Maybe } from './BasicTypes'
 import {
   CactusModel,
@@ -29,7 +29,14 @@ export class VueStateModel<
   TPageRequest,
   TOrderByInput
 > {
-  state: Ref<Maybe<TModel>[]> = ref([])
+  private _reactiveState: Maybe<TModel>[] = reactive([])
+  get state() {
+    return ref(this._reactiveState) as Ref<Maybe<TModel>[]>
+  }
+  set state(value) {
+    this._reactiveState.length = 0
+    this._reactiveState.push(...value.value)
+  }
   get stateIndexes() {
     const map: Map<string, number> = new Map()
     for (let i = 0; i < this.state.value.length; i++) {
@@ -94,18 +101,18 @@ export class VueStateModel<
   }) {
     const { isNotValid, data } = this._validateResult(result)
     if (isNotValid || data == null) return
-    const arr = this.state.value
     for (const model of Object.values(data)) {
       if (model == null) continue
       const id = model['id']
       const index = this.stateIndexes.get(id)
       if (index != null) {
-        remove ? arr.splice(index, 1) : arr.splice(index, 1, model)
+        remove
+          ? this._reactiveState.splice(index, 1)
+          : this._reactiveState.splice(index, 1, model)
       } else {
-        arr.push(model)
+        this._reactiveState.push(model)
       }
     }
-    this.state.value = arr
   }
 
   protected _updateListState<TResult>(
@@ -116,7 +123,11 @@ export class VueStateModel<
     for (const findModels of Object.values(data)) {
       if (findModels == null) continue
       const items = findModels['items']
-      this.state.value = items
+
+      if (items) {
+        this.state.value = items
+        return
+      }
     }
   }
   add: OperationFunction<TCreateInput, TCreateResult> = async (input, gql) => {
@@ -156,6 +167,6 @@ export class VueStateModel<
     return result
   }
   get list() {
-    return this.state.value
+    return this._reactiveState
   }
 }
