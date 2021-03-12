@@ -1,6 +1,6 @@
 {
   "name": "@xsoulspace/cactus-sync-client",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Sharp and simple as cactus offline-first client library to sync with graphql server..",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -51,7 +51,6 @@
     "vue": "^3.0.6"
   },
   "devDependencies": {
-    "graphql-tools": "^7.0.4",
     "@graphql-codegen/cli": "1.21.2",
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.17.0",
@@ -59,6 +58,7 @@
     "eslint": "^7.21.0",
     "eslint-plugin-prettier": "^3.3.1",
     "fake-indexeddb": "^3.1.2",
+    "graphql-tools": "^7.0.4",
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
     "ts-jest": "^26.5.3",
