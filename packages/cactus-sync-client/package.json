@@ -31,7 +31,7 @@
     "upgrade": "yarn yarn-upgrade-all",
     "generate": "graphql-codegen --config codegen.yml",
     "dev-genmodels": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js",
-    "patch": "yarn version --patch && git push origin --tags"
+    "patch": "yarn version --patch && git push && git push origin --tags"
   },
   "dependencies": {
     "@apollo/client": "^3.3.11",
