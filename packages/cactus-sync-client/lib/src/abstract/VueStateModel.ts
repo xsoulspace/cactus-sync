@@ -1,5 +1,6 @@
-import { ExecutionResult, Maybe } from 'graphql-tools'
+import { ApolloQueryResult, FetchResult } from '@apollo/client'
 import { Ref, ref } from 'vue'
+import { Maybe } from './BasicTypes'
 import {
   CactusModel,
   OperationFunction,
@@ -77,7 +78,7 @@ export class VueStateModel<
     this._cactusModel = cactusModel
   }
   protected _validateResult<TResult>(
-    result: ExecutionResult<TResult>
+    result: FetchResult<TResult> | ApolloQueryResult<TResult>
   ): { isNotValid: boolean; data?: Maybe<TResult> } {
     if (result.errors != null) return { isNotValid: true }
     const data = result.data
@@ -88,7 +89,7 @@ export class VueStateModel<
     remove,
     result,
   }: {
-    result: ExecutionResult<TResult>
+    result: FetchResult<TResult> | ApolloQueryResult<TResult>
     remove?: Maybe<boolean>
   }) {
     const { isNotValid, data } = this._validateResult(result)
@@ -107,7 +108,9 @@ export class VueStateModel<
     }
   }
 
-  protected _updateListState<TResult>(result: ExecutionResult<TResult>) {
+  protected _updateListState<TResult>(
+    result: FetchResult<TResult> | ApolloQueryResult<TResult>
+  ) {
     const { isNotValid, data } = this._validateResult(result)
     if (isNotValid || data == null) return
     for (const findModels of Object.values(data)) {
