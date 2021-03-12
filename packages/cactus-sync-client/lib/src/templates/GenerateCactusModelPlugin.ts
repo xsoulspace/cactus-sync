@@ -24,6 +24,8 @@ interface PluginConfig {
   useDefaultFragments?: boolean
   defaultFragmentsPath?: string
   modelsGraphqlSchemaPath?: string
+  cactusSyncConfigPath?: string
+  cactusSyncConfigHookName?: string
 }
 
 const toCamelCase = (str: string) => {
@@ -41,11 +43,15 @@ module.exports = {
       useDefaultFragments,
       defaultFragmentsPath,
       modelsGraphqlSchemaPath,
+      cactusSyncConfigPath,
+      cactusSyncConfigHookName,
     } = config
     const importVueStateModel = withVueState ? ', VueStateModel' : ''
     const typesPath = schemaTypesPath ?? './generatedTypes'
     const fragmentsPath = defaultFragmentsPath ?? '../gql'
     const graphqlSchemaPath = modelsGraphqlSchemaPath ?? './models.graphql?raw'
+    const configPath = cactusSyncConfigPath ?? './config'
+    const configHookName = cactusSyncConfigHookName ?? 'useCactusSyncInit'
     // ============ Filtering types only ====================
 
     const types = Object.values(schema.getTypeMap()).filter((el) =>
@@ -156,10 +162,15 @@ module.exports = {
       )}, PageRequest, OrderByInput} from '${typesPath}'
       import { CactusSync, CactusModel ${importVueStateModel}, Maybe } from '@xsoulspace/cactus-sync-client'
       import strSchema from '${graphqlSchemaPath}'
+      import {${configHookName}} from '${configPath}'
+      
+      await ${configHookName}()
 
       const schema = buildSchema(strSchema)
 
       ${modelsExportStr}
+      
+      console.log('Cactus Sync hooks initialized')
 
     `
   },

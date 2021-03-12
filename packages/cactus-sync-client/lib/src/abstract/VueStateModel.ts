@@ -94,18 +94,18 @@ export class VueStateModel<
   }) {
     const { isNotValid, data } = this._validateResult(result)
     if (isNotValid || data == null) return
+    const arr = this.state.value
     for (const model of Object.values(data)) {
       if (model == null) continue
       const id = model['id']
       const index = this.stateIndexes.get(id)
       if (index != null) {
-        remove
-          ? this.state.value.splice(index, 1)
-          : this.state.value.splice(index, 1, model)
+        remove ? arr.splice(index, 1) : arr.splice(index, 1, model)
       } else {
-        this.state.value.push(model)
+        arr.push(model)
       }
     }
+    this.state.value = arr
   }
 
   protected _updateListState<TResult>(
@@ -157,8 +157,5 @@ export class VueStateModel<
   }
   get list() {
     return this.state.value
-  }
-  set list(value: Maybe<TModel>[]) {
-    this.state.value = value
   }
 }

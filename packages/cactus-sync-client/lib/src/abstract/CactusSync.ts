@@ -106,6 +106,7 @@ export class CactusSync<TCacheShape = any> extends Dexie {
       options: apolloOptions,
       schema,
     })
+    console.log('Cactus Sync intialized')
   }
   /**
    * Start point to include Model into db
