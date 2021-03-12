@@ -164,7 +164,7 @@ module.exports = {
       import strSchema from '${graphqlSchemaPath}'
       import {${configHookName}} from '${configPath}'
       
-      await ${configHookName}()
+      ${configHookName}()
 
       const schema = buildSchema(strSchema)
 

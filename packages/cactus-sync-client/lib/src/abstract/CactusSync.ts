@@ -89,7 +89,7 @@ export class CactusSync<TCacheShape = any> extends Dexie {
    *
    * @param arg
    */
-  static async init<TCacheShape>({
+  static init<TCacheShape>({
     schema,
     apolloOptions,
     dbName,
@@ -101,7 +101,7 @@ export class CactusSync<TCacheShape = any> extends Dexie {
       dbVersion,
       dexieOptions,
     })
-    CactusSync.db.graphqlRunner = await ApolloRunner.init({
+    CactusSync.db.graphqlRunner = ApolloRunner.init({
       db: CactusSync.db,
       options: apolloOptions,
       schema,

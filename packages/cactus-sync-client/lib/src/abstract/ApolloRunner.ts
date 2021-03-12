@@ -40,7 +40,7 @@ export class ApolloRunner<TCacheShape> {
     this.apollo = apollo
     this.schema = schema
   }
-  static async init<TCacheShape>({
+  static init<TCacheShape>({
     options,
     schema,
   }: ApolloRunnerInitI<TCacheShape>) {
