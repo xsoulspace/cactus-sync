@@ -23,6 +23,7 @@ interface PluginConfig {
   schemaTypesPath?: string
   useDefaultFragments?: boolean
   defaultFragmentsPath?: string
+  modelsGraphqlSchemaPath?: string
 }
 
 const toCamelCase = (str: string) => {
@@ -39,10 +40,12 @@ module.exports = {
       schemaTypesPath,
       useDefaultFragments,
       defaultFragmentsPath,
+      modelsGraphqlSchemaPath,
     } = config
     const importVueStateModel = withVueState ? ', VueStateModel' : ''
     const typesPath = schemaTypesPath ?? './generatedTypes'
     const fragmentsPath = defaultFragmentsPath ?? '../gql'
+    const graphqlSchemaPath = modelsGraphqlSchemaPath ?? './models.graphql?raw'
     // ============ Filtering types only ====================
 
     const types = Object.values(schema.getTypeMap()).filter((el) =>
@@ -146,22 +149,15 @@ module.exports = {
     return endent`
     
       /* eslint-disable */
+      import { GraphQLObjectType, buildSchema } from 'graphql'
+      ${fragmentsImportStr}
       import { ${typesModels.join(
         ' ,\n '
       )}, PageRequest, OrderByInput} from '${typesPath}'
-      ${fragmentsImportStr}
-      import path from 'path'
-      import { CactusSync, CactusModel ${importVueStateModel} } from '@xsoulspace/cactus-sync-client'
-      import { GraphQLFileLoader, loadSchemaSync, Maybe } from 'graphql-tools'
-      import { GraphQLObjectType } from 'graphql'
-      
-      const schemaPath = path.resolve(
-        __dirname,
-        './schema.graphql'
-      )
-      const schema = loadSchemaSync(schemaPath, {
-        loaders: [new GraphQLFileLoader()],
-      })
+      import { CactusSync, CactusModel ${importVueStateModel}, Maybe } from '@xsoulspace/cactus-sync-client'
+      import strSchema from '${graphqlSchemaPath}'
+
+      const schema = buildSchema(strSchema)
 
       ${modelsExportStr}
 

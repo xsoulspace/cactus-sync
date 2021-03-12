@@ -5,6 +5,7 @@ config:
   schemaTypesPath: '../../../resources/generatedTypes'
   useDefaultFragments: true
   defaultFragmentsPath: '../gql'
+  modelsGraphqlSchemaPath: './models.graphql?raw'
 generates:
   generated/hooks.ts:
     plugins:
