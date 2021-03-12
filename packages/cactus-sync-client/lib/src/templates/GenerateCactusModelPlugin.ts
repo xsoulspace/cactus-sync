@@ -81,7 +81,8 @@ module.exports = {
       const queryGetResult = `{ get${name}: Maybe<${name}> }`
 
       const queryFindArgs = `QueryFind${pluralName}Args`
-      const queryFindResult = `{ find${pluralName}: ${name}ResultList}`
+      const queryFindResult = `${name}ResultList`
+      const queryFindResultI = `{ find${pluralName}: ${queryFindResult}}`
 
       const args = [
         mutationCreateArgs,
@@ -118,7 +119,7 @@ module.exports = {
           ${queryGetArgs},
           ${queryGetResult},
           ${queryFindArgs},
-          ${queryFindResult}
+          ${queryFindResultI}
         >({ graphqlModelType: schema.getType('${name}') as Maybe<GraphQLObjectType> ${defaultFragment}})
       )
       `
@@ -137,7 +138,7 @@ module.exports = {
               ${queryGetArgs},
               ${queryGetResult},
               ${queryFindArgs},
-              ${queryFindResult}
+              ${queryFindResultI}
             >
         `
       }
