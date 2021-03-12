@@ -125,9 +125,7 @@ export class CactusSync<TCacheShape = any> extends Dexie {
     TGetInput = OperationVariables,
     TGetResult = ApolloQueryResult<TModel>,
     TFindInput = OperationVariables,
-    TFindResult = ApolloQueryResult<TModel>,
-    TPageRequest = Maybe<unknown>,
-    TOrderByInput = Maybe<unknown>
+    TFindResult = ApolloQueryResult<TModel>
   >(
     modelBuilder: CactusModelBuilder<
       TModel,
@@ -140,9 +138,7 @@ export class CactusSync<TCacheShape = any> extends Dexie {
       TGetInput,
       TGetResult,
       TFindInput,
-      TFindResult,
-      TPageRequest,
-      TOrderByInput
+      TFindResult
     >
   ) {
     const db = CactusSync.db
@@ -159,23 +155,7 @@ export class CactusSync<TCacheShape = any> extends Dexie {
 
   models: Map<
     CactusModel['modelName'],
-    Maybe<
-      CactusModel<
-        any,
-        any,
-        any,
-        any,
-        any,
-        any,
-        any,
-        any,
-        any,
-        any,
-        any,
-        any,
-        any
-      >
-    >
+    Maybe<CactusModel<any, any, any, any, any, any, any, any, any, any, any>>
   > = new Map()
   replicatingModels: Set<CactusModel['modelName']> = new Set()
   async startModelReplication({

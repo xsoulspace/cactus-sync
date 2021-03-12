@@ -81,7 +81,7 @@ module.exports = {
       const queryGetResult = `{ get${name}: Maybe<${name}> }`
 
       const queryFindArgs = `QueryFind${pluralName}Args`
-      const queryFindResult = `${name}ResultList`
+      const queryFindResult = `{ find${pluralName}: ${name}ResultList}`
 
       const args = [
         mutationCreateArgs,
@@ -118,9 +118,7 @@ module.exports = {
           ${queryGetArgs},
           ${queryGetResult},
           ${queryFindArgs},
-          ${queryFindResult},
-          PageRequest, 
-          OrderByInput
+          ${queryFindResult}
         >({ graphqlModelType: schema.getType('${name}') as Maybe<GraphQLObjectType> ${defaultFragment}})
       )
       `
@@ -139,9 +137,7 @@ module.exports = {
               ${queryGetArgs},
               ${queryGetResult},
               ${queryFindArgs},
-              ${queryFindResult},
-              PageRequest, 
-              OrderByInput
+              ${queryFindResult}
             >
         `
       }
@@ -157,9 +153,7 @@ module.exports = {
       /* eslint-disable */
       import { GraphQLObjectType, buildSchema } from 'graphql'
       ${fragmentsImportStr}
-      import { ${typesModels.join(
-        ' ,\n '
-      )}, PageRequest, OrderByInput} from '${typesPath}'
+      import { ${typesModels.join(' ,\n ')} } from '${typesPath}'
       import { CactusSync, CactusModel ${importVueStateModel}, Maybe } from '@xsoulspace/cactus-sync-client'
       import strSchema from '${graphqlSchemaPath}'
       import {${configHookName}} from '${configPath}'

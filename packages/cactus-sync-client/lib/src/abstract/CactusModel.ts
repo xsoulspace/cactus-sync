@@ -1,3 +1,4 @@
+import { QueryResult } from '@apollo/client'
 import {
   ApolloQueryResult,
   FetchResult,
@@ -46,9 +47,7 @@ export type CactusModelBuilder<
   TGetInput = OperationVariables,
   TGetResult = ApolloQueryResult<TModel>,
   TFindInput = OperationVariables,
-  TFindResult = ApolloQueryResult<TModel>,
-  TPageRequest = Maybe<unknown>,
-  TOrderByInput = Maybe<unknown>
+  TFindResult = ApolloQueryResult<TModel>
 > = (
   arg: CactusModelDbInitI
 ) => CactusModel<
@@ -62,16 +61,8 @@ export type CactusModelBuilder<
   TGetInput,
   TGetResult,
   TFindInput,
-  TFindResult,
-  TPageRequest,
-  TOrderByInput
+  TFindResult
 >
-
-type FindInput<TFilter, TPageRequest, TOrderByInput> = {
-  filter?: Maybe<TFilter>
-  pageRequest?: Maybe<TPageRequest>
-  orderBy?: Maybe<TOrderByInput>
-}
 
 type OperationFunctionGql = {
   stringGql?: Maybe<string>
@@ -89,13 +80,11 @@ export type OperationFunction<TInput, TResult> = (
 ) => Promise<ExecutionResult<TResult>>
 
 export type QueryOperationFunction<
-  TFilter,
-  TResult,
-  TPageRequest = Maybe<unknown>,
-  TOrderByInput = Maybe<unknown>,
-  TFilterInput = FindInput<TFilter, TPageRequest, TOrderByInput>
+  TData = any,
+  TFilter = OperationVariables,
+  TResult = QueryResult<TData, TFilter>
 > = (
-  arg?: Maybe<TFilterInput>,
+  arg?: Maybe<TFilter>,
   gql?: Maybe<OperationFunctionGql>
 ) => Promise<ExecutionResult<TResult>>
 
@@ -110,9 +99,7 @@ export class CactusModel<
   TGetInput = OperationVariables,
   TGetResult = ApolloQueryResult<TModel>,
   TFindInput = OperationVariables,
-  TFindResult = ApolloQueryResult<TModel>,
-  TPageRequest = Maybe<unknown>,
-  TOrderByInput = Maybe<unknown>
+  TFindResult = ApolloQueryResult<TModel>
 > {
   modelName: string
   protected _defaultGqlOperations: DefaultGqlOperations
@@ -173,9 +160,7 @@ export class CactusModel<
     TGetInput,
     TGetResult,
     TFindInput,
-    TFindResult,
-    TPageRequest = Maybe<unknown>,
-    TOrderByInput = Maybe<unknown>
+    TFindResult
   >(
     arg: CactusModelInitI
   ): CactusModelBuilder<
@@ -189,9 +174,7 @@ export class CactusModel<
     TGetInput,
     TGetResult,
     TFindInput,
-    TFindResult,
-    TPageRequest,
-    TOrderByInput
+    TFindResult
   > {
     return (dbInit: CactusModelDbInitI) =>
       new CactusModel({ ...arg, ...dbInit })
@@ -297,12 +280,10 @@ export class CactusModel<
       operationType: DefaultGqlOperationType.get,
     })
   }
-  find: QueryOperationFunction<
-    TFindInput,
-    TFindResult,
-    TPageRequest,
-    TOrderByInput
-  > = async (arg, gql) => {
+  find: QueryOperationFunction<TModel, TFindInput, TFindResult> = async (
+    arg,
+    gql
+  ) => {
     return await this._executeMiddleware({
       operationInput: {
         gql,

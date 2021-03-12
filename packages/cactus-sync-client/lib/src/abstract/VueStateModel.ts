@@ -25,9 +25,7 @@ export class VueStateModel<
   TGetInput,
   TGetResult,
   TFindInput,
-  TFindResult,
-  TPageRequest,
-  TOrderByInput
+  TFindResult
 > {
   private _reactiveState: Maybe<TModel>[] = reactive([])
   private _setReactiveState(value: Maybe<TModel>[]) {
@@ -59,9 +57,7 @@ export class VueStateModel<
     TGetInput,
     TGetResult,
     TFindInput,
-    TFindResult,
-    TPageRequest,
-    TOrderByInput
+    TFindResult
   >
   constructor({
     cactusModel,
@@ -77,9 +73,7 @@ export class VueStateModel<
       TGetInput,
       TGetResult,
       TFindInput,
-      TFindResult,
-      TPageRequest,
-      TOrderByInput
+      TFindResult
     >
   }) {
     this._cactusModel = cactusModel
@@ -155,12 +149,10 @@ export class VueStateModel<
     this._updateState({ result })
     return result
   }
-  find: QueryOperationFunction<
-    TFindInput,
-    TFindResult,
-    TPageRequest,
-    TOrderByInput
-  > = async (input, gql) => {
+  find: QueryOperationFunction<TModel, TFindInput, TFindResult> = async (
+    input,
+    gql
+  ) => {
     const result = await this._cactusModel.find(input, gql)
     this._updateListState(result)
     return result
