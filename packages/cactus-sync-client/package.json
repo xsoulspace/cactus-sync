@@ -30,7 +30,8 @@
     "genmodels": "tsc ./dist/src/templates/GenerateCactusModelPlugin.ts && rm -rf ./dist/src/templates/GenerateCactusModelPlugin.ts",
     "upgrade": "yarn yarn-upgrade-all",
     "generate": "graphql-codegen --config codegen.yml",
-    "dev-genmodels": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js"
+    "dev-genmodels": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js",
+    "patch": "yarn version --patch && git push origin --tags"
   },
   "dependencies": {
     "@apollo/client": "^3.3.11",
