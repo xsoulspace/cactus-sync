@@ -33,7 +33,6 @@ export class VueStateModel<
   private _setReactiveState(value: Maybe<TModel>[]) {
     this._reactiveState.length = 0
     this._reactiveState.push(...value)
-    console.log({ 'new state': this._reactiveState })
   }
   get state() {
     return computed(() => this._reactiveState)
@@ -124,7 +123,6 @@ export class VueStateModel<
     for (const findModels of Object.values(data)) {
       if (findModels == null) continue
       const items = findModels['items']
-      console.log({ 'items received': items })
       if (items) {
         this._setReactiveState(items)
         return
