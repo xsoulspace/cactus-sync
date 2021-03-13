@@ -9,6 +9,16 @@ import {
   QueryOperationFunction,
 } from './CactusModel'
 
+enum VueStateModelEvents {
+  addUpdateStateModel = 'addUpdateStateModel',
+  removeStateModel = 'removeStateModel',
+}
+
+type StateModelChange<TModel> = {
+  modelName: string
+  item: TModel
+}
+
 /**
  * State management for Vue
  * When you use any of add, update, remove, find, get
@@ -80,7 +90,11 @@ export class VueStateModel<
   }) {
     this._cactusModel = cactusModel
     this._initSubscriptionListener()
+    this._listenOtherStatesChanges()
   }
+
+  /// ================== STATE CHANGES HANDLERS ======================
+
   protected _validateResult<TResult>(
     result: FetchResult<TResult> | ApolloQueryResult<TResult>
   ): { isNotValid: boolean; data?: Maybe<TResult> } {
@@ -92,35 +106,104 @@ export class VueStateModel<
   protected _updateState<TResult>({
     remove,
     result,
+    notifyListeners,
   }: {
     result: FetchResult<TResult> | ApolloQueryResult<TResult>
     remove?: Maybe<boolean>
+    notifyListeners?: Maybe<boolean>
   }) {
     const { isNotValid, data } = this._validateResult(result)
     if (isNotValid || data == null) return
     for (const maybeModel of Object.values(data)) {
-      this._updateStateModel({ maybeModel, remove })
+      this._updateStateModel({ maybeModel, remove, notifyListeners })
     }
   }
+  /**
+   * notifyListeners should notify all states for this model about
+   * new/updated/removed item
+   *
+   * should not be used with subscribed events
+   * @param param0
+   * @returns
+   */
   protected _updateStateModel({
     remove,
     maybeModel,
+    notifyListeners,
   }: {
     maybeModel: Maybe<TModel>
     remove?: Maybe<boolean>
+    notifyListeners?: Maybe<boolean>
   }) {
     if (maybeModel == null) return
     const id = maybeModel['id']
     const index = this.stateIndexes.get(id)
-    if (index != null) {
-      remove
-        ? this._reactiveState.splice(index, 1)
-        : this._reactiveState.splice(index, 1, maybeModel)
-    } else {
-      this._reactiveState.push(maybeModel)
+    if (remove && index != null) {
+      this._reactiveState.splice(index, 1)
+    }
+    if (!remove) {
+      if (index != null) {
+        this._reactiveState.splice(index, 1, maybeModel)
+      } else {
+        this._reactiveState.push(maybeModel)
+      }
+    }
+    if (notifyListeners) {
+      const obj: StateModelChange<TModel> = {
+        modelName: this.modelName,
+        item: maybeModel,
+      }
+      const eventType = remove
+        ? VueStateModelEvents.removeStateModel
+        : VueStateModelEvents.addUpdateStateModel
+      console.log({ eventType, obj })
+      this._emitter.emit(eventType, obj)
     }
   }
+  get modelName() {
+    return this._cactusModel.modelName
+  }
+  protected _verifyModelName(
+    modelName: Maybe<string>
+  ): { isVerified: boolean } {
+    const isVerified = modelName == this.modelName
+    return { isVerified }
+  }
+  /**
+   * This function is responsible for listening changes
+   * in another states and should be initialized in constuctor
+   */
+  protected _listenOtherStatesChanges() {
+    const handleEvent = ({
+      remove,
+      obj,
+    }: {
+      obj: Maybe<StateModelChange<TModel>>
+      remove?: Maybe<boolean>
+    }) => {
+      console.log({ remove, obj })
 
+      const { isVerified } = this._verifyModelName(obj?.modelName)
+      if (isVerified) {
+        const maybeModel = obj?.item
+        if (maybeModel) {
+          this._updateStateModel({
+            maybeModel,
+            remove,
+          })
+        }
+      }
+    }
+    this._emitter.on(
+      VueStateModelEvents.removeStateModel,
+      (obj: Maybe<StateModelChange<TModel>>) =>
+        handleEvent({ obj, remove: true })
+    )
+    this._emitter.on(
+      VueStateModelEvents.addUpdateStateModel,
+      (obj: Maybe<StateModelChange<TModel>>) => handleEvent({ obj })
+    )
+  }
   protected _updateListState<TResult>(
     result: FetchResult<TResult> | ApolloQueryResult<TResult>
   ) {
@@ -135,9 +218,12 @@ export class VueStateModel<
       }
     }
   }
+
+  /// =================== PUBLIC OPERATIONS ========================
+
   add: OperationFunction<TCreateInput, TCreateResult> = async (input, gql) => {
     const result = await this._cactusModel.add(input, gql)
-    this._updateState({ result })
+    this._updateState({ result, notifyListeners: true })
     return result
   }
   update: OperationFunction<TUpdateInput, TUpdateResult> = async (
@@ -145,7 +231,7 @@ export class VueStateModel<
     gql
   ) => {
     const result = await this._cactusModel.update(input, gql)
-    this._updateState({ result })
+    this._updateState({ result, notifyListeners: true })
     return result
   }
   remove: OperationFunction<TDeleteInput, TDeleteResult> = async (
@@ -153,7 +239,7 @@ export class VueStateModel<
     gql
   ) => {
     const result = await this._cactusModel.remove(input, gql)
-    this._updateState({ result, remove: true })
+    this._updateState({ result, remove: true, notifyListeners: true })
     return result
   }
   get: OperationFunction<TGetInput, TGetResult> = async (input, gql) => {
@@ -180,21 +266,22 @@ export class VueStateModel<
    * This function listen when subscription begins and ends
    * for model. Should be called in constructor
    */
+  protected get _emitter() {
+    return this._cactusModel.db.graphqlRunner.subscriptionsEmitter
+  }
   protected _initSubscriptionListener() {
-    this._cactusModel.db.graphqlRunner?.subscriptionsEmitter.on(
+    this._emitter.on(
       ApolloRunnerEvents.subscribeModelName,
       (maybeModelName) => {
-        if (maybeModelName == this._cactusModel.modelName) {
-          this._subscribe()
-        }
+        const { isVerified } = this._verifyModelName(maybeModelName)
+        if (isVerified) this._subscribe()
       }
     )
-    this._cactusModel.db.graphqlRunner?.subscriptionsEmitter.on(
+    this._emitter.on(
       ApolloRunnerEvents.unsubscirbeModelName,
       (maybeModelName) => {
-        if (maybeModelName == this._cactusModel.modelName) {
-          this._unsubscribe()
-        }
+        const { isVerified } = this._verifyModelName(maybeModelName)
+        if (isVerified) this._unsubscribe()
       }
     )
   }

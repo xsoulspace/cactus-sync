@@ -10,7 +10,20 @@ export const useCactusSyncInit = () => {
     // You should use an absolute URL here
     uri: url,
   })
-
+  // This is needed if you can use wss
+  // const link = new WebSocketLink({
+  //   url: 'wss://localhost:4000/graphql',
+  //   connectionParams: () => {
+  //     return {}
+  //     // const session = getSession();
+  //     // if (!session) {
+  //     //   return {};
+  //     // }
+  //     // return {
+  //     //   Authorization: `Bearer ${session.token}`,
+  //     // };
+  //   },
+  // })
   const cache = new InMemoryCache()
   CactusSync.init({
     apolloOptions: {

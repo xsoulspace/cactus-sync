@@ -70,16 +70,26 @@ export class CactusSync<TCacheShape = any> extends Dexie {
    */
   static db?: Maybe<CactusSync>
 
-  graphqlRunner?: Maybe<ApolloRunner<TCacheShape>>
+  graphqlRunner: ApolloRunner<TCacheShape>
   dbVersion: number
   // include enumeration for models map
-  constructor({ dbName, dexieOptions, dbVersion }: CactusSyncI) {
+  constructor({
+    dbName,
+    dexieOptions,
+    dbVersion,
+    apolloOptions,
+    schema,
+  }: CactusSyncInitI<TCacheShape>) {
     super(dbName ?? 'cactusSyncDb', dexieOptions ?? undefined)
     const db = this
     this.dbVersion = dbVersion ?? 1
 
     db.version(this.dbVersion)
-    // maybe will need to @deprecate
+    this.graphqlRunner = ApolloRunner.init({
+      db: db,
+      options: apolloOptions,
+      schema,
+    })
   }
   /**
    * Start point to initialize CactusSyncDb to add new models
@@ -89,23 +99,8 @@ export class CactusSync<TCacheShape = any> extends Dexie {
    *
    * @param arg
    */
-  static init<TCacheShape>({
-    schema,
-    apolloOptions,
-    dbName,
-    dbVersion,
-    dexieOptions,
-  }: CactusSyncInitI<TCacheShape>) {
-    CactusSync.db = new CactusSync<TCacheShape>({
-      dbName,
-      dbVersion,
-      dexieOptions,
-    })
-    CactusSync.db.graphqlRunner = ApolloRunner.init({
-      db: CactusSync.db,
-      options: apolloOptions,
-      schema,
-    })
+  static init<TCacheShape>(arg: CactusSyncInitI<TCacheShape>) {
+    CactusSync.db = new CactusSync<TCacheShape>(arg)
     console.log('Cactus Sync intialized')
   }
   /**

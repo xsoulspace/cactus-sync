@@ -1,14 +1,13 @@
-import express from 'express'
-import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
-import ws from 'ws' // yarn add ws
-import { useServer } from 'graphql-ws/lib/use/ws'
-import { execute, subscribe } from 'graphql'
-import http from 'http'
-import { buildSchema } from 'graphql'
 import { makeExecutableSchema } from '@graphql-tools/schema'
+import { ApolloServerExpressConfig } from 'apollo-server-express'
+import { execute, subscribe } from 'graphql'
+import { useServer } from 'graphql-ws/lib/use/ws'
+import http from 'http'
+import https from 'https'
+import ws from 'ws' // yarn add ws
 
 export function createGraphQLWS(
-  server: http.Server,
+  server: http.Server | https.Server,
   config: ApolloServerExpressConfig
 ) {
   const wsServer = new ws.Server({
@@ -18,7 +17,6 @@ export function createGraphQLWS(
 
   if (!config.typeDefs) {
     throw Error('TypeDefs not defined')
-    return
   }
   useServer(
     {
