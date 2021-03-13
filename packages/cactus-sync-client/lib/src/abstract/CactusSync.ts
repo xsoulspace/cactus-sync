@@ -1,6 +1,7 @@
 import {
   ApolloClientOptions,
   ApolloQueryResult,
+  FetchPolicy,
   FetchResult,
   OperationVariables,
 } from '@apollo/client/core'
@@ -25,6 +26,7 @@ interface CactusSyncI {
 interface CactusSyncInitI<TCacheShape> extends CactusSyncI {
   schema: GraphQLSchema
   apolloOptions: ApolloClientOptions<TCacheShape>
+  defaultFetchPolicy?: Maybe<FetchPolicy>
 }
 /**
  * Function type to run after CactusSync(Dexie) change
@@ -79,6 +81,7 @@ export class CactusSync<TCacheShape = any> extends Dexie {
     dbVersion,
     apolloOptions,
     schema,
+    defaultFetchPolicy,
   }: CactusSyncInitI<TCacheShape>) {
     super(dbName ?? 'cactusSyncDb', dexieOptions ?? undefined)
     const db = this
@@ -89,6 +92,7 @@ export class CactusSync<TCacheShape = any> extends Dexie {
       db: db,
       options: apolloOptions,
       schema,
+      defaultFetchPolicy,
     })
   }
   /**

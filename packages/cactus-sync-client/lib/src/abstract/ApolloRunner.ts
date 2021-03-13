@@ -1,6 +1,7 @@
 import {
   ApolloClient,
   ApolloClientOptions,
+  FetchPolicy,
   FetchResult,
   ObservableSubscription,
   Observer,
@@ -33,11 +34,13 @@ interface ApolloRunnerSubscribes extends ModelNameReplicationI {
 interface ApolloRunnerI<TCacheShape> {
   apollo: ApolloClient<TCacheShape>
   schema: GraphQLSchema
+  defaultFetchPolicy?: Maybe<FetchPolicy>
 }
 interface ApolloRunnerInitI<TCacheShape> {
   db: Dexie
   options: ApolloClientOptions<TCacheShape>
   schema: GraphQLSchema
+  defaultFetchPolicy?: Maybe<FetchPolicy>
 }
 
 export type ApolloSubscription<TModel = any> = {
@@ -62,9 +65,15 @@ export type ApolloSubscription<TModel = any> = {
 export class ApolloRunner<TCacheShape> {
   schema: GraphQLSchema
   apollo: ApolloClient<TCacheShape>
-  constructor({ schema, apollo }: ApolloRunnerI<TCacheShape>) {
+  defaultFetchPolicy: FetchPolicy
+  constructor({
+    schema,
+    apollo,
+    defaultFetchPolicy,
+  }: ApolloRunnerI<TCacheShape>) {
     this.apollo = apollo
     this.schema = schema
+    this.defaultFetchPolicy = defaultFetchPolicy ?? 'network-only'
   }
   static init<TCacheShape>({
     options,
@@ -93,6 +102,7 @@ export class ApolloRunner<TCacheShape> {
         return await this.apollo.query<TResult, TVariables>({
           query: parse(query),
           variables: variableValues,
+          fetchPolicy: this.defaultFetchPolicy,
         })
     }
   }

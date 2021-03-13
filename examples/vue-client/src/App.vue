@@ -3,6 +3,8 @@
   <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
   <button @click="addTodo">Add to original state</button>
   <button @click="addTodoModel">Add via standalone model</button>
+  <button @click="find">find</button>
+  <button @click="findMars">findMars</button>
   <div>
     <span>List Original</span>
     <div v-for="todo in todoList" :key="todo.id">
@@ -36,17 +38,23 @@
       const todoState = useTodoState()
       const todoDubplicateState = useTodoState()
       const counter = ref(1)
+      const find = () => todoState.find()
+      const findMars = () =>
+        todoState.find({ filter: { title: { contains: 'Mars' } } })
       onMounted(async () => {
         const isReplicating = await todoModel.startReplication()
         console.log({ isReplicating })
 
         todoState.find()
       })
-      const addTodo = async (arg?: { standalone?: boolean }) => {
+      const addTodo = async (arg?: {
+        standalone?: boolean
+        title?: string
+      }) => {
         const todo: CreateTodoInput = {
           _version: 1,
           _lastUpdatedAt: Date.now().toString(),
-          title: `New todo ${counter.value}`,
+          title: `${arg?.title ?? 'New todo'} ${counter.value}`,
         }
         counter.value++
         if (arg?.standalone) {
@@ -59,7 +67,7 @@
           })
         }
       }
-      const addTodoModel = () => addTodo({ standalone: true })
+      const addTodoModel = () => addTodo({ standalone: true, title: 'Mars' })
       const removeTodo = async (todo: Todo) => {
         await todoState.remove({
           input: {
@@ -72,6 +80,8 @@
         addTodo,
         addTodoModel,
         removeTodo,
+        find,
+        findMars,
         todoList: todoState.list,
         todoDuplicateList: todoDubplicateState.list,
       }
