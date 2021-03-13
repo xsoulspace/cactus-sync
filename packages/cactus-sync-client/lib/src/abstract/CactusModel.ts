@@ -25,6 +25,10 @@ import {
 } from './ApolloRunner'
 import { Maybe } from './BasicTypes'
 import { CactusSync } from './CactusSync'
+import {
+  notifyStateModelListeners,
+  validateStateModelResult,
+} from './StateModel'
 
 interface CactusModelInitI {
   graphqlModelType: Maybe<GraphQLObjectType>
@@ -80,7 +84,8 @@ type OperationInput<TInput> = {
 
 export type OperationFunction<TInput, TResult> = (
   input: TInput,
-  gql?: Maybe<OperationFunctionGql>
+  gql?: Maybe<OperationFunctionGql>,
+  notifyListeners?: Maybe<boolean>
 ) => Promise<ExecutionResult<TResult>>
 
 export type QueryOperationFunction<
@@ -221,8 +226,9 @@ export class CactusModel<
   protected async _executeMiddleware<TInput, TResult>(arg: {
     operationInput: OperationInput<TInput>
     operationType: DefaultGqlOperationType
+    notifyListeners?: Maybe<boolean>
   }) {
-    const { operationType, operationInput } = arg
+    const { operationType, operationInput, notifyListeners } = arg
     const { input: variableValues, gql } = operationInput
     /**
      * If we receive fragmentGql, we concat it with default query
@@ -240,20 +246,72 @@ export class CactusModel<
       query,
       operationType,
     })
+
+    /// STATE UDPATES
+
+    if (!notifyListeners) return result
+    const validateAndEmit = ({ remove }: { remove?: Maybe<boolean> }) => {
+      const { isNotValid, data } = validateStateModelResult(result)
+      console.log({ isNotValid, data })
+      if (isNotValid || data == null) return
+      for (const maybeModel of Object.values(data)) {
+        notifyStateModelListeners({
+          emitter: this.db.graphqlRunner.subscriptionsEmitter,
+          remove: remove,
+          item: maybeModel,
+          notifyListeners,
+          modelName: this.modelName,
+        })
+      }
+    }
+    switch (operationType) {
+      case DefaultGqlOperationType.create:
+      case DefaultGqlOperationType.update:
+        validateAndEmit({})
+        break
+      case DefaultGqlOperationType.remove:
+        validateAndEmit({ remove: true })
+        break
+    }
     return result
   }
-  add: OperationFunction<TCreateInput, TCreateResult> = async (input, gql) => {
+  /**
+   * By default this function will notify all states for this model
+   * You can turn off it by turning notifyListeners = false
+   *
+   * @param input
+   * @param gql
+   * @param notifyListeners
+   * @returns
+   */
+  add: OperationFunction<TCreateInput, TCreateResult> = async (
+    input,
+    gql,
+    notifyListeners
+  ) => {
     return await this._executeMiddleware({
       operationInput: {
         gql,
         input,
       },
       operationType: DefaultGqlOperationType.create,
+      notifyListeners: notifyListeners == false ? false : true,
     })
   }
+  /**
+   * By default this function will notify all states for this model
+   * You can turn off it by turning notifyListeners = false
+   *
+   * @param input
+   * @param gql
+   * @param notifyListeners
+   * @returns
+   */
+
   update: OperationFunction<TUpdateInput, TUpdateResult> = async (
     input,
-    gql
+    gql,
+    notifyListeners
   ) => {
     return await this._executeMiddleware({
       operationInput: {
@@ -261,11 +319,23 @@ export class CactusModel<
         input,
       },
       operationType: DefaultGqlOperationType.update,
+      notifyListeners: notifyListeners == false ? false : true,
     })
   }
+  /**
+   * By default this function will notify all states for this model
+   * You can turn off it by turning notifyListeners = false
+   *
+   * @param input
+   * @param gql
+   * @param notifyListeners
+   * @returns
+   */
+
   remove: OperationFunction<TDeleteInput, TDeleteResult> = async (
     input,
-    gql
+    gql,
+    notifyListeners
   ) => {
     return await this._executeMiddleware({
       operationInput: {
@@ -273,6 +343,7 @@ export class CactusModel<
         input,
       },
       operationType: DefaultGqlOperationType.remove,
+      notifyListeners: notifyListeners == false ? false : true,
     })
   }
   get: OperationFunction<TGetInput, TGetResult> = async (input, gql) => {

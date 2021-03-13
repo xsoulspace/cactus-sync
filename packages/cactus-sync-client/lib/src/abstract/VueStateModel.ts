@@ -8,16 +8,12 @@ import {
   OperationFunction,
   QueryOperationFunction,
 } from './CactusModel'
-
-enum VueStateModelEvents {
-  addUpdateStateModel = 'addUpdateStateModel',
-  removeStateModel = 'removeStateModel',
-}
-
-type StateModelChange<TModel> = {
-  modelName: string
-  item: TModel
-}
+import {
+  notifyStateModelListeners,
+  StateModelChange,
+  StateModelEvents,
+  validateStateModelResult,
+} from './StateModel'
 
 /**
  * State management for Vue
@@ -95,14 +91,6 @@ export class VueStateModel<
 
   /// ================== STATE CHANGES HANDLERS ======================
 
-  protected _validateResult<TResult>(
-    result: FetchResult<TResult> | ApolloQueryResult<TResult>
-  ): { isNotValid: boolean; data?: Maybe<TResult> } {
-    if (result.errors != null) return { isNotValid: true }
-    const data = result.data
-    if (typeof data != 'object') return { isNotValid: true }
-    return { isNotValid: false, data }
-  }
   protected _updateState<TResult>({
     remove,
     result,
@@ -112,7 +100,7 @@ export class VueStateModel<
     remove?: Maybe<boolean>
     notifyListeners?: Maybe<boolean>
   }) {
-    const { isNotValid, data } = this._validateResult(result)
+    const { isNotValid, data } = validateStateModelResult(result)
     if (isNotValid || data == null) return
     for (const maybeModel of Object.values(data)) {
       this._updateStateModel({ maybeModel, remove, notifyListeners })
@@ -148,17 +136,13 @@ export class VueStateModel<
         this._reactiveState.push(maybeModel)
       }
     }
-    if (notifyListeners) {
-      const obj: StateModelChange<TModel> = {
-        modelName: this.modelName,
-        item: maybeModel,
-      }
-      const eventType = remove
-        ? VueStateModelEvents.removeStateModel
-        : VueStateModelEvents.addUpdateStateModel
-      console.log({ eventType, obj })
-      this._emitter.emit(eventType, obj)
-    }
+    notifyStateModelListeners({
+      notifyListeners,
+      modelName: this.modelName,
+      item: maybeModel,
+      emitter: this._emitter,
+      remove,
+    })
   }
   get modelName() {
     return this._cactusModel.modelName
@@ -181,8 +165,6 @@ export class VueStateModel<
       obj: Maybe<StateModelChange<TModel>>
       remove?: Maybe<boolean>
     }) => {
-      console.log({ remove, obj })
-
       const { isVerified } = this._verifyModelName(obj?.modelName)
       if (isVerified) {
         const maybeModel = obj?.item
@@ -195,19 +177,19 @@ export class VueStateModel<
       }
     }
     this._emitter.on(
-      VueStateModelEvents.removeStateModel,
+      StateModelEvents.removeStateModel,
       (obj: Maybe<StateModelChange<TModel>>) =>
         handleEvent({ obj, remove: true })
     )
     this._emitter.on(
-      VueStateModelEvents.addUpdateStateModel,
+      StateModelEvents.addUpdateStateModel,
       (obj: Maybe<StateModelChange<TModel>>) => handleEvent({ obj })
     )
   }
   protected _updateListState<TResult>(
     result: FetchResult<TResult> | ApolloQueryResult<TResult>
   ) {
-    const { isNotValid, data } = this._validateResult(result)
+    const { isNotValid, data } = validateStateModelResult(result)
     if (isNotValid || data == null) return
     for (const findModels of Object.values(data)) {
       if (findModels == null) continue
@@ -222,7 +204,7 @@ export class VueStateModel<
   /// =================== PUBLIC OPERATIONS ========================
 
   add: OperationFunction<TCreateInput, TCreateResult> = async (input, gql) => {
-    const result = await this._cactusModel.add(input, gql)
+    const result = await this._cactusModel.add(input, gql, false)
     this._updateState({ result, notifyListeners: true })
     return result
   }
@@ -230,7 +212,7 @@ export class VueStateModel<
     input,
     gql
   ) => {
-    const result = await this._cactusModel.update(input, gql)
+    const result = await this._cactusModel.update(input, gql, false)
     this._updateState({ result, notifyListeners: true })
     return result
   }
@@ -238,7 +220,7 @@ export class VueStateModel<
     input,
     gql
   ) => {
-    const result = await this._cactusModel.remove(input, gql)
+    const result = await this._cactusModel.remove(input, gql, false)
     this._updateState({ result, remove: true, notifyListeners: true })
     return result
   }
@@ -293,7 +275,7 @@ export class VueStateModel<
       const subscription = subscriptionFn({
         next: (fetchResult) => {
           console.log('get result from subscription', { fetchResult })
-          const { data, isNotValid } = this._validateResult(fetchResult)
+          const { data, isNotValid } = validateStateModelResult(fetchResult)
           if (isNotValid || data == null) return
           this._updateOnSubscribe({
             data,

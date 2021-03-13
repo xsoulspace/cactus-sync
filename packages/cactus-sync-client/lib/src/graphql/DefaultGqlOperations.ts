@@ -90,21 +90,21 @@ export const getDefaultGqlOperations = <TModel = unknown>({
         }
       }`,
     subscribeNew: `
-      subscription new${modelName}($filter: ${modelName}Filter){
+      subscription new${modelName}($filter: ${modelName}SubscriptionFilter){
         new${modelName}(filter: $filter){
           ${returnFields}
         }
       }
     `,
     subscribeUpdated: `
-      subscription updated${modelName}($filter: ${modelName}Filter){
+      subscription updated${modelName}($filter: ${modelName}SubscriptionFilter){
         updated${modelName}(filter: $filter){
           ${returnFields}
         }
       }
     `,
     subscribeDeleted: `
-      subscription deleted${modelName}($filter: ${modelName}Filter){
+      subscription deleted${modelName}($filter: ${modelName}SubscriptionFilter){
         deleted${modelName}(filter: $filter){
           ${returnFields}
         }

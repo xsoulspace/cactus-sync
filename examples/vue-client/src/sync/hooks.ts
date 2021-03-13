@@ -48,7 +48,7 @@ export const todoModel = CactusSync.attachModel(
     QueryGetTodoArgs,
     { getTodo: Maybe<Todo> },
     QueryFindTodosArgs,
-    TodoResultList
+    { findTodos: TodoResultList }
   >({ graphqlModelType: schema.getType('Todo') as Maybe<GraphQLObjectType> })
 )
 export const useTodoState = () => new VueStateModel({ cactusModel: todoModel })
@@ -63,7 +63,7 @@ export type TodoState = VueStateModel<
   QueryGetTodoArgs,
   { getTodo: Maybe<Todo> },
   QueryFindTodosArgs,
-  TodoResultList
+  { findTodos: TodoResultList }
 >
 export const userModel = CactusSync.attachModel(
   CactusModel.init<
@@ -77,7 +77,7 @@ export const userModel = CactusSync.attachModel(
     QueryGetUserArgs,
     { getUser: Maybe<User> },
     QueryFindUsersArgs,
-    UserResultList
+    { findUsers: UserResultList }
   >({ graphqlModelType: schema.getType('User') as Maybe<GraphQLObjectType> })
 )
 export const useUserState = () => new VueStateModel({ cactusModel: userModel })
@@ -92,7 +92,7 @@ export type UserState = VueStateModel<
   QueryGetUserArgs,
   { getUser: Maybe<User> },
   QueryFindUsersArgs,
-  UserResultList
+  { findUsers: UserResultList }
 >
 export const cactusSyncTimestampModel = CactusSync.attachModel(
   CactusModel.init<
@@ -106,7 +106,7 @@ export const cactusSyncTimestampModel = CactusSync.attachModel(
     QueryGetCactusSyncTimestampArgs,
     { getCactusSyncTimestamp: Maybe<CactusSyncTimestamp> },
     QueryFindCactusSyncTimestampsArgs,
-    CactusSyncTimestampResultList
+    { findCactusSyncTimestamps: CactusSyncTimestampResultList }
   >({
     graphqlModelType: schema.getType(
       'CactusSyncTimestamp'
@@ -126,7 +126,7 @@ export type CactusSyncTimestampState = VueStateModel<
   QueryGetCactusSyncTimestampArgs,
   { getCactusSyncTimestamp: Maybe<CactusSyncTimestamp> },
   QueryFindCactusSyncTimestampsArgs,
-  CactusSyncTimestampResultList
+  { findCactusSyncTimestamps: CactusSyncTimestampResultList }
 >
 
 console.log('Cactus Sync hooks initialized')

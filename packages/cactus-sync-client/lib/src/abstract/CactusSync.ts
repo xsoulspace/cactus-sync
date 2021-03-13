@@ -157,10 +157,9 @@ export class CactusSync<TCacheShape = any> extends Dexie {
     modelName,
     queries,
   }: ModelReplicationI): Promise<boolean> {
-    console.log({ modelName, queries })
     const isReplicating = this.isModelReplicating({ modelName })
-    if (isReplicating) {
-      this.graphqlRunner?.subscribe({ modelName, queries })
+    if (!isReplicating) {
+      this.graphqlRunner.subscribe({ modelName, queries })
       this.replicatingModels.add(modelName)
     }
     return this.isModelReplicating({ modelName })
@@ -170,7 +169,7 @@ export class CactusSync<TCacheShape = any> extends Dexie {
   }: ModelReplicationI): Promise<boolean> {
     const isReplicating = this.isModelReplicating({ modelName })
     if (isReplicating) {
-      this.graphqlRunner?.unsubscribe({ modelName })
+      this.graphqlRunner.unsubscribe({ modelName })
       this.replicatingModels.delete(modelName)
     }
     return this.isModelReplicating({ modelName })

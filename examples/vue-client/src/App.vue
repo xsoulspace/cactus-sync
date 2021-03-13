@@ -1,12 +1,13 @@
 <template>
   <img alt="Vue logo" src="./assets/logo.png" />
   <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
-  <button @click="addTodo">Add</button>
+  <button @click="addTodo">Add to original state</button>
+  <button @click="addTodoModel">Add via standalone model</button>
   <div>
     <span>List Original</span>
     <div v-for="todo in todoList" :key="todo.id">
       <div>
-        <p>todo.title</p>
+        <p>{{ todo.title }}</p>
         <p><button @click="removeTodo(todo)">x</button></p>
       </div>
     </div>
@@ -14,7 +15,8 @@
   <div>
     <span>List Duplicates</span>
     <div v-for="todo in todoDuplicateList" :key="todo.id">
-      <div>todo.title</div>
+      <div>{{ todo.title }}</div>
+      <p><button @click="removeTodo(todo)">x</button></p>
     </div>
   </div>
 </template>
@@ -37,36 +39,27 @@
       onMounted(async () => {
         const isReplicating = await todoModel.startReplication()
         console.log({ isReplicating })
-        const todos: CreateTodoInput[] = [
-          {
-            _version: 1,
-            _lastUpdatedAt: Date.now().toString(),
-            title: 'Hello World!',
-          },
-          {
-            _version: 1,
-            _lastUpdatedAt: Date.now().toString(),
-            title: 'Hello Mars!',
-          },
-        ]
-        for (const todo of todos) {
-          await todoModel.add({
-            input: todo,
-          })
-        }
+
         todoState.find()
       })
-      const addTodo = async () => {
+      const addTodo = async (arg?: { standalone?: boolean }) => {
         const todo: CreateTodoInput = {
           _version: 1,
           _lastUpdatedAt: Date.now().toString(),
-          title: `New todo ${counter}`,
+          title: `New todo ${counter.value}`,
         }
         counter.value++
-        await todoState.add({
-          input: todo,
-        })
+        if (arg?.standalone) {
+          await todoModel.add({
+            input: todo,
+          })
+        } else {
+          await todoState.add({
+            input: todo,
+          })
+        }
       }
+      const addTodoModel = () => addTodo({ standalone: true })
       const removeTodo = async (todo: Todo) => {
         await todoState.remove({
           input: {
@@ -74,8 +67,10 @@
           },
         })
       }
+
       return {
         addTodo,
+        addTodoModel,
         removeTodo,
         todoList: todoState.list,
         todoDuplicateList: todoDubplicateState.list,
