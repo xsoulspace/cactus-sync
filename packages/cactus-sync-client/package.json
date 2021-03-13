@@ -52,7 +52,8 @@
   "peerDependencies": {
     "@apollo/client": "^3.3.11",
     "graphql": "^15.5.0",
-    "vue": "^3.0.6"
+    "vue": "^3.0.6",
+    "graphql-ws": "^4.2.1"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "1.21.2",
