@@ -1,6 +1,7 @@
-import { ApolloQueryResult, FetchResult, Observable } from '@apollo/client/core'
+import { ApolloQueryResult, FetchResult } from '@apollo/client/core'
 import { computed, reactive } from 'vue'
 import { SubscribeGqlOperationType } from '../graphql'
+import { ApolloRunnerEvents } from './ApolloRunner'
 import { Maybe } from './BasicTypes'
 import {
   CactusModel,
@@ -78,7 +79,7 @@ export class VueStateModel<
     >
   }) {
     this._cactusModel = cactusModel
-    this._subscribeToSubscribes()
+    this._initSubscriptionListener()
   }
   protected _validateResult<TResult>(
     result: FetchResult<TResult> | ApolloQueryResult<TResult>
@@ -171,32 +172,72 @@ export class VueStateModel<
   get list() {
     return this._reactiveState
   }
-  protected _subscribeToSubscribes() {
-    Observable.from(this._cactusModel.graphqlSubscriptions).subscribe({
-      next: (subscription) => {
-        if (subscription == null) {
-          // TODO: how to remove subscription?
-          return
+
+  //  ===================== SUBSCRIPTIONS SECTION ========================
+
+  protected _subscriptions: ZenObservable.Subscription[] = []
+  /**
+   * This function listen when subscription begins and ends
+   * for model. Should be called in constructor
+   */
+  protected _initSubscriptionListener() {
+    this._cactusModel.db.graphqlRunner?.subscriptionsEmitter.on(
+      ApolloRunnerEvents.subscribeModelName,
+      (maybeModelName) => {
+        if (maybeModelName == this._cactusModel.modelName) {
+          this._subscribe()
         }
-        subscription({
-          next: (fetchResult) => {
-            const { data, isNotValid } = this._validateResult(fetchResult)
-            if (isNotValid || data == null) return
-            this._updateOnSubscribe({
-              data,
-            })
-          },
-        })
-      },
-    })
+      }
+    )
+    this._cactusModel.db.graphqlRunner?.subscriptionsEmitter.on(
+      ApolloRunnerEvents.unsubscirbeModelName,
+      (maybeModelName) => {
+        if (maybeModelName == this._cactusModel.modelName) {
+          this._unsubscribe()
+        }
+      }
+    )
+  }
+
+  protected _subscribe() {
+    const subscriptionsFns = this._cactusModel.graphqlSubscriptions
+    for (const subscriptionFn of subscriptionsFns) {
+      if (subscriptionFn == null) continue
+      const subscription = subscriptionFn({
+        next: (fetchResult) => {
+          console.log('get result from subscription', { fetchResult })
+          const { data, isNotValid } = this._validateResult(fetchResult)
+          if (isNotValid || data == null) return
+          this._updateOnSubscribe({
+            data,
+          })
+        },
+      })
+
+      this._subscriptions.push(subscription)
+    }
+    console.log('subscribed', { subs: this._subscriptions })
+  }
+  protected _unsubscribe() {
+    for (const subscription of this._subscriptions) {
+      subscription.unsubscribe()
+    }
+    this._subscriptions.length = 0
+    console.log('unsubscribed', { subs: this._subscriptions })
   }
   protected _updateOnSubscribe({
     data,
   }: {
     data: TCreateResult | TUpdateResult | TDeleteResult
   }) {
+    console.log('Vue state model - _updateOnSubscribe', { data })
+
     for (const [operationName, maybeModel] of Object.entries(data)) {
       const maybeOperationType = this._getSubscribeOperationType(operationName)
+      console.log('Vue state model - _updateOnSubscribe.maybeOperationType', {
+        maybeOperationType,
+        maybeModel,
+      })
       if (maybeOperationType && maybeModel) {
         switch (maybeOperationType) {
           case SubscribeGqlOperationType.subscribeNew:

@@ -162,6 +162,7 @@ export class CactusSync<TCacheShape = any> extends Dexie {
     modelName,
     queries,
   }: ModelReplicationI): Promise<boolean> {
+    console.log({ modelName, queries })
     const isReplicating = this.isModelReplicating({ modelName })
     if (isReplicating) {
       this.graphqlRunner?.subscribe({ modelName, queries })

@@ -8,10 +8,17 @@ import {
 } from '@apollo/client/core'
 import Dexie from 'dexie'
 import { GraphQLSchema, parse } from 'graphql'
+import mitt from 'mitt'
 import { DefaultGqlOperationType } from '../graphql'
 import { Maybe } from './BasicTypes'
 import { CactusModel } from './CactusModel'
 import { ModelNameReplicationI } from './CactusSync'
+
+export enum ApolloRunnerEvents {
+  subscribeModelName = 'subscribeModelName',
+  unsubscirbeModelName = 'unsubscirbeModelName',
+}
+
 export type ApolloRunnerExecute<TVariables extends OperationVariables> = {
   query: string
   variableValues?: TVariables
@@ -93,6 +100,8 @@ export class ApolloRunner<TCacheShape> {
     CactusModel['modelName'],
     ApolloSubscription[]
   > = new Map()
+  subscriptionsEmitter = mitt()
+
   getModelSubscriptions({ modelName }: ModelNameReplicationI) {
     return this.modelSubscriptions.get(modelName) ?? []
   }
@@ -106,21 +115,38 @@ export class ApolloRunner<TCacheShape> {
     this.modelSubscriptions.set(modelName, subscriptions)
   }
   subscribe({ queries, modelName }: ApolloRunnerSubscribes) {
-    const subscriptions = this.modelSubscriptions.get(modelName) ?? []
-    if (subscriptions.length > 0) {
-      // unsubscribe first
-      this.unsubscribe({ modelName })
-      // cleanup
-      subscriptions.length = 0
+    try {
+      const subscriptions = this.modelSubscriptions.get(modelName) ?? []
+
+      if (subscriptions.length > 0) {
+        // unsubscribe first
+        this.unsubscribe({ modelName })
+        // cleanup
+        subscriptions.length = 0
+      }
+      for (const query of queries) {
+        const subscripton = this.apollo.subscribe({ query: parse(query) })
+        subscriptions.push(subscripton.subscribe)
+        console.log('Apollo Runner - subscribe', { modelName, subscriptions })
+      }
+      /** Notifing all states about new subscriptions */
+      this.subscriptionsEmitter.emit(
+        ApolloRunnerEvents.subscribeModelName,
+        modelName
+      )
+      this.setModelSubscriptions({ subscriptions, modelName })
+      console.log({ emit: `subscribed ${modelName}`, subscriptions })
+    } catch (error) {
+      console.error(error)
     }
-    for (const query of queries) {
-      const subscripton = this.apollo.subscribe({ query: parse(query) })
-      subscriptions.push(subscripton.subscribe)
-    }
-    this.setModelSubscriptions({ subscriptions, modelName })
-    return subscriptions
   }
   unsubscribe({ modelName }: ModelNameReplicationI) {
+    /** Notifing all states about to cancel subscriptions */
+    console.log({ emit: `unsubscribed ${modelName}` })
+    this.subscriptionsEmitter.emit(
+      ApolloRunnerEvents.unsubscirbeModelName,
+      modelName
+    )
     this.setModelSubscriptions({ modelName, subscriptions: [] })
   }
 }

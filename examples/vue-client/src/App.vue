@@ -35,7 +35,8 @@
       const todoDubplicateState = useTodoState()
       const counter = ref(1)
       onMounted(async () => {
-        await todoModel.startReplication()
+        const isReplicating = await todoModel.startReplication()
+        console.log({ isReplicating })
         const todos: CreateTodoInput[] = [
           {
             _version: 1,

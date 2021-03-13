@@ -324,10 +324,12 @@ export class CactusModel<
   get graphqlSubscriptions(): Maybe<
     ApolloSubscription<TCreateResult | TUpdateResult | TDeleteResult>
   >[] {
-    return (
+    const subscriptions =
       this.db.graphqlRunner?.getModelSubscriptions({
         modelName: this.modelName,
       }) ?? []
-    )
+    console.log('Cactus model - graphqlSubscriptions', { subscriptions })
+
+    return subscriptions
   }
 }

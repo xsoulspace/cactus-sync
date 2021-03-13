@@ -44,6 +44,8 @@
     "graphql-config": "^3.2.0",
     "graphql-metadata": "^0.7.6",
     "graphql-tag": "^2.11.0",
+    "graphql-ws": "^4.2.1",
+    "mitt": "^2.1.0",
     "vue": "^3.0.6",
     "zen-observable": "^0.8.15"
   },
@@ -53,9 +55,9 @@
     "vue": "^3.0.6"
   },
   "devDependencies": {
-    "@types/zen-observable": "^0.8.2",
     "@graphql-codegen/cli": "1.21.2",
     "@types/jest": "^26.0.20",
+    "@types/zen-observable": "^0.8.2",
     "@typescript-eslint/eslint-plugin": "^4.17.0",
     "@typescript-eslint/parser": "^4.17.0",
     "eslint": "^7.21.0",
