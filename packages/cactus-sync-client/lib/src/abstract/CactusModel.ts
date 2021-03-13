@@ -252,7 +252,7 @@ export class CactusModel<
     if (!notifyListeners) return result
     const validateAndEmit = ({ remove }: { remove?: Maybe<boolean> }) => {
       const { isNotValid, data } = validateStateModelResult(result)
-      console.log({ isNotValid, data })
+      // console.log({ isNotValid, data })
       if (isNotValid || data == null) return
       for (const maybeModel of Object.values(data)) {
         notifyStateModelListeners({
@@ -399,7 +399,7 @@ export class CactusModel<
       this.db.graphqlRunner?.getModelSubscriptions({
         modelName: this.modelName,
       }) ?? []
-    console.log('Cactus model - graphqlSubscriptions', { subscriptions })
+    // console.log('Cactus model - graphqlSubscriptions', { subscriptions })
 
     return subscriptions
   }

@@ -196,20 +196,20 @@ export class CactusSync<TCacheShape = any> extends Dexie {
     for (const change of changes) {
       switch (change.type) {
         case DatabaseChangeType.Create: // CREATED
-          console.log('An object was created: ' + JSON.stringify(change.obj))
+          // console.log('An object was created: ' + JSON.stringify(change.obj))
           useRunHooks({ change, hooks: this.createHooks })
           break
         case DatabaseChangeType.Update: // UPDATED
-          console.log(
-            'An object with key ' +
-              change.key +
-              ' was updated with modifications: ' +
-              JSON.stringify(change?.mods)
-          )
+          // console.log(
+          //   'An object with key ' +
+          //     change.key +
+          //     ' was updated with modifications: ' +
+          //     JSON.stringify(change?.mods)
+          // )
           useRunHooks({ change, hooks: this.updateHooks })
           break
         case DatabaseChangeType.Delete: // DELETED
-          console.log('An object was deleted: ' + JSON.stringify(change.oldObj))
+          // console.log('An object was deleted: ' + JSON.stringify(change.oldObj))
           useRunHooks({ change, hooks: this.deleteHooks })
           break
       }

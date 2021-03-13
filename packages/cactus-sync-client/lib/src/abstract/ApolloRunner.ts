@@ -137,7 +137,7 @@ export class ApolloRunner<TCacheShape> {
       for (const query of queries) {
         const subscripton = this.apollo.subscribe({ query: parse(query) })
         subscriptions.push(subscripton.subscribe)
-        console.log('Apollo Runner - subscribe', { modelName, subscriptions })
+        // console.log('Apollo Runner - subscribe', { modelName, subscriptions })
       }
       /** Notifing all states about new subscriptions */
       this.subscriptionsEmitter.emit(
@@ -145,14 +145,14 @@ export class ApolloRunner<TCacheShape> {
         modelName
       )
       this.setModelSubscriptions({ subscriptions, modelName })
-      console.log({ emit: `subscribed ${modelName}`, subscriptions })
+      // console.log({ emit: `subscribed ${modelName}`, subscriptions })
     } catch (error) {
       console.error(error)
     }
   }
   unsubscribe({ modelName }: ModelNameReplicationI) {
     /** Notifing all states about to cancel subscriptions */
-    console.log({ emit: `unsubscribed ${modelName}` })
+    // console.log({ emit: `unsubscribed ${modelName}` })
     this.subscriptionsEmitter.emit(
       ApolloRunnerEvents.unsubscirbeModelName,
       modelName

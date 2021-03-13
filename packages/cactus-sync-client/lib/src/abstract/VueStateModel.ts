@@ -274,7 +274,7 @@ export class VueStateModel<
       if (subscriptionFn == null) continue
       const subscription = subscriptionFn({
         next: (fetchResult) => {
-          console.log('get result from subscription', { fetchResult })
+          // console.log('get result from subscription', { fetchResult })
           const { data, isNotValid } = validateStateModelResult(fetchResult)
           if (isNotValid || data == null) return
           this._updateOnSubscribe({
@@ -285,28 +285,28 @@ export class VueStateModel<
 
       this._subscriptions.push(subscription)
     }
-    console.log('subscribed', { subs: this._subscriptions })
+    // console.log('subscribed', { subs: this._subscriptions })
   }
   protected _unsubscribe() {
     for (const subscription of this._subscriptions) {
       subscription.unsubscribe()
     }
     this._subscriptions.length = 0
-    console.log('unsubscribed', { subs: this._subscriptions })
+    // console.log('unsubscribed', { subs: this._subscriptions })
   }
   protected _updateOnSubscribe({
     data,
   }: {
     data: TCreateResult | TUpdateResult | TDeleteResult
   }) {
-    console.log('Vue state model - _updateOnSubscribe', { data })
+    // console.log('Vue state model - _updateOnSubscribe', { data })
 
     for (const [operationName, maybeModel] of Object.entries(data)) {
       const maybeOperationType = this._getSubscribeOperationType(operationName)
-      console.log('Vue state model - _updateOnSubscribe.maybeOperationType', {
-        maybeOperationType,
-        maybeModel,
-      })
+      // console.log('Vue state model - _updateOnSubscribe.maybeOperationType', {
+      //   maybeOperationType,
+      //   maybeModel,
+      // })
       if (maybeOperationType && maybeModel) {
         switch (maybeOperationType) {
           case SubscribeGqlOperationType.subscribeNew:
