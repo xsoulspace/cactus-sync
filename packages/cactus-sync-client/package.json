@@ -1,6 +1,6 @@
 {
   "name": "@xsoulspace/cactus-sync-client",
-  "version": "0.1.17",
+  "version": "0.2.0",
   "description": "Sharp and simple as cactus offline-first client library to sync with graphql server..",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -31,7 +31,8 @@
     "upgrade": "yarn yarn-upgrade-all",
     "generate": "graphql-codegen --config codegen.yml",
     "dev-genmodels": "tsc ./lib/src/templates/GenerateCactusModelPlugin.ts && yarn generate && rm -rf ./lib/src/templates/GenerateCactusModelPlugin.js",
-    "patch": "yarn version --patch && git push && git push origin --tags"
+    "patch": "yarn version --patch && git push && git push origin --tags",
+    "minor": "yarn version --minor && git push && git push origin --tags"
   },
   "dependencies": {
     "@apollo/client": "^3.3.11",
@@ -52,8 +53,8 @@
   "peerDependencies": {
     "@apollo/client": "^3.3.11",
     "graphql": "^15.5.0",
-    "vue": "^3.0.6",
-    "graphql-ws": "^4.2.1"
+    "graphql-ws": "^4.2.1",
+    "vue": "^3.0.6"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "1.21.2",
