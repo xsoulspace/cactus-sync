@@ -18,7 +18,11 @@ import {
   getDefaultGqlOperations,
   SubscribeGqlOperationType,
 } from '../graphql/DefaultGqlOperations'
-import { ApolloRunner, ApolloRunnerExecute } from './ApolloRunner'
+import {
+  ApolloRunner,
+  ApolloRunnerExecute,
+  ApolloSubscription,
+} from './ApolloRunner'
 import { Maybe } from './BasicTypes'
 import { CactusSync } from './CactusSync'
 
@@ -316,5 +320,14 @@ export class CactusModel<
   }
   get isReplicating(): boolean {
     return this.db.isModelReplicating({ modelName: this.modelName })
+  }
+  get graphqlSubscriptions(): Maybe<
+    ApolloSubscription<TCreateResult | TUpdateResult | TDeleteResult>
+  >[] {
+    return (
+      this.db.graphqlRunner?.getModelSubscriptions({
+        modelName: this.modelName,
+      }) ?? []
+    )
   }
 }

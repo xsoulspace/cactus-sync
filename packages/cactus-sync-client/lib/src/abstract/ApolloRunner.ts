@@ -1,6 +1,9 @@
 import {
   ApolloClient,
   ApolloClientOptions,
+  FetchResult,
+  ObservableSubscription,
+  Observer,
   OperationVariables,
 } from '@apollo/client/core'
 import Dexie from 'dexie'
@@ -29,6 +32,22 @@ interface ApolloRunnerInitI<TCacheShape> {
   options: ApolloClientOptions<TCacheShape>
   schema: GraphQLSchema
 }
+
+export type ApolloSubscription<TModel = any> = {
+  (
+    observer: Observer<
+      FetchResult<TModel, Record<string, TModel>, Record<string, any>>
+    >
+  ): ObservableSubscription
+  (
+    onNext: (
+      value: FetchResult<TModel, Record<string, TModel>, Record<string, any>>
+    ) => void,
+    onError?: ((error: any) => void) | undefined,
+    onComplete?: (() => void) | undefined
+  ): ObservableSubscription
+}
+
 /**
  * To initialize `ApolloRunner` use
  * `ApolloRunner.init(...)`
@@ -70,7 +89,10 @@ export class ApolloRunner<TCacheShape> {
         })
     }
   }
-  modelSubscriptions: Map<CactusModel['modelName'], unknown[]> = new Map()
+  modelSubscriptions: Map<
+    CactusModel['modelName'],
+    ApolloSubscription[]
+  > = new Map()
   getModelSubscriptions({ modelName }: ModelNameReplicationI) {
     return this.modelSubscriptions.get(modelName) ?? []
   }
@@ -79,14 +101,12 @@ export class ApolloRunner<TCacheShape> {
     subscriptions,
   }: {
     modelName: CactusModel['modelName']
-    subscriptions: unknown[]
+    subscriptions: ApolloSubscription[]
   }) {
     this.modelSubscriptions.set(modelName, subscriptions)
   }
-  // TODO:
   subscribe({ queries, modelName }: ApolloRunnerSubscribes) {
-    const subscriptions: unknown[] =
-      this.modelSubscriptions.get(modelName) ?? []
+    const subscriptions = this.modelSubscriptions.get(modelName) ?? []
     if (subscriptions.length > 0) {
       // unsubscribe first
       this.unsubscribe({ modelName })
@@ -95,11 +115,11 @@ export class ApolloRunner<TCacheShape> {
     }
     for (const query of queries) {
       const subscripton = this.apollo.subscribe({ query: parse(query) })
-      subscriptions.push(subscripton)
+      subscriptions.push(subscripton.subscribe)
     }
     this.setModelSubscriptions({ subscriptions, modelName })
+    return subscriptions
   }
-  // TODO:
   unsubscribe({ modelName }: ModelNameReplicationI) {
     this.setModelSubscriptions({ modelName, subscriptions: [] })
   }

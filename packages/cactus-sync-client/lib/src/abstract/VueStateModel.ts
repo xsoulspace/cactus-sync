@@ -1,5 +1,6 @@
-import { ApolloQueryResult, FetchResult } from '@apollo/client/core'
+import { ApolloQueryResult, FetchResult, Observable } from '@apollo/client/core'
 import { computed, reactive } from 'vue'
+import { SubscribeGqlOperationType } from '../graphql'
 import { Maybe } from './BasicTypes'
 import {
   CactusModel,
@@ -77,6 +78,7 @@ export class VueStateModel<
     >
   }) {
     this._cactusModel = cactusModel
+    this._subscribeToSubscribes()
   }
   protected _validateResult<TResult>(
     result: FetchResult<TResult> | ApolloQueryResult<TResult>
@@ -95,17 +97,26 @@ export class VueStateModel<
   }) {
     const { isNotValid, data } = this._validateResult(result)
     if (isNotValid || data == null) return
-    for (const model of Object.values(data)) {
-      if (model == null) continue
-      const id = model['id']
-      const index = this.stateIndexes.get(id)
-      if (index != null) {
-        remove
-          ? this._reactiveState.splice(index, 1)
-          : this._reactiveState.splice(index, 1, model)
-      } else {
-        this._reactiveState.push(model)
-      }
+    for (const maybeModel of Object.values(data)) {
+      this._updateStateModel({ maybeModel, remove })
+    }
+  }
+  protected _updateStateModel({
+    remove,
+    maybeModel,
+  }: {
+    maybeModel: Maybe<TModel>
+    remove?: Maybe<boolean>
+  }) {
+    if (maybeModel == null) return
+    const id = maybeModel['id']
+    const index = this.stateIndexes.get(id)
+    if (index != null) {
+      remove
+        ? this._reactiveState.splice(index, 1)
+        : this._reactiveState.splice(index, 1, maybeModel)
+    } else {
+      this._reactiveState.push(maybeModel)
     }
   }
 
@@ -159,5 +170,58 @@ export class VueStateModel<
   }
   get list() {
     return this._reactiveState
+  }
+  protected _subscribeToSubscribes() {
+    Observable.from(this._cactusModel.graphqlSubscriptions).subscribe({
+      next: (subscription) => {
+        if (subscription == null) {
+          // TODO: how to remove subscription?
+          return
+        }
+        subscription({
+          next: (fetchResult) => {
+            const { data, isNotValid } = this._validateResult(fetchResult)
+            if (isNotValid || data == null) return
+            this._updateOnSubscribe({
+              data,
+            })
+          },
+        })
+      },
+    })
+  }
+  protected _updateOnSubscribe({
+    data,
+  }: {
+    data: TCreateResult | TUpdateResult | TDeleteResult
+  }) {
+    for (const [operationName, maybeModel] of Object.entries(data)) {
+      const maybeOperationType = this._getSubscribeOperationType(operationName)
+      if (maybeOperationType && maybeModel) {
+        switch (maybeOperationType) {
+          case SubscribeGqlOperationType.subscribeNew:
+          case SubscribeGqlOperationType.subscribeUpdated:
+            this._updateStateModel({ maybeModel })
+            break
+          case SubscribeGqlOperationType.subscribeDeleted:
+            this._updateStateModel({ maybeModel, remove: true })
+            break
+        }
+      }
+    }
+  }
+  protected _getSubscribeOperationType(
+    str: string
+  ): Maybe<SubscribeGqlOperationType> {
+    switch (true) {
+      case str.startsWith('new'):
+        return SubscribeGqlOperationType.subscribeNew
+      case str.startsWith('updated'):
+        return SubscribeGqlOperationType.subscribeUpdated
+      case str.startsWith('deleted'):
+        return SubscribeGqlOperationType.subscribeDeleted
+      default:
+        return null
+    }
   }
 }
