@@ -1,5 +1,6 @@
 import { DocumentNode, print } from 'graphql'
 import { Maybe } from '../abstract/BasicTypes'
+import { toPluralName } from '../utils'
 
 export enum DefaultGqlOperationType {
   create = 'create',
@@ -56,6 +57,7 @@ export const getDefaultGqlOperations = <TModel = unknown>({
   const returnFields = modelFragment
     ? gqlToFields(modelFragment)
     : modelFields?.join('\n')
+  const pluralModelName = toPluralName(modelName)
   const mutations: DefaultGqlOperations = {
     create: `
       mutation create${modelName}($input: Create${modelName}Input!) {
@@ -82,8 +84,8 @@ export const getDefaultGqlOperations = <TModel = unknown>({
         }
       }`,
     find: `
-      query find${modelName}($filter: ${modelName}Filter, $page: PageRequest, $orderBy: OrderByInput) {
-        find${modelName}s(filter: $filter, page: $page, orderBy: $orderBy) {
+      query find${pluralModelName}($filter: ${modelName}Filter, $page: PageRequest, $orderBy: OrderByInput) {
+        find${pluralModelName}(filter: $filter, page: $page, orderBy: $orderBy) {
           items{
             ${returnFields}
           }
