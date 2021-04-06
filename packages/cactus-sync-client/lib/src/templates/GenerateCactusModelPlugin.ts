@@ -1,5 +1,5 @@
 import endent from 'endent'
-import { GraphQLSchema, isObjectType } from 'graphql-compose/lib/graphql'
+import { GraphQLSchema, isObjectType } from 'graphql'
 // NOTE: Do not change this function directly. First change it in utils/Naming, run tests
 // and only then apply here
 const toPluralName = (str: string) => {
@@ -23,6 +23,9 @@ interface PluginConfig {
   schemaTypesPath?: string
   useDefaultFragments?: boolean
   defaultFragmentsPath?: string
+  modelsGraphqlSchemaPath?: string
+  cactusSyncConfigPath?: string
+  cactusSyncConfigHookName?: string
 }
 
 const toCamelCase = (str: string) => {
@@ -39,10 +42,16 @@ module.exports = {
       schemaTypesPath,
       useDefaultFragments,
       defaultFragmentsPath,
+      modelsGraphqlSchemaPath,
+      cactusSyncConfigPath,
+      cactusSyncConfigHookName,
     } = config
     const importVueStateModel = withVueState ? ', VueStateModel' : ''
     const typesPath = schemaTypesPath ?? './generatedTypes'
     const fragmentsPath = defaultFragmentsPath ?? '../gql'
+    const graphqlSchemaPath = modelsGraphqlSchemaPath ?? './models.graphql?raw'
+    const configPath = cactusSyncConfigPath ?? './config'
+    const configHookName = cactusSyncConfigHookName ?? 'useCactusSyncInit'
     // ============ Filtering types only ====================
 
     const types = Object.values(schema.getTypeMap()).filter((el) =>
@@ -73,6 +82,7 @@ module.exports = {
 
       const queryFindArgs = `QueryFind${pluralName}Args`
       const queryFindResult = `${name}ResultList`
+      const queryFindResultI = `{ find${pluralName}: ${queryFindResult}}`
 
       const args = [
         mutationCreateArgs,
@@ -109,9 +119,7 @@ module.exports = {
           ${queryGetArgs},
           ${queryGetResult},
           ${queryFindArgs},
-          ${queryFindResult},
-          PageRequest, 
-          OrderByInput
+          ${queryFindResultI}
         >({ graphqlModelType: schema.getType('${name}') as Maybe<GraphQLObjectType> ${defaultFragment}})
       )
       `
@@ -130,9 +138,7 @@ module.exports = {
               ${queryGetArgs},
               ${queryGetResult},
               ${queryFindArgs},
-              ${queryFindResult},
-              PageRequest, 
-              OrderByInput
+              ${queryFindResultI}
             >
         `
       }
@@ -146,24 +152,20 @@ module.exports = {
     return endent`
     
       /* eslint-disable */
-      import { ${typesModels.join(
-        ' ,\n '
-      )}, PageRequest, OrderByInput} from '${typesPath}'
+      import { GraphQLObjectType, buildSchema } from 'graphql'
       ${fragmentsImportStr}
-      import path from 'path'
-      import { CactusSync, CactusModel ${importVueStateModel} } from '@xsoulspace/cactus-sync-client'
-      import { GraphQLFileLoader, loadSchemaSync, Maybe } from 'graphql-tools'
-      import { GraphQLObjectType } from 'graphql'
+      import { ${typesModels.join(' ,\n ')} } from '${typesPath}'
+      import { CactusSync, CactusModel ${importVueStateModel}, Maybe } from '@xsoulspace/cactus-sync-client'
+      import strSchema from '${graphqlSchemaPath}'
+      import {${configHookName}} from '${configPath}'
       
-      const schemaPath = path.resolve(
-        __dirname,
-        './schema.graphql'
-      )
-      const schema = loadSchemaSync(schemaPath, {
-        loaders: [new GraphQLFileLoader()],
-      })
+      ${configHookName}()
+
+      const schema = buildSchema(strSchema)
 
       ${modelsExportStr}
+      
+      console.log('Cactus Sync hooks initialized')
 
     `
   },

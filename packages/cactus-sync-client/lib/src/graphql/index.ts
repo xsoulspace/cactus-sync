@@ -1,1 +1,1 @@
-export * from './DefautlGqlOperations'
+export * from './DefaultGqlOperations'

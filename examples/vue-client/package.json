@@ -4,10 +4,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "generate": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
-    "vue": "^3.0.6"
+    "vue": "^3.0.6",
+    "@apollo/client": "^3.3.11",
+    "graphql": "^15.5.0",
+    "subscriptions-transport-ws": "^0.9.18"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.1.5",
