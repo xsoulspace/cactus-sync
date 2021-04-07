@@ -1,7 +1,5 @@
-name: cactus_sync_client
-description: Sharp and simple as cactus offline-first client library to sync with graphql server..
-repository: https://github.com/cactus-sync/dart_packages/cactus_sync_client
-homepage: https://xsoulspace.dev/cactus-sync
+name: cactus_sync_client_gen
+description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -17,27 +15,21 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.0.0+1
+version: 1.0.0+1
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  hive: ^2.0.2
-  hive_flutter: ^1.0.0
-  riverpod: ^0.14.0
-  ferry: ^0.10.1-0.1.nullsafety.0
-  ferry_hive_store: ^0.4.1-0.1.nullsafety.0
-  gql_http_link: ^0.4.0-nullsafety.1
-  intl: ^0.17.0
-  
-dev_dependencies:
-  hive_generator: ^1.0.1
-  build: ^2.0.0
-  build_runner: ^1.12.2
 
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
   flutter_test:
     sdk: flutter
 
@@ -50,7 +42,7 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
-  # uses-material-design: true
+  uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:
