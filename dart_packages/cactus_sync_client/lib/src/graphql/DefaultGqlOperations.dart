@@ -1,15 +1,15 @@
 class DefaultGqlOperationType {
-  static final create = 'create';
- static final  update = 'update';
-  static final  remove = 'remove';
- static final  get_ = 'get';
- static final  find = 'find';
+  static const create = 'create';
+ static const  update = 'update';
+  static const  remove = 'remove';
+ static const  get_ = 'get';
+ static const  find = 'find';
 }
 
 class SubscribeGqlOperationType {
-static final   subscribeNew = 'subscribeNew';
- static final  subscribeUpdated = 'subscribeUpdated';
- static final  subscribeDeleted = 'subscribeDeleted';
+static const   subscribeNew = 'subscribeNew';
+ static const  subscribeUpdated = 'subscribeUpdated';
+ static const  subscribeDeleted = 'subscribeDeleted';
 }
 type AllGqlOperationsType =
   | SubscribeGqlOperationType
