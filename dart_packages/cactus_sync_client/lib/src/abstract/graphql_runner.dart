@@ -1,5 +1,7 @@
 import 'package:cactus_sync_client/src/graphql/DefaultGqlOperations.dart';
+import 'package:cactus_sync_client/src/graphql/graphql_result.dart';
 import 'package:flutter/material.dart';
+import 'package:gql/ast.dart';
 import 'package:gql_http_link/gql_http_link.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -35,10 +37,11 @@ class GraphqlRunner {
   GraphQLClient client;
   ValueNotifier<GraphQLClient> clientNotifier;
   FetchPolicy defaultFetchPolicy;
-  GraphqlRunner(
-      {required this.client,
-      required this.clientNotifier,
-      this.defaultFetchPolicy = FetchPolicy.networkOnly});
+  GraphqlRunner({
+    required this.client,
+    required this.clientNotifier,
+    this.defaultFetchPolicy = FetchPolicy.networkOnly,
+  });
 
   static Future<GraphqlRunner> init(
       {required GraphqlRunnerConfig config}) async {
@@ -59,20 +62,31 @@ class GraphqlRunner {
     return runner;
   }
 
-  execute<TType, TVariables, TQueryResult>(
-      {query, variableValues, operationType}) async {
+  /// Method to call mutations and queries
+  execute<TVariables, TQueryResult>(
+      {required DocumentNode query,
+      required Map<String, dynamic> variableValues,
+      required DefaultGqlOperationType operationType,
+      required FromJsonCallback fromJsonCallback}) async {
     switch (operationType) {
       case DefaultGqlOperationType.create:
       case DefaultGqlOperationType.update:
       case DefaultGqlOperationType.remove:
-        return await this.client.mutate(
+        var queryResult = await this.client.mutate(
             MutationOptions(document: query, variables: variableValues));
-      case DefaultGqlOperationType.get_:
+        return GraphqlResult.fromQueryResult<TQueryResult>(
+            queryResult: queryResult, fromJsonCallback: fromJsonCallback);
+      case DefaultGqlOperationType.get:
       case DefaultGqlOperationType.find:
-        return await this.client.query(QueryOptions(
+        var queryResult = await this.client.query(QueryOptions(
             document: query,
             variables: variableValues,
             fetchPolicy: defaultFetchPolicy));
+        return GraphqlResult.fromQueryResult<TQueryResult>(
+            queryResult: queryResult, fromJsonCallback: fromJsonCallback);
+      case DefaultGqlOperationType.fromString:
+        throw Exception('DefaultGqlOperationType is fromString but '
+            'has to be different');
     }
   }
 }

@@ -1,16 +1,89 @@
-class DefaultGqlOperationType {
-  static const create = 'create';
- static const  update = 'update';
-  static const  remove = 'remove';
- static const  get_ = 'get';
- static const  find = 'find';
+import 'package:flutter/foundation.dart';
+
+
+/// _from is used to get valid enum property from string
+/// example:
+///
+/// ```dart
+/// [fromString]['create'];
+/// ```
+///
+/// to get string value use toStringValue
+/// example:
+///
+/// ```dart
+/// [create].toStringValue() // output: 'create'
+/// ```
+enum DefaultGqlOperationType { fromString, create, update, remove, get, find }
+
+extension DefaultGqlOperationTypeDescribe on DefaultGqlOperationType {
+  /// Overload the [] getter to get the name 
+  /// based on https://stackoverflow.com/a/60209631
+  operator [](String key) => (name) {
+        switch (name) {
+          case 'create':
+            return DefaultGqlOperationType.create;
+          case 'update':
+            return DefaultGqlOperationType.update;
+          case 'remove':
+            return DefaultGqlOperationType.remove;
+          case 'get':
+            return DefaultGqlOperationType.get;
+          case 'find':
+            return DefaultGqlOperationType.find;
+          default:
+            throw RangeError('enum DefaultGqlOperationTypeDescribe '
+            'contains no value $name');
+        }
+      }(key);
+
+  /// returns string for enum value only
+  String toStringValue() => describeEnum(this);
 }
 
-class SubscribeGqlOperationType {
-static const   subscribeNew = 'subscribeNew';
- static const  subscribeUpdated = 'subscribeUpdated';
- static const  subscribeDeleted = 'subscribeDeleted';
+
+/// _from is used to get valid enum property from string
+/// example:
+///
+/// ```dart
+/// [fromString]['subscribeNew'];
+/// ```
+///
+/// to get string value use toStringValue
+/// example:
+///
+/// ```dart
+/// [subscribeNew].toStringValue() // output: 'subscribeNew'
+/// ```
+enum SubscribeGqlOperationType {
+  fromString,
+   subscribeNew ,
+   subscribeUpdated ,
+   subscribeDeleted 
 }
+
+extension SubscribeGqlOperationTypeDescribe on SubscribeGqlOperationType {
+  /// Overload the [] getter to get the name 
+  /// based on https://stackoverflow.com/a/60209631
+  operator [](String key) => (name) {
+        switch (name) {
+          case 'create':
+            return SubscribeGqlOperationType.subscribeNew;
+          case 'update':
+            return SubscribeGqlOperationType.subscribeUpdated;
+          case 'remove':
+            return SubscribeGqlOperationType.subscribeDeleted;
+          default:
+            throw RangeError('enum SubscribeGqlOperationTypeDescribe '
+            'contains no value $name');
+        }
+      }(key);
+
+  /// returns string for enum value only
+  String toStringValue() => describeEnum(this);
+}
+
+
 type AllGqlOperationsType =
   | SubscribeGqlOperationType
   | DefaultGqlOperationType
