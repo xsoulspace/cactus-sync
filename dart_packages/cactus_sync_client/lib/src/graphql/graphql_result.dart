@@ -7,6 +7,7 @@ typedef FromJsonCallback(Map<String, dynamic>? json);
 ///to use typed data provide fromJson callback and generic TResult
 class GraphqlResult<TResult> extends QueryResult {
   final FromJsonCallback fromJsonCallback;
+
   GraphqlResult(
       {Map<String, dynamic>? data,
       required QueryResultSource? source,
@@ -17,6 +18,7 @@ class GraphqlResult<TResult> extends QueryResult {
             context: const Context(),
             data: data,
             exception: exception);
+
   static fromQueryResult<TResult>(
       {required QueryResult queryResult,
       required FromJsonCallback fromJsonCallback}) {

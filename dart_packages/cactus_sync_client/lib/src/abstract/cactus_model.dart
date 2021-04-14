@@ -1,4 +1,4 @@
-import 'package:cactus_sync_client/src/graphql/DefaultGqlOperations.dart';
+import 'package:cactus_sync_client/src/graphql/gql_builder.dart';
 import 'package:cactus_sync_client/src/graphql/graphql_result.dart';
 import 'package:gql/ast.dart';
 
