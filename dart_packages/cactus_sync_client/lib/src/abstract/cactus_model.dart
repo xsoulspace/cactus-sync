@@ -12,15 +12,64 @@ class OperationFunctionGql {
 typedef OperationFunction<TInput, TResult> = GraphqlResult<TResult> Function(
     {required TInput input, OperationFunctionGql? gql, bool? notifyListeners});
 
-abstract class _AbstractModel {
-  late final OperationFunction create;
-  late final OperationFunction update;
-  late final OperationFunction remove;
-  late final OperationFunction get;
-  late final OperationFunction find;
+/// Abstract Model class to insure consistency in CUDGF
+abstract class _AbstractModel<
+    TCreateInput,
+    TCreateResult,
+    TUpdateResult,
+    TUpdateInput,
+    TRemoveResult,
+    TRemoveInput,
+    TGetResult,
+    TGetInput,
+    TFindResult,
+    TFindInput> {
+  GraphqlResult<TCreateResult> create(
+      {required TCreateInput input,
+      OperationFunctionGql? gql,
+      bool? notifyListeners});
+  GraphqlResult<TUpdateResult> update(
+      {required TUpdateInput input,
+      OperationFunctionGql? gql,
+      bool? notifyListeners});
+  GraphqlResult<TRemoveResult> remove(
+      {required TRemoveInput input,
+      OperationFunctionGql? gql,
+      bool? notifyListeners});
+  GraphqlResult<TGetResult> get(
+      {required TGetInput input,
+      OperationFunctionGql? gql,
+      bool? notifyListeners});
+  GraphqlResult<TFindResult> find(
+      {required TFindInput input,
+      OperationFunctionGql? gql,
+      bool? notifyListeners});
 }
 
-class CactusModel<TType, TInput> implements _AbstractModel {
+class CactusModel<
+        TType,
+        TCreateInput,
+        TCreateResult,
+        TUpdateResult,
+        TUpdateInput,
+        TRemoveResult,
+        TRemoveInput,
+        TGetResult,
+        TGetInput,
+        TFindResult,
+        TFindInput>
+    implements
+        _AbstractModel<
+            TCreateInput,
+            TCreateResult,
+            TUpdateResult,
+            TUpdateInput,
+            TRemoveResult,
+            TRemoveInput,
+            TGetResult,
+            TGetInput,
+            TFindResult,
+            TFindInput> {
   FromJsonCallback createFromJsonCallback;
   FromJsonCallback updateFromJsonCallback;
   FromJsonCallback removeFromJsonCallback;
@@ -55,23 +104,42 @@ class CactusModel<TType, TInput> implements _AbstractModel {
   }
 
   @override
-  late final OperationFunction create = (
-      {required TInput input,
-      OperationFunctionGql? gql,
-      bool? notifyListeners}) {
+  create({required input, OperationFunctionGql? gql, bool? notifyListeners}) {
     var fromJsonCallback = _getFromJsonCallbackByOperationType(
         operationType: DefaultGqlOperationType.create);
-  };
+    // TODO: implement
+    return GraphqlResult(source: source, fromJsonCallback: fromJsonCallback);
+  }
 
   @override
-  late final OperationFunction find;
+  update({required input, OperationFunctionGql? gql, bool? notifyListeners}) {
+    var fromJsonCallback = _getFromJsonCallbackByOperationType(
+        operationType: DefaultGqlOperationType.update);
+    // TODO: implement
+    return GraphqlResult(source: source, fromJsonCallback: fromJsonCallback);
+  }
 
   @override
-  late final OperationFunction get;
+  remove({required input, OperationFunctionGql? gql, bool? notifyListeners}) {
+    var fromJsonCallback = _getFromJsonCallbackByOperationType(
+        operationType: DefaultGqlOperationType.remove);
+    // TODO: implement
+    return GraphqlResult(source: source, fromJsonCallback: fromJsonCallback);
+  }
 
   @override
-  late final OperationFunction remove;
+  find({required input, OperationFunctionGql? gql, bool? notifyListeners}) {
+    var fromJsonCallback = _getFromJsonCallbackByOperationType(
+        operationType: DefaultGqlOperationType.find);
+    // TODO: implement
+    return GraphqlResult(source: source, fromJsonCallback: fromJsonCallback);
+  }
 
   @override
-  late final OperationFunction update;
+  get({required input, OperationFunctionGql? gql, bool? notifyListeners}) {
+    var fromJsonCallback = _getFromJsonCallbackByOperationType(
+        operationType: DefaultGqlOperationType.get);
+    // TODO: implement
+    return GraphqlResult(source: source, fromJsonCallback: fromJsonCallback);
+  }
 }
