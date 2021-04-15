@@ -1,87 +1,11 @@
 import 'package:cactus_sync_client/src/utils/naming.dart';
-import 'package:flutter/foundation.dart';
-import 'package:gql/ast.dart';
-import "package:gql/language.dart" as gqlLang;
 
-/// _from is used to get valid enum property from string
-/// example:
-///
-/// ```dart
-/// [fromString]['create'];
-/// ```
-///
-/// to get string value use toStringValue
-/// example:
-///
-/// ```dart
-/// [create].toStringValue() // output: 'create'
-/// ```
 enum DefaultGqlOperationType { fromString, create, update, remove, get, find }
-
-extension DefaultGqlOperationTypeDescribe on DefaultGqlOperationType {
-  /// Overload the [] getter to get the name
-  /// based on https://stackoverflow.com/a/60209631
-  operator [](String key) => (name) {
-        switch (name) {
-          case 'create':
-            return DefaultGqlOperationType.create;
-          case 'update':
-            return DefaultGqlOperationType.update;
-          case 'remove':
-            return DefaultGqlOperationType.remove;
-          case 'get':
-            return DefaultGqlOperationType.get;
-          case 'find':
-            return DefaultGqlOperationType.find;
-          default:
-            throw RangeError('enum DefaultGqlOperationTypeDescribe '
-                'contains no value $name');
-        }
-      }(key);
-
-  /// returns string for enum value only
-  String toStringValue() => describeEnum(this);
-}
-
-/// _from is used to get valid enum property from string
-/// example:
-///
-/// ```dart
-/// [fromString]['subscribeNew'];
-/// ```
-///
-/// to get string value use toStringValue
-/// example:
-///
-/// ```dart
-/// [subscribeNew].toStringValue() // output: 'subscribeNew'
-/// ```
 enum SubscribeGqlOperationType {
   fromString,
   subscribeNew,
   subscribeUpdated,
   subscribeDeleted
-}
-
-extension SubscribeGqlOperationTypeDescribe on SubscribeGqlOperationType {
-  /// Overload the [] getter to get the name
-  /// based on https://stackoverflow.com/a/60209631
-  operator [](String key) => (name) {
-        switch (name) {
-          case 'create':
-            return SubscribeGqlOperationType.subscribeNew;
-          case 'update':
-            return SubscribeGqlOperationType.subscribeUpdated;
-          case 'remove':
-            return SubscribeGqlOperationType.subscribeDeleted;
-          default:
-            throw RangeError('enum SubscribeGqlOperationTypeDescribe '
-                'contains no value $name');
-        }
-      }(key);
-
-  /// returns string for enum value only
-  String toStringValue() => describeEnum(this);
 }
 
 ///
@@ -98,10 +22,10 @@ class GqlBuilder {
   late String pluralModelName;
   GqlBuilder(
       {List<String>? modelFields,
-      DocumentNode? modelFragment,
+      String? modelFragment,
       required String this.modelName}) {
     if (modelFragment != null) {
-      returnFields = toFields(gqlNode: modelFragment);
+      returnFields = toFields(gqlFragment: modelFragment);
     } else if (modelFields != null) {
       returnFields = modelFields.join('\n');
     } else {
@@ -114,9 +38,8 @@ class GqlBuilder {
   /// The function removes all outside {} from gql
   /// and returns clear string
   ///
-  String toFields({required DocumentNode gqlNode}) {
-    var origin = gqlLang.printNode(gqlNode);
-    var arrOrigin = origin.split('{');
+  String toFields({required String gqlFragment}) {
+    var arrOrigin = gqlFragment.split('{');
     arrOrigin.removeAt(0);
     var cuttedStart = arrOrigin.join('{');
     var cuttedStartArr = cuttedStart.split('}');

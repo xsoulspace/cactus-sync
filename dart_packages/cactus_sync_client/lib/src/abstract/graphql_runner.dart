@@ -63,7 +63,7 @@ class GraphqlRunner {
   }
 
   /// Method to call mutations and queries
-  execute<TVariables, TQueryResult>(
+  Future<GraphqlResult<TQueryResult>> execute<TVariables, TQueryResult>(
       {required DocumentNode query,
       required Map<String, dynamic> variableValues,
       required DefaultGqlOperationType operationType,
@@ -72,13 +72,13 @@ class GraphqlRunner {
       case DefaultGqlOperationType.create:
       case DefaultGqlOperationType.update:
       case DefaultGqlOperationType.remove:
-        var queryResult = await this.client.mutate(
+        var queryResult = await client.mutate(
             MutationOptions(document: query, variables: variableValues));
         return GraphqlResult.fromQueryResult<TQueryResult>(
             queryResult: queryResult, fromJsonCallback: fromJsonCallback);
       case DefaultGqlOperationType.get:
       case DefaultGqlOperationType.find:
-        var queryResult = await this.client.query(QueryOptions(
+        var queryResult = await client.query(QueryOptions(
             document: query,
             variables: variableValues,
             fetchPolicy: defaultFetchPolicy));
