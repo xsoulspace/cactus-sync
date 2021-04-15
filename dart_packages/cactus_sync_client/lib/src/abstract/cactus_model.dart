@@ -4,11 +4,29 @@ import 'package:cactus_sync_client/src/graphql/gql_builder.dart';
 import 'package:cactus_sync_client/src/graphql/graphql_result.dart';
 import "package:gql/schema.dart" as gql_schema;
 
+/// [stringQueryGql] is a gql which replaces the whole gql
+/// TODO: add an example
+/// [modelFragmentGql] is used to fill requested fields only in gql
+/// TODO: add an example
 class QueryGql {
   String? stringQueryGql;
   String? modelFragmentGql;
   QueryGql({this.stringQueryGql, this.modelFragmentGql});
 }
+
+typedef CactusModelBuilder<
+        TModel,
+        TCreateInput,
+        TCreateResult,
+        TUpdateInput,
+        TUpdateResult,
+        TDeleteInput,
+        TDeleteResult,
+        TGetInput,
+        TGetResult,
+        TFindInput,
+        TFindResult>
+    = CactusModel Function({required CactusSync db});
 
 /// Abstract Model class to insure consistency in CUDGF
 abstract class _AbstractModel<
@@ -73,11 +91,13 @@ class CactusModel<
   FromJsonCallback removeFromJsonCallback;
   FromJsonCallback getFromJsonCallback;
   FromJsonCallback findFromJsonCallback;
+
   CactusSync db;
   late String modelName;
   late GqlBuilder gqlBuilder;
   gql_schema.ObjectTypeDefinition graphqlModelType;
   String defaultModelFragment;
+
   CactusModel({
     required this.createFromJsonCallback,
     required this.updateFromJsonCallback,
@@ -98,6 +118,46 @@ class CactusModel<
         modelFields: modelFields,
         modelFragment: defaultModelFragment);
   }
+  static CactusModelBuilder<
+      TModel,
+      TCreateInput,
+      TCreateResult,
+      TUpdateInput,
+      TUpdateResult,
+      TDeleteInput,
+      TDeleteResult,
+      TGetInput,
+      TGetResult,
+      TFindInput,
+      TFindResult> init<
+          TModel,
+          TCreateInput,
+          TCreateResult,
+          TUpdateInput,
+          TUpdateResult,
+          TDeleteInput,
+          TDeleteResult,
+          TGetInput,
+          TGetResult,
+          TFindInput,
+          TFindResult>({
+    required gql_schema.ObjectTypeDefinition graphqlModelType,
+    required String defaultModelFragment,
+    required FromJsonCallback createFromJsonCallback,
+    required FromJsonCallback findFromJsonCallback,
+    required FromJsonCallback getFromJsonCallback,
+    required FromJsonCallback removeFromJsonCallback,
+    required FromJsonCallback updateFromJsonCallback,
+  }) =>
+      ({required db}) => CactusModel(
+          createFromJsonCallback: createFromJsonCallback,
+          db: db,
+          defaultModelFragment: defaultModelFragment,
+          findFromJsonCallback: findFromJsonCallback,
+          getFromJsonCallback: getFromJsonCallback,
+          graphqlModelType: graphqlModelType,
+          removeFromJsonCallback: removeFromJsonCallback,
+          updateFromJsonCallback: updateFromJsonCallback);
 
   /// We will remove any relationships by default for safety
   /// User anyway in anytime may call it with custom gql
@@ -137,8 +197,7 @@ class CactusModel<
           {required String query,
           required Map<String, dynamic> variableValues,
           required DefaultGqlOperationType operationType,
-          required dynamic Function(Map<String, dynamic>?)
-              fromJsonCallback}) async =>
+          required FromJsonCallback fromJsonCallback}) async =>
       await _graphqlRunner.execute<TVariables, TQueryResult>(
           fromJsonCallback: fromJsonCallback,
           operationType: operationType,
