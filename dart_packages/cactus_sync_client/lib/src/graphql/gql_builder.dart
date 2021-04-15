@@ -21,7 +21,7 @@ class GqlBuilder {
   late String returnFields;
   late String pluralModelName;
   GqlBuilder(
-      {List<String>? modelFields,
+      {List<String?>? modelFields,
       String? modelFragment,
       required String this.modelName}) {
     if (modelFragment != null) {
@@ -46,6 +46,23 @@ class GqlBuilder {
     cuttedStartArr.removeAt(cuttedStartArr.length - 1);
     var finalStr = cuttedStartArr.join('}');
     return finalStr;
+  }
+
+  String getByOperationType({required DefaultGqlOperationType operationType}) {
+    switch (operationType) {
+      case DefaultGqlOperationType.create:
+        return createGqlStr;
+      case DefaultGqlOperationType.update:
+        return updateGqlStr;
+      case DefaultGqlOperationType.remove:
+        return removeGqlStr;
+      case DefaultGqlOperationType.get:
+        return getGqlStr;
+      case DefaultGqlOperationType.find:
+        return findGqlStr;
+      case DefaultGqlOperationType.fromString:
+        throw Exception('operationType cannot be fromString');
+    }
   }
 
   get createGqlStr => '''

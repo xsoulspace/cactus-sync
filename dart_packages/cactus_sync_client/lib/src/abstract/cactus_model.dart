@@ -2,18 +2,13 @@ import 'package:cactus_sync_client/src/abstract/cactus_sync.dart';
 import 'package:cactus_sync_client/src/abstract/graphql_runner.dart';
 import 'package:cactus_sync_client/src/graphql/gql_builder.dart';
 import 'package:cactus_sync_client/src/graphql/graphql_result.dart';
-import 'package:gql/ast.dart';
 import "package:gql/schema.dart" as gql_schema;
 
-class OperationFunctionGql {
-  String? stringGql;
-  DocumentNode? fragmentGql;
-  OperationFunctionGql({this.stringGql, this.fragmentGql})
-      : assert(stringGql != null && fragmentGql != null);
+class QueryGql {
+  String? stringQueryGql;
+  String? modelFragmentGql;
+  QueryGql({this.stringQueryGql, this.modelFragmentGql});
 }
-
-typedef OperationFunction<TInput, TResult> = GraphqlResult<TResult> Function(
-    {required TInput input, OperationFunctionGql? gql, bool? notifyListeners});
 
 /// Abstract Model class to insure consistency in CUDGF
 abstract class _AbstractModel<
@@ -28,24 +23,24 @@ abstract class _AbstractModel<
     TFindResult,
     TFindInput> {
   GraphqlResult<TCreateResult> create(
-      {required TCreateInput input,
-      OperationFunctionGql? gql,
+      {required TCreateInput variableValues,
+      QueryGql? queryGql,
       bool? notifyListeners});
   GraphqlResult<TUpdateResult> update(
-      {required TUpdateInput input,
-      OperationFunctionGql? gql,
+      {required TUpdateInput variableValues,
+      QueryGql? queryGql,
       bool? notifyListeners});
   GraphqlResult<TRemoveResult> remove(
-      {required TRemoveInput input,
-      OperationFunctionGql? gql,
+      {required TRemoveInput variableValues,
+      QueryGql? queryGql,
       bool? notifyListeners});
   GraphqlResult<TGetResult> get(
-      {required TGetInput input,
-      OperationFunctionGql? gql,
+      {required TGetInput variableValues,
+      QueryGql? queryGql,
       bool? notifyListeners});
   GraphqlResult<TFindResult> find(
-      {required TFindInput input,
-      OperationFunctionGql? gql,
+      {required TFindInput variableValues,
+      QueryGql? queryGql,
       bool? notifyListeners});
 }
 
@@ -81,26 +76,22 @@ class CactusModel<
   CactusSync db;
   late String modelName;
   late GqlBuilder gqlBuilder;
-  gql_schema.TypeDefinition graphqlModelType;
+  gql_schema.ObjectTypeDefinition graphqlModelType;
   String defaultModelFragment;
-  CactusModel(
-      {required this.createFromJsonCallback,
-      required this.updateFromJsonCallback,
-      required this.removeFromJsonCallback,
-      required this.getFromJsonCallback,
-      required this.findFromJsonCallback,
-      required this.defaultModelFragment,
-      required this.graphqlModelType,
-      required this.db,
-      }) {
+  CactusModel({
+    required this.createFromJsonCallback,
+    required this.updateFromJsonCallback,
+    required this.removeFromJsonCallback,
+    required this.getFromJsonCallback,
+    required this.findFromJsonCallback,
+    required this.defaultModelFragment,
+    required this.graphqlModelType,
+    required this.db,
+  }) {
     var maybeModelName = graphqlModelType.name;
-    if(maybeModelName == null) throw ArgumentError.notNull('Model name');
+    if (maybeModelName == null) throw ArgumentError.notNull('Model name');
     modelName = maybeModelName;
-    // TODO: 
-    var fields = graphqlModelType.getFields();
-    if (fields == null)
-      throw Exception('no fields defined for ${graphqlModelType.name} model');
-    // TODO: 
+    var fields = graphqlModelType.fields;
     var modelFields = this._getModelFieldNames(fields);
     gqlBuilder = GqlBuilder(
         modelName: modelName,
@@ -110,14 +101,16 @@ class CactusModel<
 
   /// We will remove any relationships by default for safety
   /// User anyway in anytime may call it with custom gql
-  /// TODO: the idea is get names of queired fields
-  _getModelFieldNames(DocumentNode fields) {
-    //  var schema = gql_schema.GraphQLSchema.fromNode(fields);
-    //   schema.query?.fields.removeWhere((el) =>
-    //       el.description?.includes('manyToOne') ||
-    //       el.description?.includes('oneToMany') ||
-    //       el.description?.includes('oneToOne'));
-    //   nodes.map((el) => el.name);
+  /// the idea is to get names of queired fields
+  List<String?> _getModelFieldNames(List<gql_schema.FieldDefinition> fields) {
+    var fieldsNames = fields
+        .where((el) =>
+            el.description?.contains('manyToOne') != true ||
+            el.description?.contains('oneToMany') != true ||
+            el.description?.contains('oneToOne') != true)
+        .map((el) => el.name)
+        .where((element) => element != null);
+    return fieldsNames.toList();
   }
 
   FromJsonCallback _getFromJsonCallbackByOperationType(
@@ -138,122 +131,128 @@ class CactusModel<
             'has to be different');
     }
   }
-  GraphqlRunner get _graphqlRunner=>db.graphqlRunner;
- Future<GraphqlResult<TQueryResult>> _execute<TVariables, TQueryResult>(
-    {
-required DocumentNode query, required Map<String, dynamic> variableValues, required DefaultGqlOperationType operationType, required dynamic Function(Map<String, dynamic>?) fromJsonCallback
-    }
-  ) async => await _graphqlRunner.execute<TVariables, TQueryResult>(fromJsonCallback: fromJsonCallback,operationType:operationType ,query:query 
-  ,variableValues: variableValues);
-  
 
-  _resolveOperationGql(
-   {
- required DefaultGqlOperationType  operationType,
-  DocumentNode?  fragmentGql,
-   String? stringGql}
-  ) {
-    if (stringGql != null) return stringGql;
-    var fragment = fragmentGql ?? defaultModelFragment;
-    
-    if (fragment) {
-      return getDefaultGqlOperations({
-        modelName: this.modelName,
-        modelFragment: fragment,
-      })[operationType]
-    }
-    return this._defaultGqlOperations[operationType];
+  GraphqlRunner get _graphqlRunner => db.graphqlRunner;
+  Future<GraphqlResult<TQueryResult>> _execute<TVariables, TQueryResult>(
+          {required String query,
+          required Map<String, dynamic> variableValues,
+          required DefaultGqlOperationType operationType,
+          required dynamic Function(Map<String, dynamic>?)
+              fromJsonCallback}) async =>
+      await _graphqlRunner.execute<TVariables, TQueryResult>(
+          fromJsonCallback: fromJsonCallback,
+          operationType: operationType,
+          query: query,
+          variableValues: variableValues);
+
+  String _resolveOperationGql({
+    required DefaultGqlOperationType operationType,
+    QueryGql? queryGql,
+  }) {
+    var stringQueryGql = queryGql?.stringQueryGql;
+    if (stringQueryGql != null) return stringQueryGql;
+    var modelFragmentGql = queryGql?.modelFragmentGql;
+    var builder = modelFragmentGql != null
+        ? GqlBuilder(
+            modelName: modelName,
+            modelFragment: modelFragmentGql,
+          )
+        : gqlBuilder;
+    return builder.getByOperationType(operationType: operationType);
   }
 
-   _executeMiddleware<TInput, TResult>({
-    String? fragmentGql,
-    String? stringGql, 
-    required DefaultGqlOperationType operationType,
-    bool?  notifyListeners,
-    variableValues
-  }) async{
+  _executeMiddleware<TVariables, TResult>(
+      {QueryGql? queryGql,
+      required DefaultGqlOperationType operationType,
+      bool? notifyListeners,
+      variableValues}) async {
     /**
-     * If we receive fragmentGql, we concat it with default query
-     * If we receive stringGql we replace default by stringGql
+     * If we receive modelFragmentGql, we concat it with default query
+     * If we receive stringQueryGql we replace default by stringQueryGql
      * If class has default fragment it will be use it
      * And then it will be use default fields
      */
-    var query =_resolveOperationGql(
-      operationType: operationType,
-      fragmentGql: fragmentGql,
-      stringGql: stringGql,
-    );
-    var result = await _execute<TInput, TResult>(
+    var query =
+        _resolveOperationGql(operationType: operationType, queryGql: queryGql);
+    var result = await _execute<TVariables, TResult>(
       variableValues: variableValues,
-     query: query,
-      operationType: operationType,fromJsonCallback: _getFromJsonCallbackByOperationType(operationType: operationType),
+      query: query,
+      operationType: operationType,
+      fromJsonCallback:
+          _getFromJsonCallbackByOperationType(operationType: operationType),
     );
 
-    /// STATE UDPATES
+    /// STATE UPDATES
 
     if (notifyListeners == null || notifyListeners == false) return result;
-    var validateAndEmit = ({bool? remove}){
-      var { isNotValid, data } = validateStateModelResult(result);
-      // console.log({ isNotValid, data })
-      if (isNotValid || data == null) return;
-      for (var maybeModel of Object.values(data)) {
-        notifyStateModelListeners({
-          emitter: this.db.graphqlRunner.subscriptionsEmitter,
-          remove: remove,
-          item: maybeModel,
-          notifyListeners,
-          modelName: this.modelName,
-        });
-      }
-    }
-    switch (operationType) {
-      case DefaultGqlOperationType.create:
-      case DefaultGqlOperationType.update:
-        validateAndEmit({});
-        break
-      case DefaultGqlOperationType.remove:
-        validateAndEmit({ remove: true });
-        break
-    }
-    return result;
-  }
-  @override
-  create({required input, OperationFunctionGql? gql, bool? notifyListeners}) {
-    var fromJsonCallback = _getFromJsonCallbackByOperationType(
-        operationType: DefaultGqlOperationType.create);
-    
-    return GraphqlResult(data: ,exception: ,source: source, fromJsonCallback: fromJsonCallback);
+    // TODO: enable sync for different states
+    // var validateAndEmit = ({bool? remove}){
+    //   var { isNotValid, data } = validateStateModelResult(result);
+    //   if (isNotValid || data == null) return;
+    //   for (var maybeModel of Object.values(data)) {
+    //     notifyStateModelListeners({
+    //       emitter: this.db.graphqlRunner.subscriptionsEmitter,
+    //       remove: remove,
+    //       item: maybeModel,
+    //       notifyListeners,
+    //       modelName: this.modelName,
+    //     });
+    //   }
+    // }
+    // switch (operationType) {
+    //   case DefaultGqlOperationType.create:
+    //   case DefaultGqlOperationType.update:
+    //     validateAndEmit({});
+    //     break
+    //   case DefaultGqlOperationType.remove:
+    //     validateAndEmit({ remove: true });
+    //     break
+    // }
+    // return result;
   }
 
   @override
-  update({required input, OperationFunctionGql? gql, bool? notifyListeners}) {
-    var fromJsonCallback = _getFromJsonCallbackByOperationType(
-        operationType: DefaultGqlOperationType.update);
-    // TODO: implement
-    return GraphqlResult(source: source, fromJsonCallback: fromJsonCallback);
+  create({required variableValues, queryGql, notifyListeners}) {
+    return _executeMiddleware(
+        operationType: DefaultGqlOperationType.create,
+        queryGql: queryGql,
+        notifyListeners: notifyListeners,
+        variableValues: variableValues);
   }
 
   @override
-  remove({required input, OperationFunctionGql? gql, bool? notifyListeners}) {
-    var fromJsonCallback = _getFromJsonCallbackByOperationType(
-        operationType: DefaultGqlOperationType.remove);
-    // TODO: implement
-    return GraphqlResult(source: source, fromJsonCallback: fromJsonCallback);
+  update({required variableValues, queryGql, notifyListeners}) {
+    return _executeMiddleware(
+        operationType: DefaultGqlOperationType.create,
+        queryGql: queryGql,
+        notifyListeners: notifyListeners,
+        variableValues: variableValues);
   }
 
   @override
-  find({required input, OperationFunctionGql? gql, bool? notifyListeners}) {
-    var fromJsonCallback = _getFromJsonCallbackByOperationType(
-        operationType: DefaultGqlOperationType.find);
-    // TODO: implement
-    return GraphqlResult(source: source, fromJsonCallback: fromJsonCallback);
+  remove({required variableValues, queryGql, notifyListeners}) {
+    return _executeMiddleware(
+        operationType: DefaultGqlOperationType.create,
+        queryGql: queryGql,
+        notifyListeners: notifyListeners,
+        variableValues: variableValues);
   }
 
   @override
-  get({required input, OperationFunctionGql? gql, bool? notifyListeners}) {
-    var fromJsonCallback = _getFromJsonCallbackByOperationType(
-        operationType: DefaultGqlOperationType.get);
-    // TODO: implement
-    return GraphqlResult(source: source, fromJsonCallback: fromJsonCallback);
+  find({required variableValues, queryGql, notifyListeners}) {
+    return _executeMiddleware(
+        operationType: DefaultGqlOperationType.create,
+        queryGql: queryGql,
+        notifyListeners: notifyListeners,
+        variableValues: variableValues);
+  }
+
+  @override
+  get({required variableValues, queryGql, notifyListeners}) {
+    return _executeMiddleware(
+        operationType: DefaultGqlOperationType.create,
+        queryGql: queryGql,
+        notifyListeners: notifyListeners,
+        variableValues: variableValues);
   }
 }

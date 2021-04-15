@@ -1,7 +1,7 @@
 import 'package:cactus_sync_client/src/graphql/gql_builder.dart';
 import 'package:cactus_sync_client/src/graphql/graphql_result.dart';
 import 'package:flutter/material.dart';
-import 'package:gql/ast.dart';
+import "package:gql/language.dart" as graphql_lang;
 import 'package:gql_http_link/gql_http_link.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -64,22 +64,23 @@ class GraphqlRunner {
 
   /// Method to call mutations and queries
   Future<GraphqlResult<TQueryResult>> execute<TVariables, TQueryResult>(
-      {required DocumentNode query,
+      {required String query,
       required Map<String, dynamic> variableValues,
       required DefaultGqlOperationType operationType,
       required FromJsonCallback fromJsonCallback}) async {
+    var document = graphql_lang.parseString(query);
     switch (operationType) {
       case DefaultGqlOperationType.create:
       case DefaultGqlOperationType.update:
       case DefaultGqlOperationType.remove:
         var queryResult = await client.mutate(
-            MutationOptions(document: query, variables: variableValues));
+            MutationOptions(document: document, variables: variableValues));
         return GraphqlResult.fromQueryResult<TQueryResult>(
             queryResult: queryResult, fromJsonCallback: fromJsonCallback);
       case DefaultGqlOperationType.get:
       case DefaultGqlOperationType.find:
         var queryResult = await client.query(QueryOptions(
-            document: query,
+            document: document,
             variables: variableValues,
             fetchPolicy: defaultFetchPolicy));
         return GraphqlResult.fromQueryResult<TQueryResult>(
