@@ -16,7 +16,6 @@ class StateModelValidationResult<TData> {
 /// items from `{ findSomething: { items: [] } }`
 /// ANd also model should keep original json Map
 ///
-
 class StateModel<
         TModel,
         TCreateInput,
@@ -130,6 +129,8 @@ class StateModel<
 
   bool _verifyModelName({required String? name}) => name == modelName;
 
+  /// This function must be used only with queires and not mutations!
+  /// The purpose is to update a whole state
   void _updateListState<TResult>({required GraphqlResult<TResult> result}) {
     var validatedResult = validateStateModelResult(result: result);
     var data = validatedResult.data.typedData;
@@ -144,48 +145,72 @@ class StateModel<
   /// ==================== PUBLIC SECTION ======================
   ///
   @override
-  GraphqlResult<TCreateResult> create(
+  Future<GraphqlResult<TCreateResult>> create(
       {required TCreateInput variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners}) {
-    // TODO: implement create
-    throw UnimplementedError();
+      bool? notifyListeners}) async {
+    var result = await cactusModel.create(
+        variableValues: variableValues,
+        notifyListeners: notifyListeners,
+        queryGql: queryGql);
+    _updateState(result: result, notifyListeners: true);
+    return result;
   }
 
   @override
-  GraphqlResult<TFindInput> find(
-      {required TFindResult variableValues,
-      QueryGql? queryGql,
-      bool? notifyListeners}) {
-    // TODO: implement find
-    throw UnimplementedError();
-  }
-
-  @override
-  GraphqlResult<TGetInput> get(
-      {required TGetResult variableValues,
-      QueryGql? queryGql,
-      bool? notifyListeners}) {
-    // TODO: implement get
-    throw UnimplementedError();
-  }
-
-  @override
-  GraphqlResult<TDeleteInput> remove(
-      {required TDeleteResult variableValues,
-      QueryGql? queryGql,
-      bool? notifyListeners}) {
-    // TODO: implement remove
-    throw UnimplementedError();
-  }
-
-  @override
-  GraphqlResult<TUpdateInput> update(
+  Future<GraphqlResult<TUpdateInput>> update(
       {required TUpdateResult variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners}) {
-    // TODO: implement update
-    throw UnimplementedError();
+      bool? notifyListeners}) async {
+    var result = await cactusModel.update(
+        variableValues: variableValues,
+        notifyListeners: notifyListeners,
+        queryGql: queryGql);
+    _updateState(result: result, notifyListeners: true);
+    return result;
+  }
+
+  @override
+  Future<GraphqlResult<TDeleteInput>> remove(
+      {required TDeleteResult variableValues,
+      QueryGql? queryGql,
+      bool? notifyListeners}) async {
+    var result = await cactusModel.remove(
+        variableValues: variableValues,
+        notifyListeners: notifyListeners,
+        queryGql: queryGql);
+    _updateState(result: result, notifyListeners: true);
+    return result;
+  }
+
+  @override
+  Future<GraphqlResult<TFindInput>> find(
+      {required TFindResult variableValues,
+      QueryGql? queryGql,
+      bool? notifyListeners}) async {
+    var result = await cactusModel.find(
+        variableValues: variableValues,
+        notifyListeners: notifyListeners,
+        queryGql: queryGql);
+    _updateListState(
+      result: result,
+    );
+    return result;
+  }
+
+  @override
+  Future<GraphqlResult<TGetInput>> get(
+      {required TGetResult variableValues,
+      QueryGql? queryGql,
+      bool? notifyListeners}) async {
+    var result = await cactusModel.get(
+        variableValues: variableValues,
+        notifyListeners: notifyListeners,
+        queryGql: queryGql);
+    _updateListState(
+      result: result,
+    );
+    return result;
   }
 
   //  ===================== SUBSCRIPTIONS SECTION ========================

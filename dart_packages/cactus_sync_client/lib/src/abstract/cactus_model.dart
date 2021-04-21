@@ -40,23 +40,23 @@ abstract class AbstractCactusModel<
     TGetInput,
     TFindResult,
     TFindInput> {
-  GraphqlResult<TCreateResult> create(
+  Future<GraphqlResult<TCreateResult>> create(
       {required TCreateInput variableValues,
       QueryGql? queryGql,
       bool? notifyListeners});
-  GraphqlResult<TUpdateResult> update(
+  Future<GraphqlResult<TUpdateResult>> update(
       {required TUpdateInput variableValues,
       QueryGql? queryGql,
       bool? notifyListeners});
-  GraphqlResult<TRemoveResult> remove(
+  Future<GraphqlResult<TRemoveResult>> remove(
       {required TRemoveInput variableValues,
       QueryGql? queryGql,
       bool? notifyListeners});
-  GraphqlResult<TGetResult> get(
+  Future<GraphqlResult<TGetResult>> get(
       {required TGetInput variableValues,
       QueryGql? queryGql,
       bool? notifyListeners});
-  GraphqlResult<TFindResult> find(
+  Future<GraphqlResult<TFindResult>> find(
       {required TFindInput variableValues,
       QueryGql? queryGql,
       bool? notifyListeners});
