@@ -1,6 +1,21 @@
 import 'package:cactus_sync_client/src/abstract/cactus_model.dart';
+import 'package:cactus_sync_client/src/graphql/graphql_result.dart';
+import 'package:riverpod/riverpod.dart';
 
-abstract class StateModel<TModel,
+ enum StateModelEvents {
+  addUpdateStateModel = 'addUpdateStateModel',
+  removeStateModel = 'removeStateModel',
+}
+
+class StateModelValidationResult<TData>{
+  final bool isValid;
+  final bool isNotValid;
+  final TData data;
+  StateModelValidationResult({required this.isValid, required this.isNotValid, required this.data});
+}
+
+
+class StateModel<TModel,
     TCreateInput,
     TCreateResult,
     TUpdateInput,
@@ -21,10 +36,40 @@ abstract class StateModel<TModel,
     TGetResult,
     TFindInput,
     TFindResult>{
-  List<TModel?> _reactiveState;
-  void _setReactiveState(List<TModel?>value);
- List<TModel?> get state;
-  Map<String, int>  get stateIndexes;
+
+StateModelValidationResult<GraphqlResult<TQueryResult>> validateStateModelResult<TQueryResult>  (
+  {required GraphqlResult<TQueryResult> result}
+) {
+  var notValidResult = StateModelValidationResult<GraphqlResult<TQueryResult>>(isNotValid: true, isValid: false, data: result);
+  if (result.hasException) return notValidResult;
+  var data = result.typedData;
+  if(data == null) return notValidResult;
+  return StateModelValidationResult<GraphqlResult<TQueryResult>>(isNotValid: false, isValid: true, data: result);}
+
+void notifyStateModelListeners <TModel>( {
+ required String modelName,
+required  bool notifyListeners,
+ required  TModel item,
+ required bool? remove
+}) {
+  // if (notifyListeners) {
+  //   const obj: StateModelChange<TModel> = {
+  //     modelName: modelName,
+  //     item,
+  //   }
+  //   const eventType = remove
+  //     ? StateModelEvents.removeStateModel
+  //     : StateModelEvents.addUpdateStateModel
+  //   emitter.emit(eventType, obj)
+  // }
+}
+
+ProviderReference ref;
+
+List<TModel?> _reactiveState;
+void _setReactiveState(List<TModel?>value);
+List<TModel?> get state;
+Map<String, int>  get stateIndexes;
  CactusModel<
     TModel,
     TCreateInput,
