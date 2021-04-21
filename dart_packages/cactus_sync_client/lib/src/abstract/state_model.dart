@@ -37,14 +37,14 @@ class StateModel<TModel,
     TFindInput,
     TFindResult>{
 
-StateModelValidationResult<GraphqlResult<TQueryResult>> validateStateModelResult<TQueryResult>  (
-  {required GraphqlResult<TQueryResult> result}
+StateModelValidationResult<GraphqlResult<TResult>> validateStateModelResult<TResult>  (
+  {required GraphqlResult<TResult> result}
 ) {
-  var notValidResult = StateModelValidationResult<GraphqlResult<TQueryResult>>(isNotValid: true, isValid: false, data: result);
+  var notValidResult = StateModelValidationResult<GraphqlResult<TResult>>(isNotValid: true, isValid: false, data: result);
   if (result.hasException) return notValidResult;
   var data = result.typedData;
   if(data == null) return notValidResult;
-  return StateModelValidationResult<GraphqlResult<TQueryResult>>(isNotValid: false, isValid: true, data: result);}
+  return StateModelValidationResult<GraphqlResult<TResult>>(isNotValid: false, isValid: true, data: result);}
 
 void notifyStateModelListeners <TModel>( {
  required String modelName,
@@ -64,12 +64,12 @@ required  bool notifyListeners,
   // }
 }
 
-ProviderReference ref;
-
-List<TModel?> _reactiveState;
-void _setReactiveState(List<TModel?>value);
-List<TModel?> get state;
-Map<String, int>  get stateIndexes;
+  final List<TModel?> list = [];
+  void setState(List<TModel?>value){
+    list.clear();
+    list..addAll(value);
+  } 
+  Map<int, TModel?>  get stateIndexes => list.asMap();
  CactusModel<
     TModel,
     TCreateInput,
@@ -93,14 +93,11 @@ Map<String, int>  get stateIndexes;
   /// ================== STATE CHANGES HANDLERS ======================
 
   void _updateState<TResult>({
-    remove,
-    result,
-    notifyListeners,
-  }: {
-    result: FetchResult<TResult> | ApolloQueryResult<TResult>
-    remove?: Maybe<boolean>
-    notifyListeners?: Maybe<boolean>
-  }) ;
+   
+ required  GraphqlResult<TResult> result,
+  bool?  remove,
+ bool?   notifyListeners,
+  }){} 
   
   /**
    * notifyListeners should notify all states for this model about
@@ -111,27 +108,23 @@ Map<String, int>  get stateIndexes;
    * @returns
    */
   _updateStateModel({
-    remove,
-    maybeModel,
-    notifyListeners,
-  }: {
-    maybeModel: Maybe<TModel>
-    remove?: Maybe<boolean>
-    notifyListeners?: Maybe<boolean>
-  });
- String? get modelName;
+   TModel? maybeModel,
+   bool? remove,
+   bool? notifyListeners
+  }){}
+ String? get modelName=>"";
     
   bool _verifyModelName(
     {required String? modelName}
-  ) ;
+  ){} 
   /**
    * This function is responsible for listening changes
    * in another states and should be initialized in constuctor
    */
-  void _listenOtherStatesChanges() ;
+  void _listenOtherStatesChanges() {}
  void _updateListState<TResult>(
-   FetchResult<TResult> | ApolloQueryResult<TResult> result
-  ) ;
+    {required GraphqlResult<TResult> result}
+  ){} 
 
   /// =================== PUBLIC OPERATIONS ========================
 
