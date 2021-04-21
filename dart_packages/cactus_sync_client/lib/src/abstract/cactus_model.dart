@@ -1,8 +1,9 @@
-import 'package:cactus_sync_client/src/abstract/cactus_sync.dart';
-import 'package:cactus_sync_client/src/abstract/graphql_runner.dart';
-import 'package:cactus_sync_client/src/graphql/gql_builder.dart';
-import 'package:cactus_sync_client/src/graphql/graphql_result.dart';
 import "package:gql/schema.dart" as gql_schema;
+
+import '../graphql/gql_builder.dart';
+import '../graphql/graphql_result.dart';
+import 'cactus_sync.dart';
+import 'graphql_runner.dart';
 
 /// [stringQueryGql] is a gql which replaces the whole gql
 /// TODO: add an example

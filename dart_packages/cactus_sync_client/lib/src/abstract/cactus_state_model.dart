@@ -1,6 +1,6 @@
-import 'package:cactus_sync_client/src/abstract/cactus_model.dart';
-import 'package:cactus_sync_client/src/graphql/graphql_find_list.dart';
-import 'package:cactus_sync_client/src/graphql/graphql_result.dart';
+import '../graphql/graphql_find_list.dart';
+import '../graphql/graphql_result.dart';
+import 'cactus_model.dart';
 
 enum StateModelEvents { addUpdateStateModel, removeStateModel }
 
@@ -16,7 +16,7 @@ class StateModelValidationResult<TData> {
 /// items from `{ findSomething: { items: [] } }`
 /// ANd also model should keep original json Map
 ///
-class StateModel<
+class CactusStateModel<
         TModel,
         TCreateInput,
         TCreateResult,
@@ -70,7 +70,7 @@ class StateModel<
       TGetResult,
       TFindInput,
       TFindResult> cactusModel;
-  StateModel({
+  CactusStateModel({
     required this.cactusModel,
   }) {
     // TODO: implement listeners

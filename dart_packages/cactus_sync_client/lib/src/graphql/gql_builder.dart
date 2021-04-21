@@ -1,4 +1,4 @@
-import 'package:cactus_sync_client/src/utils/naming.dart';
+import '../utils/naming.dart';
 
 enum DefaultGqlOperationType { fromString, create, update, remove, get, find }
 enum SubscribeGqlOperationType {

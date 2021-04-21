@@ -1,16 +1,7 @@
-# cactus_sync_client
+# Cactus Sync Client
 
-A new Flutter project.
+Purpose: to minimize code writing by generating Types (Models), States (absed on Riverpod) and Universal Helper classes (Models) for graphql schema based on Graphback standard.
 
-## Getting Started
+To see how it works clone the project and take a look for examples folder.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+This project is only in ealy stage development. Please don't use it for production until version ^1.0.0.

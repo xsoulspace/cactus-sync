@@ -1,5 +1,5 @@
-import 'package:cactus_sync_client/src/abstract/cactus_model.dart';
-import 'package:cactus_sync_client/src/abstract/graphql_runner.dart';
+import 'cactus_model.dart';
+import 'graphql_runner.dart';
 
 class CactusSync {
   static CactusSync? db;

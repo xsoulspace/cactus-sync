@@ -3,3 +3,7 @@
 // that can be found in the LICENSE file.
 
 library cactus_sync_client;
+
+export 'src/abstract/abstract.dart';
+export 'src/graphql/graphql.dart';
+export 'src/utils/utils.dart';
