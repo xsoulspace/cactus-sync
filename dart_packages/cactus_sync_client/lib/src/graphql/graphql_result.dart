@@ -29,5 +29,5 @@ class GraphqlResult<TResult> extends QueryResult {
         exception: queryResult.exception);
   }
 
-  TResult? get typedData => fromJsonCallback(data) as TResult;
+  TResult? get typedData => fromJsonCallback(data) as TResult?;
 }

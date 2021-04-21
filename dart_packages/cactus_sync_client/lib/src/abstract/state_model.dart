@@ -1,4 +1,5 @@
 import 'package:cactus_sync_client/src/abstract/cactus_model.dart';
+import 'package:cactus_sync_client/src/graphql/graphql_find_list.dart';
 import 'package:cactus_sync_client/src/graphql/graphql_result.dart';
 
 enum StateModelEvents { addUpdateStateModel, removeStateModel }
@@ -10,6 +11,11 @@ class StateModelValidationResult<TData> {
   StateModelValidationResult(
       {required this.isValid, required this.isNotValid, required this.data});
 }
+
+/// Every response model should contain method getList to get
+/// items from `{ findSomething: { items: [] } }`
+/// ANd also model should keep original json Map
+///
 
 class StateModel<
         TModel,
@@ -48,11 +54,11 @@ class StateModel<
 
   final List<TModel?> list = [];
   void setState(List<TModel?> value) {
-    list.clear();
-    list..addAll(value);
+    list
+      ..clear()
+      ..addAll(value);
   }
 
-  Map<int, TModel?> get stateIndexes => list.asMap();
   CactusModel<
       TModel,
       TCreateInput,
@@ -68,8 +74,9 @@ class StateModel<
   StateModel({
     required this.cactusModel,
   }) {
-    _initSubscriptionListener();
-    _listenOtherStatesChanges();
+    // TODO: implement listeners
+    // _initSubscriptionListener();
+    // _listenOtherStatesChanges();
   }
 
   /// ================== STATE CHANGES HANDLERS ======================
@@ -78,25 +85,61 @@ class StateModel<
     required GraphqlResult<TResult> result,
     bool? remove,
     bool? notifyListeners,
-  }) {}
+  }) {
+    var validatedResult = validateStateModelResult(result: result);
+    if (validatedResult.isNotValid) return;
+    var maybeData = validatedResult.data.typedData ?? [];
+    if (maybeData is List)
+      for (TModel? maybeModel in maybeData) {
+        _updateStateModel(
+            maybeModel: maybeModel,
+            remove: remove,
+            notifyListeners: notifyListeners);
+      }
+    else
+      throw ArgumentError(
+          'The data should have type List but has type ${maybeData.runtimeType}');
+  }
 
-  ///
   /// notifyListeners should notify all states for this model about
   /// new/updated/removed item
   ///
   /// should not be used with subscribed events
-  _updateStateModel(
-      {TModel? maybeModel, bool? remove, bool? notifyListeners}) {}
-  String? get modelName => "";
+  _updateStateModel({TModel? maybeModel, bool? remove, bool? notifyListeners}) {
+    if (maybeModel == null) return;
+    var index = list.indexOf(maybeModel);
+    var isIndexExists = index >= 0;
+    if (remove == true) if (isIndexExists)
+      list.removeAt(index);
+    else if (isIndexExists)
+      list[index] = maybeModel;
+    else
+      list.add(maybeModel);
 
-  bool _verifyModelName({required String? modelName}) {}
+    // TODO: implement notify
+    // notifyStateModelListeners(
+    //   notifyListeners,
+    //   modelName: this.modelName,
+    //   item: maybeModel,
+    //   emitter: _emitter,
+    //   remove,
+    // )
+  }
 
-  ///
-  /// This function is responsible for listening changes
-  /// in another states and should be initialized in constuctor
-  ///
-  void _listenOtherStatesChanges() {}
-  void _updateListState<TResult>({required GraphqlResult<TResult> result}) {}
+  String get modelName => cactusModel.modelName;
+
+  bool _verifyModelName({required String? name}) => name == modelName;
+
+  void _updateListState<TResult>({required GraphqlResult<TResult> result}) {
+    var validatedResult = validateStateModelResult(result: result);
+    var data = validatedResult.data.typedData;
+    if (validatedResult.isNotValid ||
+        data == null ||
+        data is! GraphqlFindList<TModel>) return;
+    var items = data.getValues;
+    if (items.length == 0) return;
+    setState(items);
+  }
 
   /// ==================== PUBLIC SECTION ======================
   ///
@@ -146,32 +189,37 @@ class StateModel<
   }
 
   //  ===================== SUBSCRIPTIONS SECTION ========================
-  //
-  final Stream<StateModelEvents> emitter = Stream<StateModelEvents>.empty();
-  List _subscriptions = [];
+  // TODO: implement SUBSCRIPTIONS SECTION
+  ///
+  /// This function is responsible for listening changes
+  /// in another states and should be initialized in constuctor
+  ///
+  // void _listenOtherStatesChanges() {}
+  // final Stream<StateModelEvents> emitter = Stream<StateModelEvents>.empty();
+  // List _subscriptions = [];
 
-  void _initSubscriptionListener() {}
+  // void _initSubscriptionListener() {}
 
-  void _subscribe() {}
-  void _unsubscribe() {}
-  void _updateOnSubscribe<TResult>({required TResult data}) {}
+  // void _subscribe() {}
+  // void _unsubscribe() {}
+  // void _updateOnSubscribe<TResult>({required TResult data}) {}
 
-  String _getSubscribeOperationType({required String str}) {}
+  // String _getSubscribeOperationType({required String str}) {}
 
-  void notifyStateModelListeners<TModel>(
-      {required String modelName,
-      required bool notifyListeners,
-      required TModel item,
-      required bool? remove}) {
-    // if (notifyListeners) {
-    //   const obj: StateModelChange<TModel> = {
-    //     modelName: modelName,
-    //     item,
-    //   }
-    //   const eventType = remove
-    //     ? StateModelEvents.removeStateModel
-    //     : StateModelEvents.addUpdateStateModel
-    //   emitter.emit(eventType, obj)
-    // }
-  }
+  // void notifyStateModelListeners<TModel>(
+  //     {required String modelName,
+  //     required bool notifyListeners,
+  //     required TModel item,
+  //     required bool? remove}) {
+  //   // if (notifyListeners) {
+  //   //   const obj: StateModelChange<TModel> = {
+  //   //     modelName: modelName,
+  //   //     item,
+  //   //   }
+  //   //   const eventType = remove
+  //   //     ? StateModelEvents.removeStateModel
+  //   //     : StateModelEvents.addUpdateStateModel
+  //   //   emitter.emit(eventType, obj)
+  //   // }
+  // }
 }
