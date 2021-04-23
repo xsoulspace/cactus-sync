@@ -1,7 +1,7 @@
-# cactus_sync_client_gen
+A sample command-line application with an entrypoint in `bin/`, library code
+in `lib/`, and example unit test in `test/`.
 
-A new Flutter project.
-
-## Getting Started
+Created from templates made available by Stagehand under a BSD-style
+[license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
 
 This project purpose is to generate models and types for cactus_sync_client.

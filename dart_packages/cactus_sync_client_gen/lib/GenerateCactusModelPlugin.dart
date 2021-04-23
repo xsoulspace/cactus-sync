@@ -2,10 +2,10 @@ void generateCactusModels = () {
   var camelModelName = '';
   var properModelType = '';
   var generatedProviderStr = '''
-  final use${camelModelName}State = Provider<${properModelType}>((_)=>
-    CactusStateModel<${properModelType}>()
-  );
-''';
+    final use${camelModelName}State = Provider<${properModelType}>((_)=>
+      CactusStateModel<${properModelType}>()
+    );
+  ''';
 };
 
 // interface PluginConfig {
