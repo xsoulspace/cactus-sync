@@ -1,0 +1,6 @@
+{
+  human {
+    name
+    height
+  }
+}
