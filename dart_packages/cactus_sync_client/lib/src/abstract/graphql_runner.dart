@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gql/language.dart' as graphql_lang;
+import 'package:gql/language.dart' as gql_lang;
 import 'package:gql_http_link/gql_http_link.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -70,7 +70,7 @@ class GraphqlRunner {
       required Map<String, dynamic> variableValues,
       required DefaultGqlOperationType operationType,
       required FromJsonCallback fromJsonCallback}) async {
-    var document = graphql_lang.parseString(query);
+    var document = gql_lang.parseString(query);
     switch (operationType) {
       case DefaultGqlOperationType.create:
       case DefaultGqlOperationType.update:

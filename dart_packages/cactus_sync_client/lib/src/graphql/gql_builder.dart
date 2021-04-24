@@ -31,7 +31,7 @@ class GqlBuilder {
     } else {
       throw ArgumentError.notNull('modelFragment or modelFields');
     }
-    pluralModelName = StringUtil.toPluralName(modelName);
+    pluralModelName = modelName.toPluralName();
   }
 
   ///
