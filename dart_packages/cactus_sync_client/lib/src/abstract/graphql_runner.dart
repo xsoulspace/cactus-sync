@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import "package:gql/language.dart" as graphql_lang;
+import 'package:gql/language.dart' as graphql_lang;
 import 'package:gql_http_link/gql_http_link.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -48,7 +48,7 @@ class GraphqlRunner {
       {required GraphqlRunnerConfig config}) async {
     await initHiveForFlutter(subDir: config.hiveSubDir);
 
-    final Link link = config.authLink.concat(config.httpLink);
+    final link = config.authLink.concat(config.httpLink);
     final client = GraphQLClient(
         link: link,
         cache: config.cache ??
@@ -57,8 +57,9 @@ class GraphqlRunner {
             ),
         alwaysRebroadcast: config.alwaysRebroadcast,
         defaultPolicies: config.defaultPolicies);
-    ValueNotifier<GraphQLClient> clientNotifier = ValueNotifier(client);
-    var runner = GraphqlRunner(client: client, clientNotifier: clientNotifier);
+    final clientNotifier = ValueNotifier(client);
+    final runner =
+        GraphqlRunner(client: client, clientNotifier: clientNotifier);
 
     return runner;
   }

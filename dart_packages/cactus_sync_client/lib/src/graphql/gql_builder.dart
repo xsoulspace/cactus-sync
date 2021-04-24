@@ -23,7 +23,7 @@ class GqlBuilder {
   GqlBuilder(
       {List<String?>? modelFields,
       String? modelFragment,
-      required String this.modelName}) {
+      required this.modelName}) {
     if (modelFragment != null) {
       returnFields = toFields(gqlFragment: modelFragment);
     } else if (modelFields != null) {
@@ -39,12 +39,12 @@ class GqlBuilder {
   /// and returns clear string
   ///
   String toFields({required String gqlFragment}) {
-    var arrOrigin = gqlFragment.split('{');
+    final arrOrigin = gqlFragment.split('{');
     arrOrigin.removeAt(0);
-    var cuttedStart = arrOrigin.join('{');
-    var cuttedStartArr = cuttedStart.split('}');
+    final cuttedStart = arrOrigin.join('{');
+    final cuttedStartArr = cuttedStart.split('}');
     cuttedStartArr.removeAt(cuttedStartArr.length - 1);
-    var finalStr = cuttedStartArr.join('}');
+    final finalStr = cuttedStartArr.join('}');
     return finalStr;
   }
 
@@ -65,7 +65,7 @@ class GqlBuilder {
     }
   }
 
-  get createGqlStr => '''
+  String get createGqlStr => '''
         mutation create$modelName(\$input: Create${modelName}Input!) {
           create$modelName(input: \$input) {
             $returnFields
@@ -74,15 +74,15 @@ class GqlBuilder {
     '''
       .toString();
 
-  get updateGqlStr => '''
+  String get updateGqlStr => '''
         mutation update$modelName(\$input: Mutate${modelName}Input!) {
-          update${modelName}(input: \$input) {
+          update$modelName(input: \$input) {
             $returnFields
           }
         }
     '''
       .toString();
-  get removeGqlStr => '''
+  String get removeGqlStr => '''
         mutation delete$modelName(\$input: Mutate${modelName}Input!) {
           delete$modelName(input: \$input) {
             $returnFields
@@ -90,7 +90,7 @@ class GqlBuilder {
         }
     '''
       .toString();
-  get getGqlStr => '''
+  String get getGqlStr => '''
         query get$modelName(\$id: ID!) {
           get$modelName(id: \$id) {
             $returnFields
@@ -98,7 +98,7 @@ class GqlBuilder {
         }
     '''
       .toString();
-  get findGqlStr => '''
+  String get findGqlStr => '''
         query find$pluralModelName(
           \$filter: ${modelName}Filter, 
           \$page: PageRequest, 
@@ -114,7 +114,7 @@ class GqlBuilder {
         }
     '''
       .toString();
-  get subscribeNewGqlStr => '''
+  String get subscribeNewGqlStr => '''
         subscription new$modelName(
           \$filter: ${modelName}SubscriptionFilter
         ){
@@ -124,7 +124,7 @@ class GqlBuilder {
         }
     '''
       .toString();
-  get subscribeUpdatedGqlStr => '''
+  String get subscribeUpdatedGqlStr => '''
         subscription updated$modelName(
           \$filter: ${modelName}SubscriptionFilter
         ){
@@ -134,7 +134,7 @@ class GqlBuilder {
         }
     '''
       .toString();
-  get subscribeDeletedGqlStr => '''
+  String get subscribeDeletedGqlStr => '''
         subscription deleted$modelName(
           \$filter: ${modelName}SubscriptionFilter
         ){

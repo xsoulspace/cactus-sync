@@ -44,23 +44,23 @@ abstract class AbstractCactusModel<
   Future<GraphqlResult<TCreateResult>> create(
       {required TCreateInput variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners});
+      bool notifyListeners = true});
   Future<GraphqlResult<TUpdateResult>> update(
       {required TUpdateInput variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners});
+      bool notifyListeners = true});
   Future<GraphqlResult<TRemoveResult>> remove(
       {required TRemoveInput variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners});
+      bool notifyListeners = true});
   Future<GraphqlResult<TGetResult>> get(
       {required TGetInput variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners});
+      bool notifyListeners = true});
   Future<GraphqlResult<TFindResult>> find(
       {required TFindInput variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners});
+      bool notifyListeners = true});
 }
 
 class CactusModel<
@@ -109,11 +109,11 @@ class CactusModel<
     required this.graphqlModelType,
     required this.db,
   }) {
-    var maybeModelName = graphqlModelType.name;
+    final maybeModelName = graphqlModelType.name;
     if (maybeModelName == null) throw ArgumentError.notNull('Model name');
     modelName = maybeModelName;
-    var fields = graphqlModelType.fields;
-    var modelFields = this._getModelFieldNames(fields);
+    final fields = graphqlModelType.fields;
+    final modelFields = _getModelFieldNames(fields);
     gqlBuilder = GqlBuilder(
         modelName: modelName,
         modelFields: modelFields,
@@ -164,7 +164,7 @@ class CactusModel<
   /// User anyway in anytime may call it with custom gql
   /// the idea is to get names of queired fields
   List<String?> _getModelFieldNames(List<gql_schema.FieldDefinition> fields) {
-    var fieldsNames = fields
+    final fieldsNames = fields
         .where((el) =>
             el.description?.contains('manyToOne') != true ||
             el.description?.contains('oneToMany') != true ||
@@ -199,7 +199,7 @@ class CactusModel<
           required Map<String, dynamic> variableValues,
           required DefaultGqlOperationType operationType,
           required FromJsonCallback fromJsonCallback}) async =>
-      await _graphqlRunner.execute<TVariables, TQueryResult>(
+      _graphqlRunner.execute<TVariables, TQueryResult>(
           fromJsonCallback: fromJsonCallback,
           operationType: operationType,
           query: query,
@@ -209,10 +209,10 @@ class CactusModel<
     required DefaultGqlOperationType operationType,
     QueryGql? queryGql,
   }) {
-    var stringQueryGql = queryGql?.stringQueryGql;
+    final stringQueryGql = queryGql?.stringQueryGql;
     if (stringQueryGql != null) return stringQueryGql;
-    var modelFragmentGql = queryGql?.modelFragmentGql;
-    var builder = modelFragmentGql != null
+    final modelFragmentGql = queryGql?.modelFragmentGql;
+    final builder = modelFragmentGql != null
         ? GqlBuilder(
             modelName: modelName,
             modelFragment: modelFragmentGql,
@@ -221,10 +221,10 @@ class CactusModel<
     return builder.getByOperationType(operationType: operationType);
   }
 
-  _executeMiddleware<TVariables, TResult>(
+  Future<GraphqlResult<TResult>> _executeMiddleware<TVariables, TResult>(
       {QueryGql? queryGql,
       required DefaultGqlOperationType operationType,
-      bool? notifyListeners,
+      bool notifyListeners = true,
       variableValues}) async {
     /**
      * If we receive modelFragmentGql, we concat it with default query
@@ -232,9 +232,9 @@ class CactusModel<
      * If class has default fragment it will be use it
      * And then it will be use default fields
      */
-    var query =
+    final query =
         _resolveOperationGql(operationType: operationType, queryGql: queryGql);
-    var result = await _execute<TVariables, TResult>(
+    final result = await _execute<TVariables, TResult>(
       variableValues: variableValues,
       query: query,
       operationType: operationType,
@@ -243,9 +243,9 @@ class CactusModel<
     );
 
     /// STATE UPDATES
-
-    if (notifyListeners == null || notifyListeners == false) return result;
+    return result;
     // TODO: enable sync for different states
+    // if (!notifyListeners) return result;
     // var validateAndEmit = ({bool? remove}){
     //   var { isNotValid, data } = validateStateModelResult(result);
     //   if (isNotValid || data == null) return;
@@ -272,7 +272,7 @@ class CactusModel<
   }
 
   @override
-  create({required variableValues, queryGql, notifyListeners}) {
+  create({required variableValues, queryGql, notifyListeners = true}) {
     return _executeMiddleware(
         operationType: DefaultGqlOperationType.create,
         queryGql: queryGql,
@@ -281,7 +281,7 @@ class CactusModel<
   }
 
   @override
-  update({required variableValues, queryGql, notifyListeners}) {
+  update({required variableValues, queryGql, notifyListeners = true}) {
     return _executeMiddleware(
         operationType: DefaultGqlOperationType.create,
         queryGql: queryGql,
@@ -290,7 +290,7 @@ class CactusModel<
   }
 
   @override
-  remove({required variableValues, queryGql, notifyListeners}) {
+  remove({required variableValues, queryGql, notifyListeners = true}) {
     return _executeMiddleware(
         operationType: DefaultGqlOperationType.create,
         queryGql: queryGql,
@@ -299,7 +299,7 @@ class CactusModel<
   }
 
   @override
-  find({required variableValues, queryGql, notifyListeners}) {
+  find({required variableValues, queryGql, notifyListeners = true}) {
     return _executeMiddleware(
         operationType: DefaultGqlOperationType.create,
         queryGql: queryGql,
@@ -308,7 +308,7 @@ class CactusModel<
   }
 
   @override
-  get({required variableValues, queryGql, notifyListeners}) {
+  get({required variableValues, queryGql, notifyListeners = true}) {
     return _executeMiddleware(
         operationType: DefaultGqlOperationType.create,
         queryGql: queryGql,

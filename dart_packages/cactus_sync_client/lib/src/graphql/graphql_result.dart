@@ -1,6 +1,6 @@
 import 'package:graphql/client.dart';
 
-typedef FromJsonCallback(Map<String, dynamic>? json);
+typedef FromJsonCallback = void Function(Map<String, dynamic>? json);
 
 ///Generic query result based on query result
 ///
@@ -19,7 +19,7 @@ class GraphqlResult<TResult> extends QueryResult {
             data: data,
             exception: exception);
 
-  static fromQueryResult<TResult>(
+  static GraphqlResult<TResult> fromQueryResult<TResult>(
       {required QueryResult queryResult,
       required FromJsonCallback fromJsonCallback}) {
     return GraphqlResult<TResult>(

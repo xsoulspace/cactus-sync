@@ -88,32 +88,35 @@ class CactusStateModel<
     var validatedResult = validateStateModelResult(result: result);
     if (validatedResult.isNotValid) return;
     var maybeData = validatedResult.data.typedData ?? [];
-    if (maybeData is List)
+    if (maybeData is List) {
       for (TModel? maybeModel in maybeData) {
         _updateStateModel(
             maybeModel: maybeModel,
             remove: remove,
             notifyListeners: notifyListeners);
       }
-    else
+    } else {
       throw ArgumentError(
           'The data should have type List but has type ${maybeData.runtimeType}');
+    }
   }
 
   /// notifyListeners should notify all states for this model about
   /// new/updated/removed item
   ///
   /// should not be used with subscribed events
-  _updateStateModel({TModel? maybeModel, bool? remove, bool? notifyListeners}) {
+  void _updateStateModel(
+      {TModel? maybeModel, bool? remove, bool? notifyListeners}) {
     if (maybeModel == null) return;
-    var index = list.indexOf(maybeModel);
-    var isIndexExists = index >= 0;
-    if (remove == true) if (isIndexExists)
-      list.removeAt(index);
-    else if (isIndexExists)
+    final index = list.indexOf(maybeModel);
+    final isIndexExists = index >= 0;
+    if (remove == true) {
+      if (isIndexExists) list.removeAt(index);
+    } else if (isIndexExists) {
       list[index] = maybeModel;
-    else
+    } else {
       list.add(maybeModel);
+    }
 
     // TODO: implement notify
     // notifyStateModelListeners(
@@ -132,13 +135,13 @@ class CactusStateModel<
   /// This function must be used only with queires and not mutations!
   /// The purpose is to update a whole state
   void _updateListState<TResult>({required GraphqlResult<TResult> result}) {
-    var validatedResult = validateStateModelResult(result: result);
-    var data = validatedResult.data.typedData;
+    final validatedResult = validateStateModelResult(result: result);
+    final data = validatedResult.data.typedData;
     if (validatedResult.isNotValid ||
         data == null ||
         data is! GraphqlFindList<TModel>) return;
-    var items = data.getValues;
-    if (items.length == 0) return;
+    final items = data.getValues;
+    if (items.isEmpty) return;
     setState(items);
   }
 
@@ -148,8 +151,8 @@ class CactusStateModel<
   Future<GraphqlResult<TCreateResult>> create(
       {required TCreateInput variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners}) async {
-    var result = await cactusModel.create(
+      bool notifyListeners = true}) async {
+    final result = await cactusModel.create(
         variableValues: variableValues,
         notifyListeners: notifyListeners,
         queryGql: queryGql);
@@ -161,8 +164,8 @@ class CactusStateModel<
   Future<GraphqlResult<TUpdateInput>> update(
       {required TUpdateResult variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners}) async {
-    var result = await cactusModel.update(
+      bool notifyListeners = true}) async {
+    final result = await cactusModel.update(
         variableValues: variableValues,
         notifyListeners: notifyListeners,
         queryGql: queryGql);
@@ -174,8 +177,8 @@ class CactusStateModel<
   Future<GraphqlResult<TDeleteInput>> remove(
       {required TDeleteResult variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners}) async {
-    var result = await cactusModel.remove(
+      bool notifyListeners = true}) async {
+    final result = await cactusModel.remove(
         variableValues: variableValues,
         notifyListeners: notifyListeners,
         queryGql: queryGql);
@@ -187,8 +190,8 @@ class CactusStateModel<
   Future<GraphqlResult<TFindInput>> find(
       {required TFindResult variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners}) async {
-    var result = await cactusModel.find(
+      bool notifyListeners = true}) async {
+    final result = await cactusModel.find(
         variableValues: variableValues,
         notifyListeners: notifyListeners,
         queryGql: queryGql);
@@ -202,8 +205,8 @@ class CactusStateModel<
   Future<GraphqlResult<TGetInput>> get(
       {required TGetResult variableValues,
       QueryGql? queryGql,
-      bool? notifyListeners}) async {
-    var result = await cactusModel.get(
+      bool notifyListeners = true}) async {
+    final result = await cactusModel.get(
         variableValues: variableValues,
         notifyListeners: notifyListeners,
         queryGql: queryGql);

@@ -6,8 +6,8 @@ class CactusSync {
 
   GraphqlRunner graphqlRunner;
   CactusSync({required this.graphqlRunner});
-  static init<TCacheShape>({required GraphqlRunner graphqlRunner}) {
-    CactusSync.db = new CactusSync(graphqlRunner: graphqlRunner);
+  static void init<TCacheShape>({required GraphqlRunner graphqlRunner}) {
+    CactusSync.db = CactusSync(graphqlRunner: graphqlRunner);
   }
 
   ///
@@ -15,7 +15,7 @@ class CactusSync {
   /// Model must be created from GraphQl schema
   ///
   ///
-  static attachModel<
+  static CactusModel attachModel<
           TModel,
           TCreateInput,
           TCreateResult,
@@ -41,10 +41,12 @@ class CactusSync {
               TFindResult>
           modelBuilder) {
     var db = CactusSync.db;
-    if (db == null) throw Exception('''
+    if (db == null) {
+      throw Exception('''
         You don't have CactusSync db instance! Be aware: 
         CactusSync.init(...) should be called before attachModel!
       ''');
+    }
     var model = modelBuilder(db: db);
     db.models.addAll({model.modelName: model});
     return model;
