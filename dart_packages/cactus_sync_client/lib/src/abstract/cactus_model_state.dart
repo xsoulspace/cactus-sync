@@ -16,7 +16,7 @@ class StateModelValidationResult<TData> {
 /// items from `{ findSomething: { items: [] } }`
 /// ANd also model should keep original json Map
 ///
-class CactusStateModel<
+class CactusModelState<
         TModel,
         TCreateInput,
         TCreateResult,
@@ -70,7 +70,7 @@ class CactusStateModel<
       TGetResult,
       TFindInput,
       TFindResult> cactusModel;
-  CactusStateModel({
+  CactusModelState({
     required this.cactusModel,
   }) {
     // TODO: implement listeners

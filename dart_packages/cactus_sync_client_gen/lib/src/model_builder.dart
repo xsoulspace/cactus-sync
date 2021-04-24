@@ -8,36 +8,67 @@ import 'package:indent/indent.dart';
 import '../utils/utils.dart';
 
 class ModelBuilder implements Builder {
-  String generateCactusModels({required String properModelType}) {
-    final camelModelName = '${properModelType.toCamelCase()}Model';
+  String _getModelProvider(
+          {required String camelModelName, required String properModelType}) =>
+      '''
+        final use${camelModelName}State = Provider<$properModelType>((_)=>
+          CactusStateModel<$properModelType>()
+        );
+      ''';
 
+  StringBuffer _generateCactusModels({
+    required String properModelType,
+  }) {
     final pluralProperModelName = properModelType.toPluralName();
+    final strBuffer = StringBuffer();
+    final properModelName = '${properModelType}Model';
+
+    final camelModelName = '${properModelType.toCamelCase()}Model';
 
     final defaultFragmentName = '${properModelType}Fragment';
 
-//       const mutationCreateArgs = `MutationCreate${name}Args`
-//       const mutationCreateResult = `{ create${name}: Maybe<${name}> }`
+    final mutationCreateArgs = 'MutationCreate${properModelType}Args';
+    final mutationCreateResult =
+        '{ create$properModelType: Maybe<$properModelType> }';
 
-//       const mutationUpdateArgs = `MutationUpdate${name}Args`
-//       const mutationUpdateResult = `{ update${name}: Maybe<${name}> }`
+    final mutationUpdateArgs = 'MutationUpdate${properModelType}Args';
+    final mutationUpdateResult =
+        '{ update$properModelType: Maybe<$properModelType> }';
 
-//       const mutationDeleteArgs = `MutationDelete${name}Args`
-//       const mutationDeleteResult = `{ delete${name}: Maybe<${name}> }`
+    final mutationDeleteArgs = 'MutationDelete${properModelType}Args';
+    final mutationDeleteResult =
+        '{ delete$properModelType: Maybe<$properModelType> }';
 
-//       const queryGetArgs = `QueryGet${name}Args`
-//       const queryGetResult = `{ get${name}: Maybe<${name}> }`
+    final queryGetArgs = 'QueryGet${properModelType}Args';
+    final queryGetResult = '{ get$properModelType: Maybe<$properModelType> }';
 
-//       const queryFindArgs = `QueryFind${pluralName}Args`
-//       const queryFindResult = `${name}ResultList`
-//       const queryFindResultI = `{ find${pluralName}: ${queryFindResult}}`
-
-    final generatedProviderStr = '''
-          final use${camelModelName}State = Provider<$properModelType>((_)=>
-            CactusStateModel<$properModelType>()
-          );
-        '''
-        .unindent();
-    return generatedProviderStr;
+    final queryFindArgs = 'QueryFind${pluralProperModelName}Args';
+    final queryFindResult = '${properModelType}ResultList';
+    final queryFindResultI = '{ find$pluralProperModelName: $queryFindResult}';
+    const defaultFragment = '';
+    final modelStr = '''
+        final $properModelName = CactusSync.attachModel(
+          CactusModel.init<
+            $properModelType,
+            $mutationCreateArgs,
+            $mutationCreateResult,
+            $mutationUpdateArgs,
+            $mutationUpdateResult,
+            $mutationDeleteArgs,
+            $mutationDeleteResult,
+            $queryGetArgs,
+            $queryGetResult,
+            $queryFindArgs,
+            $queryFindResultI
+          >(
+            graphqlModelType:  
+            $defaultFragment)
+        );
+      ''';
+    final providerStr = _getModelProvider(
+        camelModelName: camelModelName, properModelType: properModelType);
+    strBuffer.writeAll([providerStr, modelStr], "\n");
+    return strBuffer;
   }
 
   bool isSystemType({required String typeName}) =>
@@ -57,9 +88,10 @@ class ModelBuilder implements Builder {
     for (final type in operationTypes.values) {
       if (type == null) continue;
       final typeName = type.name;
+      print(gql_lang.printNode(type.astNode));
       if (typeName == null || isSystemType(typeName: typeName)) continue;
-      final strModels = generateCactusModels(properModelType: typeName);
-      finalModels.write("\n $strModels");
+      final strModelsBuffer = _generateCactusModels(properModelType: typeName);
+      finalModels.writeln(strModelsBuffer.toString());
     }
 
     final finalContent = """
@@ -126,28 +158,6 @@ class ModelBuilder implements Builder {
 //     const typesModels: string[] = []
 //     const fragments: string[] = []
 //     for (const type of types) {
-//       const name = type.name
-//       const isSystemType = name.includes('_') || name.toLowerCase() == 'query'
-//       if (isSystemType) continue
-//       const camelName = toCamelCase(name)
-//       const pluralName = toPluralName(name)
-//       // ============ Generic generation =================
-
-//       const mutationCreateArgs = `MutationCreate${name}Args`
-//       const mutationCreateResult = `{ create${name}: Maybe<${name}> }`
-
-//       const mutationUpdateArgs = `MutationUpdate${name}Args`
-//       const mutationUpdateResult = `{ update${name}: Maybe<${name}> }`
-
-//       const mutationDeleteArgs = `MutationDelete${name}Args`
-//       const mutationDeleteResult = `{ delete${name}: Maybe<${name}> }`
-
-//       const queryGetArgs = `QueryGet${name}Args`
-//       const queryGetResult = `{ get${name}: Maybe<${name}> }`
-
-//       const queryFindArgs = `QueryFind${pluralName}Args`
-//       const queryFindResult = `${name}ResultList`
-//       const queryFindResultI = `{ find${pluralName}: ${queryFindResult}}`
 
 //       const args = [
 //         mutationCreateArgs,
