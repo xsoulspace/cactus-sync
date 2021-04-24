@@ -42,10 +42,10 @@ class CactusStateModel<
   StateModelValidationResult<GraphqlResult<TResult>>
       validateStateModelResult<TResult>(
           {required GraphqlResult<TResult> result}) {
-    var notValidResult = StateModelValidationResult<GraphqlResult<TResult>>(
+    final notValidResult = StateModelValidationResult<GraphqlResult<TResult>>(
         isNotValid: true, isValid: false, data: result);
     if (result.hasException) return notValidResult;
-    var data = result.typedData;
+    final data = result.typedData;
     if (data == null) return notValidResult;
     return StateModelValidationResult<GraphqlResult<TResult>>(
         isNotValid: false, isValid: true, data: result);
@@ -85,11 +85,11 @@ class CactusStateModel<
     bool? remove,
     bool? notifyListeners,
   }) {
-    var validatedResult = validateStateModelResult(result: result);
+    final validatedResult = validateStateModelResult(result: result);
     if (validatedResult.isNotValid) return;
-    var maybeData = validatedResult.data.typedData ?? [];
+    final maybeData = validatedResult.data.typedData ?? [];
     if (maybeData is List) {
-      for (TModel? maybeModel in maybeData) {
+      for (final TModel? maybeModel in maybeData) {
         _updateStateModel(
             maybeModel: maybeModel,
             remove: remove,
