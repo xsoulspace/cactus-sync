@@ -28,15 +28,16 @@ dependencies:
   hive: ^2.0.2
   hive_flutter: ^1.0.0
   riverpod: ^0.14.0
-  ferry: ^0.10.1-0.1.nullsafety.0
-  ferry_hive_store: ^0.4.1-0.1.nullsafety.0
+  graphql: ^5.0.0-nullsafety.4 
+  graphql_flutter: ^5.0.0-nullsafety.2
   gql_http_link: ^0.4.0-nullsafety.1
-
+  intl: ^0.17.0
+  
 dev_dependencies:
   hive_generator: ^1.0.1
   build: ^2.0.0
   build_runner: ^1.12.2
-
+  lint: ^1.5.3
   flutter_test:
     sdk: flutter
 
