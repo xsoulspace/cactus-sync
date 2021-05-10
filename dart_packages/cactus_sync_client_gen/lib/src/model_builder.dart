@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:build/build.dart';
+import 'package:code_builder/code_builder.dart';
+import 'package:dart_style/dart_style.dart';
 import 'package:gql/language.dart' as gql_lang;
 import "package:gql/schema.dart" as gql_schema;
 import 'package:indent/indent.dart';
@@ -8,13 +10,98 @@ import 'package:indent/indent.dart';
 import '../utils/utils.dart';
 
 class ModelBuilder implements Builder {
-  String _getModelProvider(
-          {required String camelModelName, required String properModelType}) =>
-      '''
+  String _getModelProvider({
+    required String camelModelName,
+    required String properModelType,
+  }) {
+    return '''
         final use${camelModelName}State = Provider<$properModelType>((_)=>
           CactusStateModel<$properModelType>()
         );
       ''';
+  }
+
+  StringBuffer _getModelProviders({
+    required Iterable<gql_schema.TypeDefinition?> operationTypes,
+  }) {
+    final strBuffer = StringBuffer();
+    for (final type in operationTypes) {
+      if (type == null) continue;
+      final typeName = type.name;
+      // print(gql_lang.printNode());
+
+      if (typeName == null || isSystemType(typeName: typeName)) continue;
+      final strModelsBuffer = _generateCactusModels(
+        properModelType: typeName,
+      );
+      strBuffer.writeln(strModelsBuffer);
+    }
+    return strBuffer;
+  }
+
+  StringBuffer _getInputClasses({
+    required List<gql_schema.InputObjectTypeDefinition> inputObjectTypes,
+  }) {
+    final finalClasses = StringBuffer();
+    for (final item in inputObjectTypes) {
+      final List<Field> fieldsDiefinitions = [];
+      final List<Parameter> defaultConstructorInitializers = [];
+      for (final gqlField in item.fields) {
+        final gqlFieldName = gqlField.name;
+        if (gqlFieldName == null) continue;
+
+        final typeName = gqlField.type?.baseTypeName;
+        if (typeName == null) continue;
+
+        fieldsDiefinitions.add(
+          Field(
+            (f) {
+              f
+                ..name = gqlFieldName
+                ..type = refer(typeName)
+                ..docs.add(gqlField.description ?? '');
+            },
+          ),
+        );
+        defaultConstructorInitializers.add(
+          Parameter(
+            (p) => p
+              ..toThis = true
+              ..named = true
+              ..name = gqlFieldName,
+          ),
+        );
+      }
+
+      final defaultConstructor = Constructor(
+        (c) => c
+          ..name = item.name
+          ..constant = true
+          ..requiredParameters.addAll(
+            defaultConstructorInitializers,
+          ),
+      );
+
+      final inputClass = Class(
+        (b) => b
+          ..name = item.name
+          ..abstract = true
+          ..fields.addAll(fieldsDiefinitions)
+          ..constructors.addAll([defaultConstructor])
+        // ..methods.add(Method.returnsVoid((b) => b
+        //   ..name = 'eat'
+        //   ..body = const Code("print('Yum');")))
+        ,
+      );
+      final emitter = DartEmitter();
+      final strigifiedInputClass = DartFormatter().format(
+        '${inputClass.accept(emitter)}',
+      );
+      finalClasses.writeln(strigifiedInputClass);
+    }
+
+    return finalClasses;
+  }
 
   StringBuffer _generateCactusModels({
     required String properModelType,
@@ -84,28 +171,17 @@ class ModelBuilder implements Builder {
     final operationTypes = schema.typeMap;
     final finalModels = StringBuffer();
 
-    // for (final type in operationTypes.values) {
-    //   if (type == null) continue;
-    //   final typeName = type.name;
-    //   // print(gql_lang.printNode());
+    final modelProviders = _getModelProviders(
+      operationTypes: operationTypes.values,
+    );
 
-    //   if (typeName == null || isSystemType(typeName: typeName)) continue;
-    //   final strModelsBuffer = _generateCactusModels(properModelType: typeName);
-    //   finalModels.writeln(strModelsBuffer.toString());
-    // }
-    for (final item in schema.inputObjectTypes) {
-      finalModels.writeln("abstract class ${item.name} {");
-      final buffer = StringBuffer();
-      for (final field in item.fields) {
-        buffer.writeln("required this.${field.name},");
-        // finalModels.writeln(field.description);
-        finalModels.writeln("final ${field.type?.baseTypeName} ${field.name};");
-      }
-      finalModels.writeln("const ${item.name} ({");
-      finalModels.writeln(buffer.toString());
-      finalModels.writeln("});");
-      finalModels.writeln("}");
-    }
+    final inputClasses = _getInputClasses(
+      inputObjectTypes: schema.inputObjectTypes,
+    );
+
+    finalModels.writeln(modelProviders);
+
+    finalModels.writeln(inputClasses);
 
     final finalContent = """
       import 'package:cactus_sync_client/cactus_sync_client.dart';
