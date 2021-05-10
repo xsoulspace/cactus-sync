@@ -60,9 +60,7 @@ class ModelBuilder implements Builder {
             $queryGetResult,
             $queryFindArgs,
             $queryFindResultI
-          >(
-            graphqlModelType:  
-            $defaultFragment)
+          >(graphqlModelType: $defaultFragment)б
         );
       ''';
     final providerStr = _getModelProvider(
@@ -85,10 +83,12 @@ class ModelBuilder implements Builder {
     final schema = gql_schema.buildSchema(schemaDocument);
     final operationTypes = schema.typeMap;
     final finalModels = StringBuffer();
+    print(schema.inputObjectTypes);
     for (final type in operationTypes.values) {
       if (type == null) continue;
       final typeName = type.name;
-      print(gql_lang.printNode(type.astNode));
+      // print(gql_lang.printNode());
+
       if (typeName == null || isSystemType(typeName: typeName)) continue;
       final strModelsBuffer = _generateCactusModels(properModelType: typeName);
       finalModels.writeln(strModelsBuffer.toString());
