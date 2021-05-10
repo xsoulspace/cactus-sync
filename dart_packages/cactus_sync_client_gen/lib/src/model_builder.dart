@@ -83,15 +83,28 @@ class ModelBuilder implements Builder {
     final schema = gql_schema.buildSchema(schemaDocument);
     final operationTypes = schema.typeMap;
     final finalModels = StringBuffer();
-    print(schema.inputObjectTypes);
-    for (final type in operationTypes.values) {
-      if (type == null) continue;
-      final typeName = type.name;
-      // print(gql_lang.printNode());
 
-      if (typeName == null || isSystemType(typeName: typeName)) continue;
-      final strModelsBuffer = _generateCactusModels(properModelType: typeName);
-      finalModels.writeln(strModelsBuffer.toString());
+    // for (final type in operationTypes.values) {
+    //   if (type == null) continue;
+    //   final typeName = type.name;
+    //   // print(gql_lang.printNode());
+
+    //   if (typeName == null || isSystemType(typeName: typeName)) continue;
+    //   final strModelsBuffer = _generateCactusModels(properModelType: typeName);
+    //   finalModels.writeln(strModelsBuffer.toString());
+    // }
+    for (final item in schema.inputObjectTypes) {
+      finalModels.writeln("abstract class ${item.name} {");
+      final buffer = StringBuffer();
+      for (final field in item.fields) {
+        buffer.writeln("required this.${field.name},");
+        // finalModels.writeln(field.description);
+        finalModels.writeln("final ${field.type?.baseTypeName} ${field.name};");
+      }
+      finalModels.writeln("const ${item.name} ({");
+      finalModels.writeln(buffer.toString());
+      finalModels.writeln("});");
+      finalModels.writeln("}");
     }
 
     final finalContent = """
@@ -104,10 +117,9 @@ class ModelBuilder implements Builder {
       /// !---------- END CAUTION ----------!
 
       $finalModels
-    """
-        .unindent();
+    """;
 
-    await buildStep.writeAsString(copyAssetId, finalContent);
+    await buildStep.writeAsString(copyAssetId, finalContent.unindent());
   }
 
   @override
