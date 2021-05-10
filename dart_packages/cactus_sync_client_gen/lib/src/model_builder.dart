@@ -172,17 +172,17 @@ class ModelBuilder implements Builder {
     final schemaDocument = gql_lang.parseString(originContentStr);
     final schema = gql_schema.buildSchema(schemaDocument);
     final operationTypes = schema.typeMap;
-    final finalModels = StringBuffer();
+    final finalModels = StringBuffer('///ada');
 
     // final modelProviders = _getModelProviders(
     //   operationTypes: operationTypes.values,
     // );
 
+    // finalModels.writeln(modelProviders);
+
     final inputClasses = _getInputClasses(
       inputObjectTypes: schema.inputObjectTypes,
     );
-
-    // finalModels.writeln(modelProviders);
 
     finalModels.writeln(inputClasses);
 
