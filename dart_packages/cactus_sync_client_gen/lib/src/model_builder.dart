@@ -39,6 +39,8 @@ class ModelBuilder implements Builder {
     return strBuffer;
   }
 
+  /// Use it to generate inputs for mutations
+  /// and queries
   StringBuffer _getInputClasses({
     required List<gql_schema.InputObjectTypeDefinition> inputObjectTypes,
   }) {
@@ -68,6 +70,7 @@ class ModelBuilder implements Builder {
             (p) => p
               ..toThis = true
               ..named = true
+              ..required = true
               ..name = gqlFieldName,
           ),
         );
@@ -95,7 +98,7 @@ class ModelBuilder implements Builder {
       );
       final emitter = DartEmitter();
       final strigifiedInputClass = DartFormatter().format(
-        '${inputClass.accept(emitter)}',
+        inputClass.accept(emitter).toString(),
       );
       finalClasses.writeln(strigifiedInputClass);
     }
@@ -171,15 +174,15 @@ class ModelBuilder implements Builder {
     final operationTypes = schema.typeMap;
     final finalModels = StringBuffer();
 
-    final modelProviders = _getModelProviders(
-      operationTypes: operationTypes.values,
-    );
+    // final modelProviders = _getModelProviders(
+    //   operationTypes: operationTypes.values,
+    // );
 
     final inputClasses = _getInputClasses(
       inputObjectTypes: schema.inputObjectTypes,
     );
 
-    finalModels.writeln(modelProviders);
+    // finalModels.writeln(modelProviders);
 
     finalModels.writeln(inputClasses);
 
