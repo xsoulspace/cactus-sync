@@ -69,8 +69,8 @@ class ModelBuilder implements Builder {
           Parameter(
             (p) => p
               ..toThis = true
-              ..named = true
-              ..required = true
+              // ..named = false
+              // ..required = true
               ..name = gqlFieldName,
           ),
         );
@@ -78,7 +78,6 @@ class ModelBuilder implements Builder {
 
       final defaultConstructor = Constructor(
         (c) => c
-          ..name = item.name
           ..constant = true
           ..requiredParameters.addAll(
             defaultConstructorInitializers,

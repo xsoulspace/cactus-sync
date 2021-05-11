@@ -40,14 +40,14 @@ class CactusSync {
               TFindInput,
               TFindResult>
           modelBuilder) {
-    var db = CactusSync.db;
+    final db = CactusSync.db;
     if (db == null) {
       throw Exception('''
         You don't have CactusSync db instance! Be aware: 
         CactusSync.init(...) should be called before attachModel!
       ''');
     }
-    var model = modelBuilder(db: db);
+    final model = modelBuilder(db: db);
     db.models.addAll({model.modelName: model});
     return model;
   }

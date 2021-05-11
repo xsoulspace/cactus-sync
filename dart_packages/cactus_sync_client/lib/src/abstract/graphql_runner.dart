@@ -70,18 +70,18 @@ class GraphqlRunner {
       required Map<String, dynamic> variableValues,
       required DefaultGqlOperationType operationType,
       required FromJsonCallback fromJsonCallback}) async {
-    var document = gql_lang.parseString(query);
+    final document = gql_lang.parseString(query);
     switch (operationType) {
       case DefaultGqlOperationType.create:
       case DefaultGqlOperationType.update:
       case DefaultGqlOperationType.remove:
-        var queryResult = await client.mutate(
+        final queryResult = await client.mutate(
             MutationOptions(document: document, variables: variableValues));
         return GraphqlResult.fromQueryResult<TQueryResult>(
             queryResult: queryResult, fromJsonCallback: fromJsonCallback);
       case DefaultGqlOperationType.get:
       case DefaultGqlOperationType.find:
-        var queryResult = await client.query(QueryOptions(
+        final queryResult = await client.query(QueryOptions(
             document: document,
             variables: variableValues,
             fetchPolicy: defaultFetchPolicy));
