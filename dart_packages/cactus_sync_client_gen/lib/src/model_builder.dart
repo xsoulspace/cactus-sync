@@ -1,238 +1,12 @@
 import 'dart:async';
 
 import 'package:build/build.dart';
-import 'package:code_builder/code_builder.dart';
-import 'package:dart_style/dart_style.dart';
+import 'package:cactus_sync_client_gen/src/gql_input_converter.dart';
 import 'package:gql/language.dart' as gql_lang;
 import "package:gql/schema.dart" as gql_schema;
 import 'package:indent/indent.dart';
 
-import '../utils/utils.dart';
-
-class _VerifiedName {
-  final String name;
-  final bool isKeyword;
-  const _VerifiedName({
-    required this.isKeyword,
-    required this.name,
-  });
-}
-
 class ModelBuilder implements Builder {
-  String _getModelProvider({
-    required String camelModelName,
-    required String properModelType,
-  }) {
-    return '''
-        final use${camelModelName}State = Provider<$properModelType>((_)=>
-          CactusStateModel<$properModelType>()
-        );
-      ''';
-  }
-
-  StringBuffer _getModelProviders({
-    required Iterable<gql_schema.TypeDefinition?> operationTypes,
-  }) {
-    final strBuffer = StringBuffer();
-    for (final type in operationTypes) {
-      if (type == null) continue;
-      final typeName = type.name;
-      // print(gql_lang.printNode());
-
-      if (typeName == null || isSystemType(typeName: typeName)) continue;
-      final strModelsBuffer = _generateCactusModels(
-        properModelType: typeName,
-      );
-      strBuffer.writeln(strModelsBuffer);
-    }
-    return strBuffer;
-  }
-
-  _VerifiedName _verifyName({
-    required String name,
-  }) {
-    switch (name) {
-      case 'in':
-        return const _VerifiedName(
-          isKeyword: true,
-          name: 'ins',
-        );
-      default:
-        return _VerifiedName(
-          isKeyword: false,
-          name: name,
-        );
-    }
-  }
-
-  /// Mostly usefull to convert scalar to dart type
-  String _verifyScalarTypeName({
-    required String name,
-  }) {
-    /// Graphql Scalars
-    /// TODO: make it modular. Implementation example:
-    /// https://ferrygraphql.com/docs/custom-scalars/#create-a-custom-serializer
-    ///
-    /// ID: string;
-    /// String: string;
-    /// Boolean: boolean;
-    /// Int: number;
-    /// Float: number;
-    /// GraphbackDateTime: any;
-    /// GraphbackTimestamp: any;
-
-    switch (name) {
-      case 'ID':
-        return 'String';
-      case 'GraphbackDateTime':
-        return 'String';
-      case 'GraphbackTimestamp':
-        return 'DateTime';
-      case 'Float':
-        return 'double';
-      case 'Int':
-        return 'int';
-      case 'Boolean':
-        return 'bool';
-      default:
-        return name;
-    }
-  }
-
-  /// Use it to generate inputs for mutations
-  /// and queries
-  StringBuffer _getInputClasses({
-    required List<gql_schema.InputObjectTypeDefinition> inputObjectTypes,
-  }) {
-    final finalClasses = StringBuffer();
-    for (final item in inputObjectTypes) {
-      final List<Field> fieldsDiefinitions = [];
-      final List<Parameter> defaultConstructorInitializers = [];
-      for (final gqlField in item.fields) {
-        final rawGqlFieldName = gqlField.name ?? '';
-        final verifiedGqlFieldName = _verifyName(
-          name: rawGqlFieldName,
-        );
-        final gqlFieldName = verifiedGqlFieldName.name;
-        if (gqlFieldName.isEmpty) continue;
-
-        final rawTypeName = gqlField.type?.baseTypeName ?? '';
-        final typeName = _verifyScalarTypeName(name: rawTypeName);
-        if (typeName.isEmpty) continue;
-
-        fieldsDiefinitions.add(
-          Field(
-            (f) {
-              f
-                ..modifier = FieldModifier.final$
-                ..name = gqlFieldName
-                ..type = refer(typeName)
-                ..docs.add(gqlField.description ?? '');
-
-              if (verifiedGqlFieldName.isKeyword) {
-                f.annotations.addAll([
-                  refer('BuiltValueField',
-                          'package:built_value/built_value.dart')
-                      .call([], {
-                    'wireName': refer("'$rawGqlFieldName'"),
-                  }),
-                ]);
-              }
-            },
-          ),
-        );
-        defaultConstructorInitializers.add(
-          Parameter(
-            (p) => p
-              ..toThis = true
-              ..named = true
-              ..required = true
-              ..name = gqlFieldName,
-          ),
-        );
-      }
-
-      final defaultConstructor = Constructor((c) => c
-        ..constant = true
-        ..optionalParameters.addAll(
-          defaultConstructorInitializers,
-        ));
-
-      final inputClass = Class(
-        (b) => b
-          ..name = item.name
-          ..fields.addAll(fieldsDiefinitions)
-          ..constructors.addAll([defaultConstructor])
-        // ..methods.add(Method.returnsVoid((b) => b
-        //   ..name = 'eat'
-        //   ..body = const Code("print('Yum');")))
-        ,
-      );
-      final emitter = DartEmitter();
-      final strigifiedInputClass = DartFormatter().format(
-        inputClass.accept(emitter).toString(),
-      );
-      finalClasses.writeln(strigifiedInputClass);
-    }
-
-    return finalClasses;
-  }
-
-  StringBuffer _generateCactusModels({
-    required String properModelType,
-  }) {
-    final pluralProperModelName = properModelType.toPluralName();
-    final strBuffer = StringBuffer();
-    final properModelName = '${properModelType}Model';
-
-    final camelModelName = '${properModelType.toCamelCase()}Model';
-
-    final defaultFragmentName = '${properModelType}Fragment';
-
-    final mutationCreateArgs = 'MutationCreate${properModelType}Args';
-    final mutationCreateResult =
-        '{ create$properModelType: Maybe<$properModelType> }';
-
-    final mutationUpdateArgs = 'MutationUpdate${properModelType}Args';
-    final mutationUpdateResult =
-        '{ update$properModelType: Maybe<$properModelType> }';
-
-    final mutationDeleteArgs = 'MutationDelete${properModelType}Args';
-    final mutationDeleteResult =
-        '{ delete$properModelType: Maybe<$properModelType> }';
-
-    final queryGetArgs = 'QueryGet${properModelType}Args';
-    final queryGetResult = '{ get$properModelType: Maybe<$properModelType> }';
-
-    final queryFindArgs = 'QueryFind${pluralProperModelName}Args';
-    final queryFindResult = '${properModelType}ResultList';
-    final queryFindResultI = '{ find$pluralProperModelName: $queryFindResult}';
-    const defaultFragment = '';
-    final modelStr = '''
-        final $properModelName = CactusSync.attachModel(
-          CactusModel.init<
-            $properModelType,
-            $mutationCreateArgs,
-            $mutationCreateResult,
-            $mutationUpdateArgs,
-            $mutationUpdateResult,
-            $mutationDeleteArgs,
-            $mutationDeleteResult,
-            $queryGetArgs,
-            $queryGetResult,
-            $queryFindArgs,
-            $queryFindResultI
-          >(graphqlModelType: $defaultFragment)б
-        );
-      ''';
-    final providerStr = _getModelProvider(
-        camelModelName: camelModelName, properModelType: properModelType);
-    strBuffer.writeAll([providerStr, modelStr], "\n");
-    return strBuffer;
-  }
-
-  bool isSystemType({required String typeName}) =>
-      typeName.contains('_') || typeName.toLowerCase() == 'query';
   @override
   FutureOr<void> build(BuildStep buildStep) async {
     // Retrieve the currently matched asset
@@ -243,6 +17,7 @@ class ModelBuilder implements Builder {
     final originContentStr = await buildStep.readAsString(inputId);
     final schemaDocument = gql_lang.parseString(originContentStr);
     final schema = gql_schema.buildSchema(schemaDocument);
+    print(schema.enums);
     // TODO: add operation types
     final operationTypes = schema.typeMap;
     // TODO: add enums
@@ -256,23 +31,24 @@ class ModelBuilder implements Builder {
 
     // finalModels.writeln(modelProviders);
 
-    final inputClasses = _getInputClasses(
+    final inputClasses = GqlInputs.fromSchema(
       inputObjectTypes: schema.inputObjectTypes,
     );
     finalModels.writeln(inputClasses);
-
-    final finalContent = """
-      import 'package:cactus_sync_client/cactus_sync_client.dart';
-      import 'package:riverpod/riverpod.dart';
-      import 'package:built_value/built_value.dart';
-      /// !------------ CAUTION ------------!
-      /// Autogenerated file. Please do not edit it manually!
-      /// Updated: ${DateTime.now()}
-      /// !---------- END CAUTION ----------!
-      
-      $finalModels
-    """
-        .unindent();
+    final finalBuffer = StringBuffer(
+      """
+        import 'package:cactus_sync_client/cactus_sync_client.dart';
+        import 'package:riverpod/riverpod.dart';
+        import 'package:built_value/built_value.dart';
+        /// !------------ CAUTION ------------!
+        /// Autogenerated file. Please do not edit it manually!
+        /// Updated: ${DateTime.now()}
+        /// !---------- END CAUTION ----------!
+      """
+          .unindent(),
+    );
+    finalBuffer.writeln(finalModels);
+    final finalContent = finalBuffer.toString();
 
     await buildStep.writeAsString(copyAssetId, finalContent.unindent());
   }
