@@ -1,9 +1,10 @@
+import "package:gql/ast.dart";
 import "package:gql/schema.dart" as gql_schema;
 
 import '../utils/utils.dart';
 
 class GqlModelProviderCreator {
-  String getModelProvider({
+  static String getModelProvider({
     required String camelModelName,
     required String properModelType,
   }) {
@@ -14,13 +15,40 @@ class GqlModelProviderCreator {
       ''';
   }
 
-  StringBuffer getModelProviders({
+  static StringBuffer getModelProviders({
     required Iterable<gql_schema.TypeDefinition?> operationTypes,
   }) {
     final strBuffer = StringBuffer();
     for (final type in operationTypes) {
+      final astNode = type?.astNode;
+      // if (astNode is ScalarTypeDefinitionNode) {
+      //   gql_schema.ScalarTypeDefinition(astNode);
+      // }
+
+      // if (astNode is InterfaceTypeDefinitionNode) {
+      //   gql_schema.InterfaceTypeDefinition(astNode);
+      // }
+
+      if (astNode is ObjectTypeDefinitionNode) {
+        // TODO:
+        print({'p': gql_schema.ObjectTypeDefinition(astNode)});
+      }
+
+      // if (astNode is UnionTypeDefinitionNode) {
+      //   gql_schema.UnionTypeDefinition(astNode);
+      // }
+
+      // if (astNode is EnumTypeDefinitionNode) {
+      //   gql_schema.EnumTypeDefinition(astNode);
+      // }
+
+      // if (astNode is InputObjectTypeDefinitionNode) {
+      //   gql_schema.InputObjectTypeDefinition(astNode);
+      // }
+
       if (type == null) continue;
       final typeName = type.name;
+
       // print(gql_lang.printNode());
 
       if (typeName == null || isSystemType(typeName: typeName)) continue;
@@ -32,7 +60,7 @@ class GqlModelProviderCreator {
     return strBuffer;
   }
 
-  StringBuffer generateCactusModels({
+  static StringBuffer generateCactusModels({
     required String properModelType,
   }) {
     final pluralProperModelName = properModelType.toPluralName();
@@ -85,6 +113,6 @@ class GqlModelProviderCreator {
     return strBuffer;
   }
 
-  bool isSystemType({required String typeName}) =>
+  static bool isSystemType({required String typeName}) =>
       typeName.contains('_') || typeName.toLowerCase() == 'query';
 }
