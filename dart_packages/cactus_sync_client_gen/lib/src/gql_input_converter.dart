@@ -1,9 +1,8 @@
+import 'package:cactus_sync_client_gen/src/gql_dart_formatter.dart';
 import 'package:cactus_sync_client_gen/src/gql_input_field_helper.dart';
 import 'package:cactus_sync_client_gen/src/gql_scalar.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:dart_style/dart_style.dart';
 import "package:gql/schema.dart" as gql_schema;
-import 'package:indent/indent.dart';
 
 class GqlInputs {
   /// Use it to generate inputs for mutations
@@ -16,15 +15,11 @@ class GqlInputs {
       final inputClass = classFromTypeDefinition(typeDefinition: item);
 
       // Formatting
+      final formattedStrInputClass = GqlDartFormatter.stringifyAndFormat(
+        dartClass: inputClass,
+      );
 
-      final emitter = DartEmitter();
-      final strigifiedInputClass = DartFormatter()
-          .format(
-            inputClass.accept(emitter).toString(),
-          )
-          .unindent();
-
-      finalClasses.writeln(strigifiedInputClass);
+      finalClasses.writeln(formattedStrInputClass);
     }
 
     return finalClasses;

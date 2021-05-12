@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:build/build.dart';
+import 'package:cactus_sync_client_gen/src/gql_enum.dart';
 import 'package:cactus_sync_client_gen/src/gql_input_converter.dart';
 import 'package:gql/language.dart' as gql_lang;
 import "package:gql/schema.dart" as gql_schema;
@@ -17,7 +18,6 @@ class ModelBuilder implements Builder {
     final originContentStr = await buildStep.readAsString(inputId);
     final schemaDocument = gql_lang.parseString(originContentStr);
     final schema = gql_schema.buildSchema(schemaDocument);
-    print(schema.enums);
     // TODO: add operation types
     final operationTypes = schema.typeMap;
     // TODO: add enums
@@ -35,6 +35,11 @@ class ModelBuilder implements Builder {
       inputObjectTypes: schema.inputObjectTypes,
     );
     finalModels.writeln(inputClasses);
+
+    final dartEnums = GqlEnums.fromSchema(
+      schemaEnums: schema.enums,
+    );
+    finalModels.writeln(dartEnums);
     final finalBuffer = StringBuffer(
       """
         import 'package:cactus_sync_client/cactus_sync_client.dart';
