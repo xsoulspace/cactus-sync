@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:build/build.dart';
+import 'package:cactus_sync_client_gen/src/gql_dart_formatter.dart';
 import 'package:cactus_sync_client_gen/src/gql_enum.dart';
 import 'package:cactus_sync_client_gen/src/gql_input_converter.dart';
 import 'package:cactus_sync_client_gen/src/gql_model_builder.dart';
+import 'package:code_builder/code_builder.dart';
 import 'package:gql/language.dart' as gql_lang;
 import "package:gql/schema.dart" as gql_schema;
 import 'package:indent/indent.dart';
@@ -23,23 +25,18 @@ class ModelBuilder implements Builder {
     // TODO: add enums
 
     // TODO: add scalars
-    final finalModels = StringBuffer();
+    final finalClasses = <Class>{};
     final operationTypes = schema.typeMap;
     final modelsAndProviders = GqlModelBuilder().makeModelsAndProviders(
       operationTypes: operationTypes.values,
     );
 
-    finalModels.writeln(modelsAndProviders);
-
+    finalClasses.addAll(modelsAndProviders);
     final inputClasses = GqlInputs().fromSchema(
       inputObjectTypes: schema.inputObjectTypes,
     );
-    finalModels.writeln(inputClasses);
+    finalClasses.addAll(inputClasses);
 
-    final dartEnums = GqlEnums.fromSchema(
-      schemaEnums: schema.enums,
-    );
-    finalModels.writeln(dartEnums);
     final finalBuffer = StringBuffer(
       """
         import 'package:cactus_sync_client/cactus_sync_client.dart';
@@ -52,7 +49,19 @@ class ModelBuilder implements Builder {
       """
           .unindent(),
     );
-    finalBuffer.writeln(finalModels);
+    final dartEnums = GqlEnums.fromSchema(
+      schemaEnums: schema.enums,
+    );
+    finalBuffer
+      ..writeln(dartEnums)
+      ..writeln(
+        finalClasses
+            .map(
+              (dartClass) =>
+                  GqlDartFormatter.stringifyAndFormat(dartClass: dartClass),
+            )
+            .join("\n"),
+      );
     final finalContent = finalBuffer.toString();
 
     await buildStep.writeAsString(copyAssetId, finalContent.unindent());

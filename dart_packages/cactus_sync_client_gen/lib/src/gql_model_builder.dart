@@ -3,7 +3,6 @@ import "package:gql/ast.dart";
 import "package:gql/schema.dart" as gql_schema;
 
 import '../utils/utils.dart';
-import 'gql_dart_formatter.dart';
 import 'gql_object_type_definition.dart';
 
 class GqlModelBuilder extends GqlObjectTypeDefinition {
@@ -18,31 +17,32 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       ''';
   }
 
-  StringBuffer makeModelsAndProviders({
+  Set<Class> makeModelsAndProviders({
     required Iterable<gql_schema.TypeDefinition?> operationTypes,
   }) {
-    final strBuffer = StringBuffer();
+    final finalClasses = <Class>{};
+
     for (final typeNode in operationTypes) {
       if (typeNode == null) continue;
       final typeDefinitionName = typeNode.name;
-      if (typeDefinitionName == null ||
-          isSystemType(typeName: typeDefinitionName)) continue;
+      if (typeDefinitionName == null) continue;
       final astNode = typeNode.astNode;
 
       if (astNode is ObjectTypeDefinitionNode) {
         final typeDefinition = gql_schema.ObjectTypeDefinition(astNode);
-        final strDartModel = makeModelClass(
+        final dartModel = makeModelClass(
           typeDefinition: typeDefinition,
           typeDefinitionName: typeDefinitionName,
         );
-        strBuffer.writeln(strDartModel);
+        finalClasses.add(dartModel);
       } else if (astNode is InterfaceTypeDefinitionNode) {
         final typeDefinition = gql_schema.InterfaceTypeDefinition(astNode);
-        final strDartModel = makeInterfaceClass(
+
+        final dartInterface = makeInterfaceClass(
           typeDefinition: typeDefinition,
           typeDefinitionName: typeDefinitionName,
         );
-        strBuffer.writeln(strDartModel);
+        finalClasses.add(dartInterface);
       } else {
         continue;
       }
@@ -70,10 +70,10 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       // );
       // strBuffer.writeln(strModelsBuffer);
     }
-    return strBuffer;
+    return finalClasses;
   }
 
-  StringBuffer makeInterfaceClass({
+  Class makeInterfaceClass({
     required gql_schema.InterfaceTypeDefinition typeDefinition,
     required String? typeDefinitionName,
   }) =>
@@ -83,7 +83,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         abstract: true,
       );
 
-  StringBuffer makeModelClass({
+  Class makeModelClass({
     required gql_schema.TypeDefinitionWithFieldSet typeDefinition,
     required String? typeDefinitionName,
     bool abstract = false,
@@ -106,10 +106,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       typeDefinitionName: typeDefinitionName,
       abstract: abstract,
     );
-    final formattedStrInputClass = GqlDartFormatter.stringifyAndFormat(
-      dartClass: dartClass,
-    );
-    return formattedStrInputClass;
+    return dartClass;
   }
 
   StringBuffer makeCactusModels({

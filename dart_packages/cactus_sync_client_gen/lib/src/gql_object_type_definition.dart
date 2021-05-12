@@ -28,6 +28,7 @@ class GqlObjectTypeDefinition {
         ..fields.addAll(fieldsDiefinitions)
         ..constructors.addAll([defaultConstructor])
         ..abstract = abstract
+
       // ..methods.add(Method.returnsVoid((b) => b
       //   ..name = 'eat'
       //   ..body = const Code("print('Yum');")))
