@@ -1,6 +1,13 @@
 import '../utils/utils.dart';
 
-enum DefaultGqlOperationType { fromString, create, update, remove, get, find }
+enum DefaultGqlOperationType {
+  fromString,
+  create,
+  update,
+  remove,
+  get,
+  find,
+}
 enum SubscribeGqlOperationType {
   fromString,
   subscribeNew,
@@ -20,10 +27,11 @@ class GqlBuilder {
   String modelName;
   late String returnFields;
   late String pluralModelName;
-  GqlBuilder(
-      {List<String?>? modelFields,
-      String? modelFragment,
-      required this.modelName}) {
+  GqlBuilder({
+    List<String?>? modelFields,
+    String? modelFragment,
+    required this.modelName,
+  }) {
     if (modelFragment != null) {
       returnFields = toFields(gqlFragment: modelFragment);
     } else if (modelFields != null) {

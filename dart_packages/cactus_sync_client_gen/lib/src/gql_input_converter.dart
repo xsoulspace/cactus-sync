@@ -13,14 +13,24 @@ class GqlInputs {
   }) {
     final finalClasses = StringBuffer();
     for (final item in inputObjectTypes) {
-      final inputClass = fromTypeDefinition(typeDefinition: item);
-      finalClasses.writeln(inputClass);
+      final inputClass = classFromTypeDefinition(typeDefinition: item);
+
+      // Formatting
+
+      final emitter = DartEmitter();
+      final strigifiedInputClass = DartFormatter()
+          .format(
+            inputClass.accept(emitter).toString(),
+          )
+          .unindent();
+
+      finalClasses.writeln(strigifiedInputClass);
     }
 
     return finalClasses;
   }
 
-  static String fromTypeDefinition({
+  static Class classFromTypeDefinition({
     required gql_schema.InputObjectTypeDefinition typeDefinition,
   }) {
     final List<Field> fieldsDiefinitions = [];
@@ -95,12 +105,7 @@ class GqlInputs {
       //   ..body = const Code("print('Yum');")))
       ,
     );
-    final emitter = DartEmitter();
-    final strigifiedInputClass = DartFormatter()
-        .format(
-          inputClass.accept(emitter).toString(),
-        )
-        .unindent();
-    return strigifiedInputClass;
+
+    return inputClass;
   }
 }
