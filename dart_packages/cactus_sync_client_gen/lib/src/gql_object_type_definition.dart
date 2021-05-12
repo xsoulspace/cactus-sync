@@ -1,6 +1,20 @@
 import 'package:cactus_sync_client_gen/src/gql_input_field_helper.dart';
 import 'package:cactus_sync_client_gen/src/gql_scalar.dart';
 import 'package:code_builder/code_builder.dart';
+import "package:gql/schema.dart" as gql_schema;
+
+class _VerifiedTypeName {
+  final bool isKeyword;
+  final String typedefName;
+  final String baseTypeName;
+  final String rawGqlFieldName;
+  const _VerifiedTypeName({
+    required this.isKeyword,
+    required this.typedefName,
+    required this.baseTypeName,
+    required this.rawGqlFieldName,
+  });
+}
 
 class GqlObjectTypeDefinition {
   Class makeClassContructor({
@@ -37,26 +51,49 @@ class GqlObjectTypeDefinition {
     return finalClass;
   }
 
-  void fillClassParametersFromField({
+  _VerifiedTypeName? verifyTypeAndName({
+    required String? typedefName,
+    required String? baseTypeName,
+  }) {
+    final rawGqlFieldName = typedefName ?? '';
+    final verifiedGqlFieldName = GqlInputFieldHelper.verifyName(
+      name: rawGqlFieldName,
+    );
+    final gqlFieldName = verifiedGqlFieldName.name;
+    if (gqlFieldName.isEmpty) return null;
+
+    final rawTypeName = baseTypeName ?? '';
+    final typeName = GqlScalar.verifyName(
+      name: rawTypeName,
+    );
+    if (typeName.isEmpty) return null;
+    return _VerifiedTypeName(
+      rawGqlFieldName: rawGqlFieldName,
+      baseTypeName: typeName,
+      isKeyword: verifiedGqlFieldName.isKeyword,
+      typedefName: verifiedGqlFieldName.name,
+    );
+  }
+
+  void fillClassMethodField({
+    required List<Field> fieldsDiefinitions,
+    required String? name,
+    required String? description,
+    required String? baseTypeName,
+    required List<gql_schema.InputValueDefinition> args,
+  }) {}
+  void fillClassParameterFromField({
     required List<Field> fieldsDiefinitions,
     required List<Parameter> defaultConstructorInitializers,
     required String? name,
     required String? description,
     required String? baseTypeName,
   }) {
-    final rawGqlFieldName = name ?? '';
-    final verifiedGqlFieldName = GqlInputFieldHelper.verifyName(
-      name: rawGqlFieldName,
+    final verifiedTypeNames = verifyTypeAndName(
+      baseTypeName: baseTypeName,
+      typedefName: name,
     );
-    final gqlFieldName = verifiedGqlFieldName.name;
-    if (gqlFieldName.isEmpty) return;
-
-    final rawTypeName = baseTypeName ?? '';
-    final typeName = GqlScalar.verifyName(
-      name: rawTypeName,
-    );
-    if (typeName.isEmpty) return;
-
+    if (verifiedTypeNames == null) return;
     fieldsDiefinitions.add(
       Field(
         (f) {
@@ -66,7 +103,7 @@ class GqlObjectTypeDefinition {
             ..type = refer(typeName)
             ..docs.add(description ?? '');
 
-          if (verifiedGqlFieldName.isKeyword) {
+          if (verifiedTypeNames.isKeyword) {
             f.annotations.addAll(
               [
                 refer(

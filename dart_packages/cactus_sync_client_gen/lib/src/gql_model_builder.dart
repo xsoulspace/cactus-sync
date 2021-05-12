@@ -30,11 +30,12 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
       if (astNode is ObjectTypeDefinitionNode) {
         final typeDefinition = gql_schema.ObjectTypeDefinition(astNode);
-        final dartModel = makeModelClass(
-          typeDefinition: typeDefinition,
-          typeDefinitionName: typeDefinitionName,
-        );
-        finalClasses.add(dartModel);
+        print(typeDefinition);
+        // final dartModel = makeModelClass(
+        //   typeDefinition: typeDefinition,
+        //   typeDefinitionName: typeDefinitionName,
+        // );
+        // finalClasses.add(dartModel);
       } else if (astNode is InterfaceTypeDefinitionNode) {
         final typeDefinition = gql_schema.InterfaceTypeDefinition(astNode);
 
@@ -91,14 +92,26 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final List<Field> fieldsDiefinitions = [];
     final List<Parameter> defaultConstructorInitializers = [];
     for (final field in typeDefinition.fields) {
-      fillClassParametersFromField(
-        fieldsDiefinitions: fieldsDiefinitions,
-        defaultConstructorInitializers: defaultConstructorInitializers,
-        name: field.name,
-        // FIXME: errors happened with comments
-        description: '', //field.description ,
-        baseTypeName: field.type?.baseTypeName,
-      );
+      final args = field.args;
+      if (args != null && args.isNotEmpty == true) {
+        fillClassMethodField(
+          fieldsDiefinitions: fieldsDiefinitions,
+          name: field.name,
+          // FIXME: errors happened with comments
+          description: '', //field.description ,
+          baseTypeName: field.type?.baseTypeName,
+          args: args,
+        );
+      } else {
+        fillClassParameterFromField(
+          fieldsDiefinitions: fieldsDiefinitions,
+          defaultConstructorInitializers: defaultConstructorInitializers,
+          name: field.name,
+          // FIXME: errors happened with comments
+          description: '', //field.description ,
+          baseTypeName: field.type?.baseTypeName,
+        );
+      }
     }
     final dartClass = makeClassContructor(
       fieldsDiefinitions: fieldsDiefinitions,
