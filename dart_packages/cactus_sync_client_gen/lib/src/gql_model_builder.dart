@@ -30,12 +30,13 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
       if (astNode is ObjectTypeDefinitionNode) {
         final typeDefinition = gql_schema.ObjectTypeDefinition(astNode);
-        print(typeDefinition);
-        // final dartModel = makeModelClass(
-        //   typeDefinition: typeDefinition,
-        //   typeDefinitionName: typeDefinitionName,
-        // );
-        // finalClasses.add(dartModel);
+
+        final dartModel = makeModelClass(
+          typeDefinition: typeDefinition,
+          typeDefinitionName: typeDefinitionName,
+          implementsInterfaces: typeDefinition.interfaces,
+        );
+        finalClasses.add(dartModel);
       } else if (astNode is InterfaceTypeDefinitionNode) {
         final typeDefinition = gql_schema.InterfaceTypeDefinition(astNode);
 
@@ -77,6 +78,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
   Class makeInterfaceClass({
     required gql_schema.InterfaceTypeDefinition typeDefinition,
     required String? typeDefinitionName,
+    List<gql_schema.InterfaceTypeDefinition>? implementsInterfaces,
   }) =>
       makeModelClass(
         typeDefinition: typeDefinition,
@@ -88,14 +90,16 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     required gql_schema.TypeDefinitionWithFieldSet typeDefinition,
     required String? typeDefinitionName,
     bool abstract = false,
+    List<gql_schema.InterfaceTypeDefinition?>? implementsInterfaces,
   }) {
     final List<Field> fieldsDiefinitions = [];
+    final List<Method> methodsDefinitions = [];
     final List<Parameter> defaultConstructorInitializers = [];
     for (final field in typeDefinition.fields) {
       final args = field.args;
       if (args != null && args.isNotEmpty == true) {
         fillClassMethodField(
-          fieldsDiefinitions: fieldsDiefinitions,
+          methodsDiefinitions: methodsDefinitions,
           name: field.name,
           // FIXME: errors happened with comments
           description: '', //field.description ,
@@ -115,9 +119,11 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     }
     final dartClass = makeClassContructor(
       fieldsDiefinitions: fieldsDiefinitions,
+      methodsDefinitions: methodsDefinitions,
       defaultConstructorInitializers: defaultConstructorInitializers,
       typeDefinitionName: typeDefinitionName,
       abstract: abstract,
+      implementsInterfaces: implementsInterfaces,
     );
     return dartClass;
   }

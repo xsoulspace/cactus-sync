@@ -10,7 +10,9 @@ class GqlInputs extends GqlObjectTypeDefinition {
   }) {
     final finalClasses = <Class>{};
     for (final item in inputObjectTypes) {
-      final inputClass = toClassFromTypeDefinition(typeDefinition: item);
+      final inputClass = toClassFromTypeDefinition(
+        typeDefinition: item,
+      );
 
       finalClasses.add(inputClass);
     }
@@ -20,8 +22,10 @@ class GqlInputs extends GqlObjectTypeDefinition {
 
   Class toClassFromTypeDefinition({
     required gql_schema.InputObjectTypeDefinition typeDefinition,
+    List<gql_schema.InterfaceTypeDefinition>? implementsInterfaces,
   }) {
     final List<Field> fieldsDiefinitions = [];
+    final List<Method> methodsDefinitions = [];
     final List<Parameter> defaultConstructorInitializers = [];
     for (final gqlField in typeDefinition.fields) {
       fillClassParameterFromField(
@@ -34,6 +38,8 @@ class GqlInputs extends GqlObjectTypeDefinition {
     }
     final inputClass = makeClassContructor(
       fieldsDiefinitions: fieldsDiefinitions,
+      implementsInterfaces: implementsInterfaces,
+      methodsDefinitions: methodsDefinitions,
       defaultConstructorInitializers: defaultConstructorInitializers,
       typeDefinitionName: typeDefinition.name,
     );

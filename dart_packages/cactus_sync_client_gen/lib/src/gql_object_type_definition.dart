@@ -19,9 +19,11 @@ class _VerifiedTypeName {
 class GqlObjectTypeDefinition {
   Class makeClassContructor({
     required List<Field> fieldsDiefinitions,
+    required List<Method> methodsDefinitions,
     required List<Parameter> defaultConstructorInitializers,
     required String? typeDefinitionName,
     bool abstract = false,
+    List<gql_schema.InterfaceTypeDefinition?>? implementsInterfaces,
   }) {
     if (typeDefinitionName == null || typeDefinitionName.isEmpty) {
       throw ArgumentError.value(
@@ -30,19 +32,29 @@ class GqlObjectTypeDefinition {
         'Empty name',
       );
     }
-    final defaultConstructor = Constructor((c) => c
-      ..constant = true
-      ..optionalParameters.addAll(
-        defaultConstructorInitializers,
-      ));
+    final defaultConstructor = Constructor(
+      (c) => c
+        ..constant = true
+        ..optionalParameters.addAll(
+          defaultConstructorInitializers,
+        ),
+    );
 
     final finalClass = Class(
       (b) => b
         ..name = typeDefinitionName
         ..fields.addAll(fieldsDiefinitions)
+        ..methods.addAll(methodsDefinitions)
         ..constructors.addAll([defaultConstructor])
         ..abstract = abstract
-
+      // FIXME: interfaces are not working
+      // ..implements.addAll(
+      //   (implementsInterfaces ?? [])
+      //       .map(
+      //         (e) => e?.name != null ? refer("'${e?.name ?? ''}'") : null,
+      //       )
+      //       .whereType<Reference>(),
+      // )
       // ..methods.add(Method.returnsVoid((b) => b
       //   ..name = 'eat'
       //   ..body = const Code("print('Yum');")))
@@ -69,19 +81,26 @@ class GqlObjectTypeDefinition {
     if (typeName.isEmpty) return null;
     return _VerifiedTypeName(
       rawGqlFieldName: rawGqlFieldName,
+      typedefName: verifiedGqlFieldName.name,
       baseTypeName: typeName,
       isKeyword: verifiedGqlFieldName.isKeyword,
-      typedefName: verifiedGqlFieldName.name,
     );
   }
 
   void fillClassMethodField({
-    required List<Field> fieldsDiefinitions,
+    required List<Method> methodsDiefinitions,
     required String? name,
     required String? description,
     required String? baseTypeName,
     required List<gql_schema.InputValueDefinition> args,
-  }) {}
+  }) {
+    final verifiedTypeNames = verifyTypeAndName(
+      baseTypeName: baseTypeName,
+      typedefName: name,
+    );
+    if (verifiedTypeNames == null) return;
+  }
+
   void fillClassParameterFromField({
     required List<Field> fieldsDiefinitions,
     required List<Parameter> defaultConstructorInitializers,
@@ -99,8 +118,13 @@ class GqlObjectTypeDefinition {
         (f) {
           f
             ..modifier = FieldModifier.final$
-            ..name = gqlFieldName
-            ..type = refer(typeName)
+            ..name = verifiedTypeNames.typedefName
+            ..type = refer(
+              // FIXME: temp solving arrays
+              verifiedTypeNames.typedefName == 'items'
+                  ? "List<${verifiedTypeNames.baseTypeName}?>"
+                  : verifiedTypeNames.baseTypeName,
+            )
             ..docs.add(description ?? '');
 
           if (verifiedTypeNames.isKeyword) {
@@ -113,7 +137,7 @@ class GqlObjectTypeDefinition {
                   [],
                   {
                     'wireName': refer(
-                      "'$rawGqlFieldName'",
+                      "'${verifiedTypeNames.rawGqlFieldName}'",
                     ),
                   },
                 ),
@@ -129,7 +153,7 @@ class GqlObjectTypeDefinition {
           ..toThis = true
           ..named = true
           ..required = true
-          ..name = gqlFieldName,
+          ..name = verifiedTypeNames.typedefName,
       ),
     );
   }
