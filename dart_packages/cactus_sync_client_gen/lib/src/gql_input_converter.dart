@@ -1,18 +1,17 @@
 import 'package:cactus_sync_client_gen/src/gql_dart_formatter.dart';
-import 'package:cactus_sync_client_gen/src/gql_input_field_helper.dart';
-import 'package:cactus_sync_client_gen/src/gql_scalar.dart';
+import 'package:cactus_sync_client_gen/src/gql_object_type_definition.dart';
 import 'package:code_builder/code_builder.dart';
 import "package:gql/schema.dart" as gql_schema;
 
-class GqlInputs {
+class GqlInputs extends GqlObjectTypeDefinition {
   /// Use it to generate inputs for mutations
   /// and queries
-  static StringBuffer fromSchema({
+  StringBuffer fromSchema({
     required List<gql_schema.InputObjectTypeDefinition> inputObjectTypes,
   }) {
     final finalClasses = StringBuffer();
     for (final item in inputObjectTypes) {
-      final inputClass = classFromTypeDefinition(typeDefinition: item);
+      final inputClass = toClassFromTypeDefinition(typeDefinition: item);
 
       // Formatting
       final formattedStrInputClass = GqlDartFormatter.stringifyAndFormat(
@@ -25,82 +24,25 @@ class GqlInputs {
     return finalClasses;
   }
 
-  static Class classFromTypeDefinition({
+  Class toClassFromTypeDefinition({
     required gql_schema.InputObjectTypeDefinition typeDefinition,
   }) {
     final List<Field> fieldsDiefinitions = [];
     final List<Parameter> defaultConstructorInitializers = [];
     for (final gqlField in typeDefinition.fields) {
-      final rawGqlFieldName = gqlField.name ?? '';
-      final verifiedGqlFieldName = GqlInputFieldHelper.verifyName(
-        name: rawGqlFieldName,
-      );
-      final gqlFieldName = verifiedGqlFieldName.name;
-      if (gqlFieldName.isEmpty) continue;
-
-      final rawTypeName = gqlField.type?.baseTypeName ?? '';
-      final typeName = GqlScalar.verifyName(
-        name: rawTypeName,
-      );
-      if (typeName.isEmpty) continue;
-
-      fieldsDiefinitions.add(
-        Field(
-          (f) {
-            f
-              ..modifier = FieldModifier.final$
-              ..name = gqlFieldName
-              ..type = refer(typeName)
-              ..docs.add(gqlField.description ?? '');
-
-            if (verifiedGqlFieldName.isKeyword) {
-              f.annotations.addAll(
-                [
-                  refer(
-                    'BuiltValueField',
-                    'package:built_value/built_value.dart',
-                  ).call(
-                    [],
-                    {
-                      'wireName': refer(
-                        "'$rawGqlFieldName'",
-                      ),
-                    },
-                  ),
-                ],
-              );
-            }
-          },
-        ),
-      );
-      defaultConstructorInitializers.add(
-        Parameter(
-          (p) => p
-            ..toThis = true
-            ..named = true
-            ..required = true
-            ..name = gqlFieldName,
-        ),
+      fillClassParametersFromField(
+        fieldsDiefinitions: fieldsDiefinitions,
+        defaultConstructorInitializers: defaultConstructorInitializers,
+        name: gqlField.name,
+        description: gqlField.description,
+        baseTypeName: gqlField.type?.baseTypeName,
       );
     }
-
-    final defaultConstructor = Constructor((c) => c
-      ..constant = true
-      ..optionalParameters.addAll(
-        defaultConstructorInitializers,
-      ));
-
-    final inputClass = Class(
-      (b) => b
-        ..name = typeDefinition.name
-        ..fields.addAll(fieldsDiefinitions)
-        ..constructors.addAll([defaultConstructor])
-      // ..methods.add(Method.returnsVoid((b) => b
-      //   ..name = 'eat'
-      //   ..body = const Code("print('Yum');")))
-      ,
+    final inputClass = makeClassContructor(
+      fieldsDiefinitions: fieldsDiefinitions,
+      defaultConstructorInitializers: defaultConstructorInitializers,
+      typeDefinitionName: typeDefinition.name,
     );
-
     return inputClass;
   }
 }

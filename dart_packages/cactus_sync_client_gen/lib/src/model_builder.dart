@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:build/build.dart';
 import 'package:cactus_sync_client_gen/src/gql_enum.dart';
 import 'package:cactus_sync_client_gen/src/gql_input_converter.dart';
-import 'package:cactus_sync_client_gen/src/gql_model_provider.dart';
+import 'package:cactus_sync_client_gen/src/gql_model_builder.dart';
 import 'package:gql/language.dart' as gql_lang;
 import "package:gql/schema.dart" as gql_schema;
 import 'package:indent/indent.dart';
@@ -25,13 +25,13 @@ class ModelBuilder implements Builder {
     // TODO: add scalars
     final finalModels = StringBuffer();
     final operationTypes = schema.typeMap;
-    final modelProviders = GqlModelProviderCreator.getModelProviders(
+    final modelsAndProviders = GqlModelBuilder().makeModelsAndProviders(
       operationTypes: operationTypes.values,
     );
 
-    // finalModels.writeln(modelProviders);
+    finalModels.writeln(modelsAndProviders);
 
-    final inputClasses = GqlInputs.fromSchema(
+    final inputClasses = GqlInputs().fromSchema(
       inputObjectTypes: schema.inputObjectTypes,
     );
     finalModels.writeln(inputClasses);
