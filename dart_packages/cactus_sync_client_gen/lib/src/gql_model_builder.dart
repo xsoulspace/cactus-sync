@@ -6,18 +6,7 @@ import '../utils/utils.dart';
 import 'gql_object_type_definition.dart';
 
 class GqlModelBuilder extends GqlObjectTypeDefinition {
-  String getModelProvider({
-    required String camelModelName,
-    required String properModelType,
-  }) {
-    return '''
-        final use${camelModelName}State = Provider<$properModelType>((_)=>
-          CactusStateModel<$properModelType>()
-        );
-      ''';
-  }
-
-  Set<Class> makeModelsAndProviders({
+   Set<Class> makeModelsAndProviders({
     required Iterable<gql_schema.TypeDefinition?> operationTypes,
   }) {
     final finalClasses = <Class>{};
@@ -133,31 +122,30 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
   }) {
     final pluralProperModelName = properModelType.toPluralName();
     final strBuffer = StringBuffer();
-    final properModelName = '${properModelType}Model';
+    final properModelName = properModelType;
 
-    final camelModelName = '${properModelType.toCamelCase()}Model';
-
+    final camelModelName = properModelType.toCamelCase();
+    // FIXME: fix all results
     final defaultFragmentName = '${properModelType}Fragment';
 
-    final mutationCreateArgs = 'MutationCreate${properModelType}Args';
+    final mutationCreateArgs = 'Create${properModelType}Input';
     final mutationCreateResult =
-        '{ create$properModelType: Maybe<$properModelType> }';
+        '{ create$properModelType: $properModelType }';
 
-    final mutationUpdateArgs = 'MutationUpdate${properModelType}Args';
-    final mutationUpdateResult =
-        '{ update$properModelType: Maybe<$properModelType> }';
+    final mutationUpdateArgs = 'Mutate${properModelType}Input';
+    final mutationUpdateResult = '{ update$properModelType: $properModelType }';
 
-    final mutationDeleteArgs = 'MutationDelete${properModelType}Args';
+    final mutationDeleteArgs = 'Mutate${properModelType}Input';
     final mutationDeleteResult =
-        '{ delete$properModelType: Maybe<$properModelType> }';
+        '{ delete$properModelType: $properModelType }';
 
-    final queryGetArgs = 'QueryGet${properModelType}Args';
+    final queryGetArgs = properModelType;
     final queryGetResult = '{ get$properModelType: Maybe<$properModelType> }';
 
-    final queryFindArgs = 'QueryFind${pluralProperModelName}Args';
+    final queryFindArgs = '${pluralProperModelName}Filter';
     final queryFindResult = '${properModelType}ResultList';
     final queryFindResultI = '{ find$pluralProperModelName: $queryFindResult}';
-    const defaultFragment = '';
+            // TODO: add params
     final modelStr = '''
         final $properModelName = CactusSync.attachModel(
           CactusModel.init<
@@ -172,7 +160,10 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             $queryGetResult,
             $queryFindArgs,
             $queryFindResultI
-          >(graphqlModelType: $defaultFragment)б
+          >(
+            graphqlModelType: $, 
+            defaultModelFragment: $,
+          )
         );
       ''';
     final providerStr = getModelProvider(
@@ -180,6 +171,17 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     strBuffer.writeAll([providerStr, modelStr], "\n");
     return strBuffer;
   }
+  String getModelProvider({
+      required String camelModelName,
+      required String properModelType,
+    }) {
+      return '''
+          final use${camelModelName}State = Provider<$properModelType>((_)=>
+            CactusStateModel<$properModelType>()
+          );
+        ''';
+    }
+
 
   bool isSystemType({required String typeName}) =>
       typeName.contains('_') || typeName.toLowerCase() == 'query';
