@@ -1,4 +1,4 @@
-import '../utils/naming.dart';
+import '../utils/utils.dart';
 
 enum DefaultGqlOperationType { fromString, create, update, remove, get, find }
 enum SubscribeGqlOperationType {
