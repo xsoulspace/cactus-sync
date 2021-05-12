@@ -9,6 +9,15 @@ import 'package:indent/indent.dart';
 
 import '../utils/utils.dart';
 
+class _VerifiedName {
+  final String name;
+  final bool isKeyword;
+  const _VerifiedName({
+    required this.isKeyword,
+    required this.name,
+  });
+}
+
 class ModelBuilder implements Builder {
   String _getModelProvider({
     required String camelModelName,
@@ -39,6 +48,36 @@ class ModelBuilder implements Builder {
     return strBuffer;
   }
 
+  _VerifiedName _verifyName({
+    required String name,
+  }) {
+    switch (name) {
+      case 'in':
+        return const _VerifiedName(
+          isKeyword: true,
+          name: 'ins',
+        );
+      default:
+        return _VerifiedName(
+          isKeyword: false,
+          name: name,
+        );
+    }
+  }
+
+  String _verifyTypeName({
+    required String name,
+  }) {
+    switch (name) {
+      case 'Float':
+        return 'double';
+      case 'Integer':
+        return 'int';
+      default:
+        return name;
+    }
+  }
+
   /// Use it to generate inputs for mutations
   /// and queries
   StringBuffer _getInputClasses({
@@ -49,19 +88,35 @@ class ModelBuilder implements Builder {
       final List<Field> fieldsDiefinitions = [];
       final List<Parameter> defaultConstructorInitializers = [];
       for (final gqlField in item.fields) {
-        final gqlFieldName = gqlField.name;
-        if (gqlFieldName == null) continue;
+        final rawGqlFieldName = gqlField.name ?? '';
+        final verifiedGqlFieldName = _verifyName(
+          name: rawGqlFieldName,
+        );
+        final gqlFieldName = verifiedGqlFieldName.name;
+        if (gqlFieldName.isEmpty) continue;
 
-        final typeName = gqlField.type?.baseTypeName;
-        if (typeName == null) continue;
+        final rawTypeName = gqlField.type?.baseTypeName ?? '';
+        final typeName = _verifyTypeName(name: rawTypeName);
+        if (typeName.isEmpty) continue;
 
         fieldsDiefinitions.add(
           Field(
             (f) {
               f
+                ..modifier = FieldModifier.final$
                 ..name = gqlFieldName
                 ..type = refer(typeName)
                 ..docs.add(gqlField.description ?? '');
+
+              if (verifiedGqlFieldName.isKeyword) {
+                f.annotations.addAll([
+                  refer('BuiltValueField',
+                          'package:built_value/built_value.dart')
+                      .call([], {
+                    'wireName': refer("'in'"),
+                  }),
+                ]);
+              }
             },
           ),
         );
@@ -69,25 +124,22 @@ class ModelBuilder implements Builder {
           Parameter(
             (p) => p
               ..toThis = true
-              // ..named = false
-              // ..required = true
+              ..named = true
+              ..required = true
               ..name = gqlFieldName,
           ),
         );
       }
 
-      final defaultConstructor = Constructor(
-        (c) => c
-          ..constant = true
-          ..requiredParameters.addAll(
-            defaultConstructorInitializers,
-          ),
-      );
+      final defaultConstructor = Constructor((c) => c
+        ..constant = true
+        ..optionalParameters.addAll(
+          defaultConstructorInitializers,
+        ));
 
       final inputClass = Class(
         (b) => b
           ..name = item.name
-          ..abstract = true
           ..fields.addAll(fieldsDiefinitions)
           ..constructors.addAll([defaultConstructor])
         // ..methods.add(Method.returnsVoid((b) => b
@@ -171,7 +223,7 @@ class ModelBuilder implements Builder {
     final schemaDocument = gql_lang.parseString(originContentStr);
     final schema = gql_schema.buildSchema(schemaDocument);
     final operationTypes = schema.typeMap;
-    final finalModels = StringBuffer('///ada');
+    final finalModels = StringBuffer();
 
     // final modelProviders = _getModelProviders(
     //   operationTypes: operationTypes.values,

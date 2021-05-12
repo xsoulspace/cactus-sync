@@ -1,6 +1,8 @@
 /// This extensition able to plurify name
 /// If you update this file please update file
 /// in cactus_sync_client_gen too
+part of 'utils.dart';
+
 extension StringUtil on String {
   String toPluralName() {
     final str = this;

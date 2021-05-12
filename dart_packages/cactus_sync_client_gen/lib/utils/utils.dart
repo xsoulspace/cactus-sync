@@ -1,1 +1,1 @@
-export 'naming.dart';
+part 'naming.dart';
