@@ -24,7 +24,7 @@ class GqlInputs extends GqlObjectTypeDefinition {
     final List<Field> fieldsDiefinitions = [];
     final List<Parameter> defaultConstructorInitializers = [];
     for (final gqlField in typeDefinition.fields) {
-      fillClassParametersFromField(
+      fillClassParameterFromField(
         fieldsDiefinitions: fieldsDiefinitions,
         defaultConstructorInitializers: defaultConstructorInitializers,
         name: gqlField.name,
