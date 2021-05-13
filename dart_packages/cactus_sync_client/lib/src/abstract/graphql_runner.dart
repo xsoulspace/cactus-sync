@@ -5,6 +5,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../graphql/gql_builder.dart';
 import '../graphql/graphql_result.dart';
+import '../utils/utils.dart';
 
 /// This config required to init GraphqlRunner
 /// Under the hood it uses default ferry with hive and hive_flutter setup

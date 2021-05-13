@@ -48,7 +48,7 @@ class CactusSync {
       ''');
     }
     final model = modelBuilder(db: db);
-    db.models.addAll({model.modelName: model});
+    db.models.addAll({model.graphqlModelName: model});
     return model;
   }
 

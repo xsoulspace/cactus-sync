@@ -1,6 +1,5 @@
+import 'package:cactus_sync_client/src/utils/utils.dart';
 import 'package:graphql/client.dart';
-
-typedef FromJsonCallback = void Function(Map<String, dynamic>? json);
 
 ///Generic query result based on query result
 ///

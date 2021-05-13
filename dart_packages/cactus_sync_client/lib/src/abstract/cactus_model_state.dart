@@ -128,7 +128,7 @@ class CactusModelState<
     // )
   }
 
-  String get modelName => cactusModel.modelName;
+  String get modelName => cactusModel.graphqlModelName;
 
   bool _verifyModelName({required String? name}) => name == modelName;
 

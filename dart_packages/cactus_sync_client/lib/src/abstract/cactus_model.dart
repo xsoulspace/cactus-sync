@@ -1,3 +1,4 @@
+import 'package:cactus_sync_client/src/utils/utils.dart';
 import "package:gql/schema.dart" as gql_schema;
 
 import '../graphql/gql_builder.dart';
@@ -94,9 +95,9 @@ class CactusModel<
   FromJsonCallback findFromJsonCallback;
 
   CactusSync db;
-  late String modelName;
+  late String graphqlModelName;
   late GqlBuilder gqlBuilder;
-  gql_schema.ObjectTypeDefinition graphqlModelType;
+  List<gql_schema.FieldDefinition> graphqlModelFields;
   String defaultModelFragment;
 
   CactusModel({
@@ -106,18 +107,16 @@ class CactusModel<
     required this.getFromJsonCallback,
     required this.findFromJsonCallback,
     required this.defaultModelFragment,
-    required this.graphqlModelType,
+    required this.graphqlModelFields,
+    required this.graphqlModelName,
     required this.db,
   }) {
-    final maybeModelName = graphqlModelType.name;
-    if (maybeModelName == null) throw ArgumentError.notNull('Model name');
-    modelName = maybeModelName;
-    final fields = graphqlModelType.fields;
-    final modelFields = _getModelFieldNames(fields);
+    final modelFields = _getModelFieldNames(graphqlModelFields);
     gqlBuilder = GqlBuilder(
-        modelName: modelName,
-        modelFields: modelFields,
-        modelFragment: defaultModelFragment);
+      modelName: graphqlModelName,
+      modelFields: modelFields,
+      modelFragment: defaultModelFragment,
+    );
   }
   static CactusModelBuilder<
       TModel,
@@ -142,7 +141,8 @@ class CactusModel<
           TGetResult,
           TFindInput,
           TFindResult>({
-    required gql_schema.ObjectTypeDefinition graphqlModelType,
+    required List<gql_schema.FieldDefinition> graphqlModelFields,
+    required String graphqlModelName,
     required String defaultModelFragment,
     required FromJsonCallback createFromJsonCallback,
     required FromJsonCallback findFromJsonCallback,
@@ -151,14 +151,16 @@ class CactusModel<
     required FromJsonCallback updateFromJsonCallback,
   }) =>
       ({required db}) => CactusModel(
-          createFromJsonCallback: createFromJsonCallback,
-          db: db,
-          defaultModelFragment: defaultModelFragment,
-          findFromJsonCallback: findFromJsonCallback,
-          getFromJsonCallback: getFromJsonCallback,
-          graphqlModelType: graphqlModelType,
-          removeFromJsonCallback: removeFromJsonCallback,
-          updateFromJsonCallback: updateFromJsonCallback);
+            createFromJsonCallback: createFromJsonCallback,
+            db: db,
+            defaultModelFragment: defaultModelFragment,
+            findFromJsonCallback: findFromJsonCallback,
+            getFromJsonCallback: getFromJsonCallback,
+            graphqlModelFields: graphqlModelFields,
+            graphqlModelName: graphqlModelName,
+            removeFromJsonCallback: removeFromJsonCallback,
+            updateFromJsonCallback: updateFromJsonCallback,
+          );
 
   /// We will remove any relationships by default for safety
   /// User anyway in anytime may call it with custom gql
@@ -214,7 +216,7 @@ class CactusModel<
     final modelFragmentGql = queryGql?.modelFragmentGql;
     final builder = modelFragmentGql != null
         ? GqlBuilder(
-            modelName: modelName,
+            modelName: graphqlModelName,
             modelFragment: modelFragmentGql,
           )
         : gqlBuilder;

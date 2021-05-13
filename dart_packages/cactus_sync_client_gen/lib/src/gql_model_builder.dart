@@ -5,11 +5,21 @@ import "package:gql/schema.dart" as gql_schema;
 import '../utils/utils.dart';
 import 'gql_object_type_definition.dart';
 
+class ModelsAndProvidersResult {
+  final Set<Class> models;
+  final StringBuffer providers;
+  const ModelsAndProvidersResult({
+    required this.models,
+    required this.providers,
+  });
+}
+
 class GqlModelBuilder extends GqlObjectTypeDefinition {
-  Set<Class> makeModelsAndProviders({
+  ModelsAndProvidersResult makeModelsAndProviders({
     required Iterable<gql_schema.TypeDefinition?> operationTypes,
   }) {
     final finalClasses = <Class>{};
+    final finalProviderBuffer = StringBuffer();
 
     for (final typeNode in operationTypes) {
       if (typeNode == null) continue;
@@ -26,6 +36,11 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
           implementsInterfaces: typeDefinition.interfaces,
         );
         finalClasses.add(dartModel);
+        final strProviderBuffer = makeCactusModels(
+          properModelType: typeDefinitionName,
+          fieldDefinitions: typeDefinition.fields,
+        );
+        finalProviderBuffer.writeln(strProviderBuffer);
       } else if (astNode is InterfaceTypeDefinitionNode) {
         final typeDefinition = gql_schema.InterfaceTypeDefinition(astNode);
 
@@ -55,13 +70,11 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       // if (astNode is InputObjectTypeDefinitionNode) {
       //   gql_schema.InputObjectTypeDefinition(astNode);
       // }
-      // FIXME:
-      // final strModelsBuffer = makeCactusModels(
-      //   properModelType: typeDefinitionName,
-      // );
-      // strBuffer.writeln(strModelsBuffer);
     }
-    return finalClasses;
+    return ModelsAndProvidersResult(
+      models: finalClasses,
+      providers: finalProviderBuffer,
+    );
   }
 
   Class makeInterfaceClass({
@@ -81,7 +94,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     bool abstract = false,
     List<gql_schema.InterfaceTypeDefinition?>? implementsInterfaces,
   }) {
-    final List<Field> fieldsDiefinitions = [];
+    final List<Field> definedFields = [];
     final List<Method> methodsDefinitions = [];
     final List<Parameter> defaultConstructorInitializers = [];
     for (final field in typeDefinition.fields) {
@@ -97,7 +110,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         );
       } else {
         fillClassParameterFromField(
-          fieldsDiefinitions: fieldsDiefinitions,
+          definedFields: definedFields,
           defaultConstructorInitializers: defaultConstructorInitializers,
           name: field.name,
           // FIXME: errors happened with comments
@@ -107,7 +120,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       }
     }
     final dartClass = makeClassContructor(
-      fieldsDiefinitions: fieldsDiefinitions,
+      definedFields: definedFields,
       methodsDefinitions: methodsDefinitions,
       defaultConstructorInitializers: defaultConstructorInitializers,
       typeDefinitionName: typeDefinitionName,
@@ -119,63 +132,61 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
   StringBuffer makeCactusModels({
     required String properModelType,
+    required List<gql_schema.FieldDefinition> fieldDefinitions,
   }) {
     final pluralProperModelName = properModelType.toPluralName();
     final strBuffer = StringBuffer();
-    final properModelName = properModelType;
-
     final camelModelName = properModelType.toCamelCase();
-    // FIXME: fix all results
+
+    // FIXME: default fragment
     final defaultFragmentName = '${properModelType}Fragment';
+    final defaultModelFragment = '';
 
     final mutationCreateArgs = 'Create${properModelType}Input';
-    final mutationCreateResult = '{ create$properModelType: $properModelType }';
+    final mutationCreateCallback =
+        '(json)=> $properModelType.fromJson(json["create$properModelType"])';
 
     final mutationUpdateArgs = 'Mutate${properModelType}Input';
-    final mutationUpdateResult = '{ update$properModelType: $properModelType }';
+    final mutationUpdateCallback =
+        '(json)=> $properModelType.fromJson(json["update$properModelType"])';
 
     final mutationDeleteArgs = 'Mutate${properModelType}Input';
-    final mutationDeleteResult = '{ delete$properModelType: $properModelType }';
+    final mutationDeleteCallback =
+        '(json)=> $properModelType.fromJson(json["delete$properModelType"])';
 
     final queryGetArgs = properModelType;
-    final queryGetResult = '{ get$properModelType: $properModelType }';
+    final queryGetCallback =
+        '(json)=> $properModelType.fromJson(json["get$properModelType"])';
 
     final queryFindArgs = '${pluralProperModelName}Filter';
     final queryFindResult = '${properModelType}ResultList';
-    final queryFindResultI = '{ find$pluralProperModelName: $queryFindResult}';
+    final queryFindCallback =
+        '(json)=> $queryFindResult.fromJson(json["find$properModelType"])';
+
     // TODO: add params
     final modelStr = '''
-        final $properModelName = CactusSync.attachModel(
+        final $camelModelName = CactusSync.attachModel(
           CactusModel.init<
             $properModelType,
             $mutationCreateArgs,
-            $mutationCreateResult,
+            $properModelType,
             $mutationUpdateArgs,
-            $mutationUpdateResult,
+            $properModelType,
             $mutationDeleteArgs,
-            $mutationDeleteResult,
+            $properModelType,
             $queryGetArgs,
-            $queryGetResult,
+            $properModelType,
             $queryFindArgs,
-            $queryFindResultI
+            $queryFindResult
           >(
-            graphqlModelType: ,
+            graphqlModelFields: $fieldDefinitions,
+            graphqlModelName: $properModelType,
             defaultModelFragment: $defaultModelFragment,
-            createFromJsonCallback: () {
-
-            },
-            findFromJsonCallback: () {
-
-            },
-            getFromJsonCallback: () {
-
-            },
-            removeFromJsonCallback: () {
-
-            },
-            updateFromJsonCallback: () {
-
-            },
+            createFromJsonCallback: $mutationCreateCallback,
+            findFromJsonCallback: $queryFindCallback,
+            getFromJsonCallback: $queryGetCallback,
+            removeFromJsonCallback: $mutationDeleteCallback,
+            updateFromJsonCallback: $mutationUpdateCallback,
           )
         );
       ''';
@@ -190,7 +201,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     required String properModelType,
   }) {
     return '''
-          final use${camelModelName}State = Provider<$properModelType>((_)=>
+          final use${properModelType}State = Provider<$properModelType>((_)=>
             CactusStateModel<$properModelType>()
           );
         ''';

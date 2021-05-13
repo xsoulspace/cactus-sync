@@ -1,9 +1,13 @@
+targets:
+  $default:
+    sources:
+      - lib/**
 builders:
   modelBuilder:
     import: 'package:cactus_sync_client_gen/cactus_sync_client_gen.dart'
     builder_factories: ['modelBuilder']
-    build_extensions:
-      .graphql:
-        - .dart
+    build_extensions: { '.graphql': ['.dart'] }
     build_to: source
     auto_apply: root_package
+    applies_builders: ['json_serializable']
+    runs_before: ['json_serializable']

@@ -18,7 +18,7 @@ class _VerifiedTypeName {
 
 class GqlObjectTypeDefinition {
   Class makeClassContructor({
-    required List<Field> fieldsDiefinitions,
+    required List<Field> definedFields,
     required List<Method> methodsDefinitions,
     required List<Parameter> defaultConstructorInitializers,
     required String? typeDefinitionName,
@@ -43,7 +43,7 @@ class GqlObjectTypeDefinition {
     final finalClass = Class(
       (b) => b
         ..name = typeDefinitionName
-        ..fields.addAll(fieldsDiefinitions)
+        ..fields.addAll(definedFields)
         ..methods.addAll(methodsDefinitions)
         ..constructors.addAll([defaultConstructor])
         ..abstract = abstract
@@ -102,7 +102,7 @@ class GqlObjectTypeDefinition {
   }
 
   void fillClassParameterFromField({
-    required List<Field> fieldsDiefinitions,
+    required List<Field> definedFields,
     required List<Parameter> defaultConstructorInitializers,
     required String? name,
     required String? description,
@@ -113,7 +113,7 @@ class GqlObjectTypeDefinition {
       typedefName: name,
     );
     if (verifiedTypeNames == null) return;
-    fieldsDiefinitions.add(
+    definedFields.add(
       Field(
         (f) {
           f
