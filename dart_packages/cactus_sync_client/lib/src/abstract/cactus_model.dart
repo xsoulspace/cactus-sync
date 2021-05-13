@@ -1,5 +1,4 @@
 import 'package:cactus_sync_client/src/utils/utils.dart';
-import "package:gql/schema.dart" as gql_schema;
 
 import '../graphql/gql_builder.dart';
 import '../graphql/graphql_result.dart';
@@ -42,26 +41,31 @@ abstract class AbstractCactusModel<
     TGetInput,
     TFindResult,
     TFindInput> {
-  Future<GraphqlResult<TCreateResult>> create(
-      {required TCreateInput variableValues,
-      QueryGql? queryGql,
-      bool notifyListeners = true});
-  Future<GraphqlResult<TUpdateResult>> update(
-      {required TUpdateInput variableValues,
-      QueryGql? queryGql,
-      bool notifyListeners = true});
-  Future<GraphqlResult<TRemoveResult>> remove(
-      {required TRemoveInput variableValues,
-      QueryGql? queryGql,
-      bool notifyListeners = true});
-  Future<GraphqlResult<TGetResult>> get(
-      {required TGetInput variableValues,
-      QueryGql? queryGql,
-      bool notifyListeners = true});
-  Future<GraphqlResult<TFindResult>> find(
-      {required TFindInput variableValues,
-      QueryGql? queryGql,
-      bool notifyListeners = true});
+  Future<GraphqlResult<TCreateResult>> create({
+    required TCreateInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
+  });
+  Future<GraphqlResult<TUpdateResult>> update({
+    required TUpdateInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
+  });
+  Future<GraphqlResult<TRemoveResult>> remove({
+    required TRemoveInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
+  });
+  Future<GraphqlResult<TGetResult>> get({
+    required TGetInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
+  });
+  Future<GraphqlResult<TFindResult>> find({
+    required TFindInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
+  });
 }
 
 class CactusModel<
@@ -97,7 +101,7 @@ class CactusModel<
   CactusSync db;
   late String graphqlModelName;
   late GqlBuilder gqlBuilder;
-  List<gql_schema.FieldDefinition> graphqlModelFields;
+  List<String?> graphqlModelFieldNames;
   String defaultModelFragment;
 
   CactusModel({
@@ -107,14 +111,13 @@ class CactusModel<
     required this.getFromJsonCallback,
     required this.findFromJsonCallback,
     required this.defaultModelFragment,
-    required this.graphqlModelFields,
+    required this.graphqlModelFieldNames,
     required this.graphqlModelName,
     required this.db,
   }) {
-    final modelFields = _getModelFieldNames(graphqlModelFields);
     gqlBuilder = GqlBuilder(
       modelName: graphqlModelName,
-      modelFields: modelFields,
+      modelFields: graphqlModelFieldNames,
       modelFragment: defaultModelFragment,
     );
   }
@@ -141,7 +144,7 @@ class CactusModel<
           TGetResult,
           TFindInput,
           TFindResult>({
-    required List<gql_schema.FieldDefinition> graphqlModelFields,
+    required List<String?> graphqlModelFieldNames,
     required String graphqlModelName,
     required String defaultModelFragment,
     required FromJsonCallback createFromJsonCallback,
@@ -156,25 +159,11 @@ class CactusModel<
             defaultModelFragment: defaultModelFragment,
             findFromJsonCallback: findFromJsonCallback,
             getFromJsonCallback: getFromJsonCallback,
-            graphqlModelFields: graphqlModelFields,
+            graphqlModelFieldNames: graphqlModelFieldNames,
             graphqlModelName: graphqlModelName,
             removeFromJsonCallback: removeFromJsonCallback,
             updateFromJsonCallback: updateFromJsonCallback,
           );
-
-  /// We will remove any relationships by default for safety
-  /// User anyway in anytime may call it with custom gql
-  /// the idea is to get names of queired fields
-  List<String?> _getModelFieldNames(List<gql_schema.FieldDefinition> fields) {
-    final fieldsNames = fields
-        .where((el) =>
-            el.description?.contains('manyToOne') != true ||
-            el.description?.contains('oneToMany') != true ||
-            el.description?.contains('oneToOne') != true)
-        .map((el) => el.name)
-        .where((element) => element != null);
-    return fieldsNames.toList();
-  }
 
   FromJsonCallback _getFromJsonCallbackByOperationType(
       {required DefaultGqlOperationType operationType}) {

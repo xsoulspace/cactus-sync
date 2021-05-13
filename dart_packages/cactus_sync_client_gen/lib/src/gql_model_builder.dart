@@ -1,6 +1,7 @@
 import 'package:code_builder/code_builder.dart';
 import "package:gql/ast.dart";
 import "package:gql/schema.dart" as gql_schema;
+import 'package:indent/indent.dart';
 
 import '../utils/utils.dart';
 import 'gql_object_type_definition.dart';
@@ -134,13 +135,14 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     required String properModelType,
     required List<gql_schema.FieldDefinition> fieldDefinitions,
   }) {
-    final pluralProperModelName = properModelType.toPluralName();
     final strBuffer = StringBuffer();
     final camelModelName = properModelType.toCamelCase();
-
+    final fieldDefinitionNames = getModelFieldNames(
+      fields: fieldDefinitions,
+    );
     // FIXME: default fragment
     final defaultFragmentName = '${properModelType}Fragment';
-    final defaultModelFragment = '';
+    final defaultModelFragment = '""';
 
     final mutationCreateArgs = 'Create${properModelType}Input';
     final mutationCreateCallback =
@@ -158,7 +160,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final queryGetCallback =
         '(json)=> $properModelType.fromJson(json["get$properModelType"])';
 
-    final queryFindArgs = '${pluralProperModelName}Filter';
+    final queryFindArgs = '${properModelType}Filter';
     final queryFindResult = '${properModelType}ResultList';
     final queryFindCallback =
         '(json)=> $queryFindResult.fromJson(json["find$properModelType"])';
@@ -179,7 +181,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             $queryFindArgs,
             $queryFindResult
           >(
-            graphqlModelFields: $fieldDefinitions,
+            graphqlModelFieldNames: $fieldDefinitionNames,
             graphqlModelName: $properModelType,
             defaultModelFragment: $defaultModelFragment,
             createFromJsonCallback: $mutationCreateCallback,
@@ -189,7 +191,8 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             updateFromJsonCallback: $mutationUpdateCallback,
           )
         );
-      ''';
+      '''
+        .unindent();
     final providerStr = getModelProvider(
         camelModelName: camelModelName, properModelType: properModelType);
     strBuffer.writeAll([providerStr, modelStr], "\n");
@@ -205,6 +208,22 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             CactusStateModel<$properModelType>()
           );
         ''';
+  }
+
+  /// We will remove any relationships by default for safety
+  /// User anyway in anytime may call it with custom gql
+  /// the idea is to get names of queired fields
+  List<String?> getModelFieldNames({
+    required List<gql_schema.FieldDefinition> fields,
+  }) {
+    final fieldsNames = fields
+        .where((el) =>
+            el.description?.contains('manyToOne') != true ||
+            el.description?.contains('oneToMany') != true ||
+            el.description?.contains('oneToOne') != true)
+        .map((el) => el.name)
+        .where((element) => element != null);
+    return fieldsNames.toList();
   }
 
   bool isSystemType({required String typeName}) =>
