@@ -6,7 +6,7 @@ import '../utils/utils.dart';
 import 'gql_object_type_definition.dart';
 
 class GqlModelBuilder extends GqlObjectTypeDefinition {
-   Set<Class> makeModelsAndProviders({
+  Set<Class> makeModelsAndProviders({
     required Iterable<gql_schema.TypeDefinition?> operationTypes,
   }) {
     final finalClasses = <Class>{};
@@ -129,23 +129,21 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final defaultFragmentName = '${properModelType}Fragment';
 
     final mutationCreateArgs = 'Create${properModelType}Input';
-    final mutationCreateResult =
-        '{ create$properModelType: $properModelType }';
+    final mutationCreateResult = '{ create$properModelType: $properModelType }';
 
     final mutationUpdateArgs = 'Mutate${properModelType}Input';
     final mutationUpdateResult = '{ update$properModelType: $properModelType }';
 
     final mutationDeleteArgs = 'Mutate${properModelType}Input';
-    final mutationDeleteResult =
-        '{ delete$properModelType: $properModelType }';
+    final mutationDeleteResult = '{ delete$properModelType: $properModelType }';
 
     final queryGetArgs = properModelType;
-    final queryGetResult = '{ get$properModelType: Maybe<$properModelType> }';
+    final queryGetResult = '{ get$properModelType: $properModelType }';
 
     final queryFindArgs = '${pluralProperModelName}Filter';
     final queryFindResult = '${properModelType}ResultList';
     final queryFindResultI = '{ find$pluralProperModelName: $queryFindResult}';
-            // TODO: add params
+    // TODO: add params
     final modelStr = '''
         final $properModelName = CactusSync.attachModel(
           CactusModel.init<
@@ -161,8 +159,23 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             $queryFindArgs,
             $queryFindResultI
           >(
-            graphqlModelType: $, 
-            defaultModelFragment: $,
+            graphqlModelType: ,
+            defaultModelFragment: $defaultModelFragment,
+            createFromJsonCallback: () {
+
+            },
+            findFromJsonCallback: () {
+
+            },
+            getFromJsonCallback: () {
+
+            },
+            removeFromJsonCallback: () {
+
+            },
+            updateFromJsonCallback: () {
+
+            },
           )
         );
       ''';
@@ -171,17 +184,17 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     strBuffer.writeAll([providerStr, modelStr], "\n");
     return strBuffer;
   }
+
   String getModelProvider({
-      required String camelModelName,
-      required String properModelType,
-    }) {
-      return '''
+    required String camelModelName,
+    required String properModelType,
+  }) {
+    return '''
           final use${camelModelName}State = Provider<$properModelType>((_)=>
             CactusStateModel<$properModelType>()
           );
         ''';
-    }
-
+  }
 
   bool isSystemType({required String typeName}) =>
       typeName.contains('_') || typeName.toLowerCase() == 'query';
