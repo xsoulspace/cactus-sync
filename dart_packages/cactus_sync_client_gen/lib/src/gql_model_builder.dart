@@ -37,11 +37,14 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
           implementsInterfaces: typeDefinition.interfaces,
         );
         finalClasses.add(dartModel);
-        final strProviderBuffer = makeCactusModels(
-          properModelType: typeDefinitionName,
-          fieldDefinitions: typeDefinition.fields,
-        );
-        finalProviderBuffer.writeln(strProviderBuffer);
+        // FIXME: Issue #6: refactor: separate models from input classes
+        if (!typeDefinitionName.contains('ResultList')) {
+          final strProviderBuffer = makeCactusModels(
+            properModelType: typeDefinitionName,
+            fieldDefinitions: typeDefinition.fields,
+          );
+          finalProviderBuffer.writeln(strProviderBuffer);
+        }
       } else if (astNode is InterfaceTypeDefinitionNode) {
         final typeDefinition = gql_schema.InterfaceTypeDefinition(astNode);
 
@@ -222,7 +225,8 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             el.description?.contains('oneToMany') != true ||
             el.description?.contains('oneToOne') != true)
         .map((el) => el.name)
-        .where((element) => element != null);
+        .whereType<String>()
+        .map((e) => "'$e'");
     return fieldsNames.toList();
   }
 
