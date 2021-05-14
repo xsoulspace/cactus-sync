@@ -43,7 +43,8 @@ class ModelBuilder implements Builder {
         import 'package:cactus_sync_client/cactus_sync_client.dart';
         import 'package:riverpod/riverpod.dart';
         import 'package:built_value/built_value.dart';
-        
+        import 'package:json_annotation/json_annotation.dart';
+
         part '$assetName.g.dart';
 
         /// !------------ CAUTION ------------!

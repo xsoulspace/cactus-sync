@@ -7,7 +7,7 @@ import '../utils/utils.dart';
 import 'gql_object_type_definition.dart';
 
 class ModelsAndProvidersResult {
-  final Set<Class> models;
+  final Iterable<Class> models;
   final StringBuffer providers;
   const ModelsAndProvidersResult({
     required this.models,
@@ -19,7 +19,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
   ModelsAndProvidersResult makeModelsAndProviders({
     required Iterable<gql_schema.TypeDefinition?> operationTypes,
   }) {
-    final finalClasses = <Class>{};
+    final finalClasses = <String /** Class name*/, Class>{};
     final finalProviderBuffer = StringBuffer();
 
     for (final typeNode in operationTypes) {
@@ -30,21 +30,23 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
       if (astNode is ObjectTypeDefinitionNode) {
         final typeDefinition = gql_schema.ObjectTypeDefinition(astNode);
-
+        final isSystemType = isItSystemType(typeName: typeDefinitionName);
         final dartModel = makeModelClass(
           typeDefinition: typeDefinition,
           typeDefinitionName: typeDefinitionName,
           implementsInterfaces: typeDefinition.interfaces,
+          serializable: !isSystemType,
         );
-        finalClasses.add(dartModel);
+        finalClasses.putIfAbsent(dartModel.name, () => dartModel);
         // FIXME: Issue #6: refactor: separate models from input classes
-        if (!typeDefinitionName.contains('ResultList')) {
-          final strProviderBuffer = makeCactusModels(
-            properModelType: typeDefinitionName,
-            fieldDefinitions: typeDefinition.fields,
-          );
-          finalProviderBuffer.writeln(strProviderBuffer);
+        if (isSystemType || isItResultListType(typeName: typeDefinitionName)) {
+          continue;
         }
+        final strProviderBuffer = makeCactusModels(
+          properModelType: typeDefinitionName,
+          fieldDefinitions: typeDefinition.fields,
+        );
+        finalProviderBuffer.writeln(strProviderBuffer);
       } else if (astNode is InterfaceTypeDefinitionNode) {
         final typeDefinition = gql_schema.InterfaceTypeDefinition(astNode);
 
@@ -52,7 +54,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
           typeDefinition: typeDefinition,
           typeDefinitionName: typeDefinitionName,
         );
-        finalClasses.add(dartInterface);
+        finalClasses.putIfAbsent(dartInterface.name, () => dartInterface);
       } else {
         continue;
       }
@@ -76,7 +78,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       // }
     }
     return ModelsAndProvidersResult(
-      models: finalClasses,
+      models: finalClasses.values,
       providers: finalProviderBuffer,
     );
   }
@@ -97,15 +99,17 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     required String? typeDefinitionName,
     bool abstract = false,
     List<gql_schema.InterfaceTypeDefinition?>? implementsInterfaces,
+    bool serializable = false,
   }) {
-    final List<Field> definedFields = [];
-    final List<Method> methodsDefinitions = [];
-    final List<Parameter> defaultConstructorInitializers = [];
+    final Set<Field> definedFields = {};
+    final Set<Method> definedMethods = {};
+    final Set<Constructor> definedConstructors = {};
+    final Set<Parameter> defaultConstructorInitializers = {};
     for (final field in typeDefinition.fields) {
       final args = field.args;
       if (args != null && args.isNotEmpty == true) {
         fillClassMethodField(
-          methodsDiefinitions: methodsDefinitions,
+          methodsDiefinitions: definedMethods,
           name: field.name,
           // FIXME: errors happened with comments
           description: '', //field.description ,
@@ -123,9 +127,18 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         );
       }
     }
+    if (serializable) {
+      fillSerializers(
+        definedMethods: definedMethods,
+        definedConstructors: definedConstructors,
+        typeName: typeDefinitionName,
+      );
+    }
     final dartClass = makeClassContructor(
+      serializable: serializable,
       definedFields: definedFields,
-      methodsDefinitions: methodsDefinitions,
+      definedMethods: definedMethods,
+      definedConstructors: definedConstructors,
       defaultConstructorInitializers: defaultConstructorInitializers,
       typeDefinitionName: typeDefinitionName,
       abstract: abstract,
@@ -139,6 +152,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     required List<gql_schema.FieldDefinition> fieldDefinitions,
   }) {
     final strBuffer = StringBuffer();
+
     final camelModelName = properModelType.toCamelCase();
     final fieldDefinitionNames = getModelFieldNames(
       fields: fieldDefinitions,
@@ -167,10 +181,28 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final queryFindResult = '${properModelType}ResultList';
     final queryFindCallback =
         '(json)=> $queryFindResult.fromJson(json["find$properModelType"])';
+    final modelProviderStr = '''
+          final use${properModelType}State = Provider<$properModelType>((_)=>
+            CactusStateModel<
+              $properModelType,
+              $mutationCreateArgs,
+              $properModelType,
+              $mutationUpdateArgs,
+              $properModelType,
+              $mutationDeleteArgs,
+              $properModelType,
+              $queryGetArgs,
+              $properModelType,
+              $queryFindArgs,
+              $queryFindResult,
+            >()
+          );
+        '''
+        .unindent();
 
     // TODO: add params
     final modelStr = '''
-        final $camelModelName = CactusSync.attachModel(
+        final ${camelModelName}Model = CactusSync.attachModel(
           CactusModel.init<
             $properModelType,
             $mutationCreateArgs,
@@ -196,21 +228,8 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         );
       '''
         .unindent();
-    final providerStr = getModelProvider(
-        camelModelName: camelModelName, properModelType: properModelType);
-    strBuffer.writeAll([providerStr, modelStr], "\n");
+    strBuffer.writeAll([modelProviderStr, modelStr], "\n");
     return strBuffer;
-  }
-
-  String getModelProvider({
-    required String camelModelName,
-    required String properModelType,
-  }) {
-    return '''
-          final use${properModelType}State = Provider<$properModelType>((_)=>
-            CactusStateModel<$properModelType>()
-          );
-        ''';
   }
 
   /// We will remove any relationships by default for safety
@@ -230,6 +249,18 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     return fieldsNames.toList();
   }
 
-  bool isSystemType({required String typeName}) =>
-      typeName.contains('_') || typeName.toLowerCase() == 'query';
+  bool isItSystemType({required String typeName}) =>
+      typeName.contains('_') ||
+      (() {
+        switch (typeName.toLowerCase()) {
+          case 'query':
+          case 'mutation':
+          case 'subscription':
+            return true;
+          default:
+            return false;
+        }
+      })();
+  bool isItResultListType({required String typeName}) =>
+      typeName.contains('ResultList');
 }

@@ -9,5 +9,5 @@ builders:
     build_extensions: { '.graphql': ['.dart'] }
     build_to: source
     auto_apply: root_package
-    applies_builders: ['json_serializable']
-    runs_before: ['json_serializable']
+    applies_builders: ['json_serializable|builder']
+    runs_before: ['json_serializable|builder']

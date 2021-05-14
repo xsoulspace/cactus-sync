@@ -25,9 +25,10 @@ class GqlInputs extends GqlObjectTypeDefinition {
     required gql_schema.InputObjectTypeDefinition typeDefinition,
     List<gql_schema.InterfaceTypeDefinition>? implementsInterfaces,
   }) {
-    final List<Field> definedFields = [];
-    final List<Method> methodsDefinitions = [];
-    final List<Parameter> defaultConstructorInitializers = [];
+    final Set<Field> definedFields = {};
+    final Set<Method> definedMethods = {};
+    final Set<Parameter> defaultConstructorInitializers = {};
+    final Set<Constructor> definedConstructors = {};
     for (final gqlField in typeDefinition.fields) {
       fillClassParameterFromField(
         definedFields: definedFields,
@@ -37,12 +38,20 @@ class GqlInputs extends GqlObjectTypeDefinition {
         baseTypeName: gqlField.type?.baseTypeName,
       );
     }
+    final typeDefinitionName = typeDefinition.name;
+    fillSerializers(
+      definedMethods: definedMethods,
+      definedConstructors: definedConstructors,
+      typeName: typeDefinitionName,
+    );
     final inputClass = makeClassContructor(
+      serializable: true,
       definedFields: definedFields,
+      definedConstructors: definedConstructors,
       implementsInterfaces: implementsInterfaces,
-      methodsDefinitions: methodsDefinitions,
+      definedMethods: definedMethods,
       defaultConstructorInitializers: defaultConstructorInitializers,
-      typeDefinitionName: typeDefinition.name,
+      typeDefinitionName: typeDefinitionName,
     );
     return inputClass;
   }

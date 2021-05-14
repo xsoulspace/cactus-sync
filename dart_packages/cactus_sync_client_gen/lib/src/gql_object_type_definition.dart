@@ -18,12 +18,14 @@ class _VerifiedTypeName {
 
 class GqlObjectTypeDefinition {
   Class makeClassContructor({
-    required List<Field> definedFields,
-    required List<Method> methodsDefinitions,
-    required List<Parameter> defaultConstructorInitializers,
+    required Set<Field> definedFields,
+    required Set<Method> definedMethods,
+    required Set<Constructor> definedConstructors,
+    required Set<Parameter> defaultConstructorInitializers,
     required String? typeDefinitionName,
     bool abstract = false,
     List<gql_schema.InterfaceTypeDefinition?>? implementsInterfaces,
+    bool serializable = false,
   }) {
     if (typeDefinitionName == null || typeDefinitionName.isEmpty) {
       throw ArgumentError.value(
@@ -39,14 +41,23 @@ class GqlObjectTypeDefinition {
           defaultConstructorInitializers,
         ),
     );
-
     final finalClass = Class(
       (b) => b
+        ..annotations.addAll(serializable
+            ? [
+                refer('JsonSerializable',
+                        'package:json_annotation/json_annotation.dart')
+                    .call([], {
+                  'explicitToJson': refer('true'),
+                }),
+              ]
+            : [])
         ..name = typeDefinitionName
         ..fields.addAll(definedFields)
-        ..methods.addAll(methodsDefinitions)
-        ..constructors.addAll([defaultConstructor])
+        ..methods.addAll(definedMethods)
+        ..constructors.addAll([defaultConstructor, ...definedConstructors])
         ..abstract = abstract
+
       // FIXME: interfaces are not working
       // ..implements.addAll(
       //   (implementsInterfaces ?? [])
@@ -88,7 +99,7 @@ class GqlObjectTypeDefinition {
   }
 
   void fillClassMethodField({
-    required List<Method> methodsDiefinitions,
+    required Set<Method> methodsDiefinitions,
     required String? name,
     required String? description,
     required String? baseTypeName,
@@ -102,8 +113,8 @@ class GqlObjectTypeDefinition {
   }
 
   void fillClassParameterFromField({
-    required List<Field> definedFields,
-    required List<Parameter> defaultConstructorInitializers,
+    required Set<Field> definedFields,
+    required Set<Parameter> defaultConstructorInitializers,
     required String? name,
     required String? description,
     required String? baseTypeName,
@@ -113,40 +124,40 @@ class GqlObjectTypeDefinition {
       typedefName: name,
     );
     if (verifiedTypeNames == null) return;
-    definedFields.add(
-      Field(
-        (f) {
-          f
-            ..modifier = FieldModifier.final$
-            ..name = verifiedTypeNames.typedefName
-            ..type = refer(
-              // FIXME: temp solving arrays
-              verifiedTypeNames.typedefName == 'items'
-                  ? "List<${verifiedTypeNames.baseTypeName}?>"
-                  : verifiedTypeNames.baseTypeName,
-            )
-            ..docs.add(description ?? '');
+    final field = Field(
+      (f) {
+        f
+          ..modifier = FieldModifier.final$
+          ..name = verifiedTypeNames.typedefName
+          ..type = refer(
+            // FIXME: temp solving arrays
+            verifiedTypeNames.typedefName == 'items'
+                ? "List<${verifiedTypeNames.baseTypeName}?>"
+                : verifiedTypeNames.baseTypeName,
+          )
+          ..docs.add(description ?? '');
 
-          if (verifiedTypeNames.isKeyword) {
-            f.annotations.addAll(
-              [
-                refer(
-                  'BuiltValueField',
-                  'package:built_value/built_value.dart',
-                ).call(
-                  [],
-                  {
-                    'wireName': refer(
-                      "'${verifiedTypeNames.rawGqlFieldName}'",
-                    ),
-                  },
-                ),
-              ],
-            );
-          }
-        },
-      ),
+        if (verifiedTypeNames.isKeyword) {
+          f.annotations.addAll(
+            [
+              refer(
+                'BuiltValueField',
+                'package:built_value/built_value.dart',
+              ).call(
+                [],
+                {
+                  'wireName': refer(
+                    "'${verifiedTypeNames.rawGqlFieldName}'",
+                  ),
+                },
+              ),
+            ],
+          );
+        }
+      },
     );
+    definedFields.add(field);
+
     defaultConstructorInitializers.add(
       Parameter(
         (p) => p
@@ -156,5 +167,42 @@ class GqlObjectTypeDefinition {
           ..name = verifiedTypeNames.typedefName,
       ),
     );
+  }
+
+  void fillSerializers({
+    required Set<Method> definedMethods,
+    required Set<Constructor> definedConstructors,
+    required String? typeName,
+  }) {
+    if (typeName?.isEmpty == true) return;
+    // @override
+    // Map<String, dynamic> toJson() => _$ModelToJson(this);
+    final toJsonMethod = Method(
+      (m) => m
+        ..name = 'toJson'
+        ..returns = refer('Map<String, dynamic>')
+        ..body = Code('return _\$${typeName}ToJson(this);'),
+    );
+    definedMethods.add(toJsonMethod);
+    // factory Model.fromJson(Map<String, dynamic> json) =>
+    //   _$ModelFromJson(json);
+    final fromJsonFactory = Constructor(
+      (c) => c
+        ..factory = true
+        ..requiredParameters.addAll(
+          [
+            Parameter(
+              (p) => p
+                ..name = 'json'
+                ..type = refer('Map<String, dynamic>'),
+            )
+          ],
+        )
+        ..body = Code(
+          'return _\$${typeName}FromJson(json);',
+        )
+        ..name = 'fromJson',
+    );
+    definedConstructors.add(fromJsonFactory);
   }
 }
