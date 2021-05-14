@@ -171,8 +171,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             return $properModelType.fromJson(
               verifiedJson["$operationName$properModelType"],
             );
-          }
-        """
+          }"""
           .unindent();
     }
 
@@ -230,8 +229,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
     // TODO: add params
     final modelStr = '''
-        final $modelName = CactusSync.attachModel(
-          CactusModel.init<
+        final $modelName = CactusSync.attachModel<
             $properModelType,
             $mutationCreateArgs,
             $properModelType,
@@ -244,15 +242,28 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             $queryFindArgs,
             $queryFindResult
           >(
-            graphqlModelFieldNames: $fieldDefinitionNames,
-            graphqlModelName: '$properModelType',
-            defaultModelFragment: $defaultModelFragment,
-            createFromJsonCallback: $mutationCreateCallback,
-            findFromJsonCallback: $queryFindCallback,
-            getFromJsonCallback: $queryGetCallback,
-            removeFromJsonCallback: $mutationDeleteCallback,
-            updateFromJsonCallback: $mutationUpdateCallback,
-          )
+            CactusModel.init<
+              $properModelType,
+              $mutationCreateArgs,
+              $properModelType,
+              $mutationUpdateArgs,
+              $properModelType,
+              $mutationDeleteArgs,
+              $properModelType,
+              $queryGetArgs,
+              $properModelType,
+              $queryFindArgs,
+              $queryFindResult
+            >(
+              graphqlModelFieldNames: $fieldDefinitionNames,
+              graphqlModelName: '$properModelType',
+              defaultModelFragment: $defaultModelFragment,
+              createFromJsonCallback: $mutationCreateCallback,
+              findFromJsonCallback: $queryFindCallback,
+              getFromJsonCallback: $queryGetCallback,
+              removeFromJsonCallback: $mutationDeleteCallback,
+              updateFromJsonCallback: $mutationUpdateCallback,
+            )
         );
       '''
         .unindent();

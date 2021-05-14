@@ -1,3 +1,3 @@
 part of 'utils.dart';
 
-typedef FromJsonCallback = void Function(Map<String, dynamic>? json);
+typedef FromJsonCallback<T> = T Function(Map<String, dynamic>? json);
