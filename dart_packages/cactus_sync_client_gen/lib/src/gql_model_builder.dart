@@ -157,8 +157,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final fieldDefinitionNames = getModelFieldNames(
       fields: fieldDefinitions,
     );
-    // FIXME: default fragment
-    final defaultFragmentName = '${properModelType}Fragment';
     final defaultModelFragment = '""';
 
     // ********** CALLBACKS ******
