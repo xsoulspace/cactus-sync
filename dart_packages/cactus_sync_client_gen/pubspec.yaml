@@ -17,6 +17,12 @@ dependencies:
   riverpod: ^0.14.0
 
 dev_dependencies:
+  flutter:
+    sdk: flutter
+  cactus_sync_client:
+    git:
+      url: https://github.com/xsoulspace/cactus-sync.git
+      path: dart_packages/cactus_sync_client
   build_runner: ^2.0.1
   json_serializable: ^4.0.0
   indent: ^2.0.0
