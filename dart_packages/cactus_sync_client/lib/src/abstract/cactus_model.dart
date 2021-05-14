@@ -103,11 +103,11 @@ class CactusModel<
             TGetInput,
             TFindResult,
             TFindInput> {
-  FromJsonCallback createFromJsonCallback;
-  FromJsonCallback updateFromJsonCallback;
-  FromJsonCallback removeFromJsonCallback;
-  FromJsonCallback getFromJsonCallback;
-  FromJsonCallback findFromJsonCallback;
+  FromJsonCallback<TType> createFromJsonCallback;
+  FromJsonCallback<TType> updateFromJsonCallback;
+  FromJsonCallback<TType> removeFromJsonCallback;
+  FromJsonCallback<TType> getFromJsonCallback;
+  FromJsonCallback<TType> findFromJsonCallback;
 
   CactusSync db;
   late String graphqlModelName;
@@ -158,11 +158,11 @@ class CactusModel<
     required List<String?> graphqlModelFieldNames,
     required String graphqlModelName,
     required String defaultModelFragment,
-    required FromJsonCallback createFromJsonCallback,
-    required FromJsonCallback findFromJsonCallback,
-    required FromJsonCallback getFromJsonCallback,
-    required FromJsonCallback removeFromJsonCallback,
-    required FromJsonCallback updateFromJsonCallback,
+    required FromJsonCallback<TModel> createFromJsonCallback,
+    required FromJsonCallback<TModel> findFromJsonCallback,
+    required FromJsonCallback<TModel> getFromJsonCallback,
+    required FromJsonCallback<TModel> removeFromJsonCallback,
+    required FromJsonCallback<TModel> updateFromJsonCallback,
   }) =>
       ({required db}) => CactusModel(
             createFromJsonCallback: createFromJsonCallback,
