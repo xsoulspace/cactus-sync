@@ -66,11 +66,12 @@ class GraphqlRunner {
   }
 
   /// Method to call mutations and queries
-  Future<GraphqlResult<TQueryResult>> execute<TVariables, TQueryResult>(
-      {required String query,
-      required Map<String, dynamic> variableValues,
-      required DefaultGqlOperationType operationType,
-      required FromJsonCallback fromJsonCallback}) async {
+  Future<GraphqlResult<TQueryResult>> execute<TVariables, TQueryResult>({
+    required String query,
+    required Map<String, dynamic> variableValues,
+    required DefaultGqlOperationType operationType,
+    required FromJsonCallback fromJsonCallback,
+  }) async {
     final document = gql_lang.parseString(query);
     switch (operationType) {
       case DefaultGqlOperationType.create:

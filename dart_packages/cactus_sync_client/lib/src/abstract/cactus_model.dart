@@ -176,7 +176,7 @@ class CactusModel<
             updateFromJsonCallback: updateFromJsonCallback,
           );
 
-  FromJsonCallback _getFromJsonCallbackByOperationType(
+  FromJsonCallback<TType> _getFromJsonCallbackByOperationType(
       {required DefaultGqlOperationType operationType}) {
     switch (operationType) {
       case DefaultGqlOperationType.create:
@@ -200,7 +200,7 @@ class CactusModel<
           {required String query,
           required Map<String, dynamic> variableValues,
           required DefaultGqlOperationType operationType,
-          required FromJsonCallback fromJsonCallback}) async =>
+          required FromJsonCallback<TType> fromJsonCallback}) async =>
       _graphqlRunner.execute<TVariables, TQueryResult>(
           fromJsonCallback: fromJsonCallback,
           operationType: operationType,

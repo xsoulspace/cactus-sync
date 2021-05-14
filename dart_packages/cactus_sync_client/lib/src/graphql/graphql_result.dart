@@ -8,20 +8,21 @@ import '../utils/utils.dart';
 class GraphqlResult<TResult> extends QueryResult {
   final FromJsonCallback fromJsonCallback;
 
-  GraphqlResult(
-      {Map<String, dynamic>? data,
-      required QueryResultSource? source,
-      OperationException? exception,
-      required this.fromJsonCallback})
-      : super(
+  GraphqlResult({
+    Map<String, dynamic>? data,
+    required QueryResultSource? source,
+    OperationException? exception,
+    required this.fromJsonCallback,
+  }) : super(
             source: source,
             context: const Context(),
             data: data,
             exception: exception);
 
-  static GraphqlResult<TResult> fromQueryResult<TResult>(
-      {required QueryResult queryResult,
-      required FromJsonCallback fromJsonCallback}) {
+  static GraphqlResult<TResult> fromQueryResult<TResult>({
+    required QueryResult queryResult,
+    required FromJsonCallback fromJsonCallback,
+  }) {
     return GraphqlResult<TResult>(
         fromJsonCallback: fromJsonCallback,
         source: queryResult.source,
