@@ -181,6 +181,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final queryFindResult = '${properModelType}ResultList';
     final queryFindCallback =
         '(json)=> $queryFindResult.fromJson(json["find$properModelType"])';
+    final modelName = '${camelModelName}Model';
     final modelProviderStr = '''
           final use${properModelType}State = Provider<$properModelType>((_)=>
             CactusStateModel<
@@ -195,14 +196,16 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
               $properModelType,
               $queryFindArgs,
               $queryFindResult,
-            >()
+            >(
+              cactusModel: $modelName,
+            )
           );
         '''
         .unindent();
 
     // TODO: add params
     final modelStr = '''
-        final ${camelModelName}Model = CactusSync.attachModel(
+        final $modelName = CactusSync.attachModel(
           CactusModel.init<
             $properModelType,
             $mutationCreateArgs,

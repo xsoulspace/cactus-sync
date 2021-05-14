@@ -1,5 +1,6 @@
-import 'package:cactus_sync_client/src/utils/utils.dart';
 import 'package:graphql/client.dart';
+
+import '../utils/utils.dart';
 
 ///Generic query result based on query result
 ///

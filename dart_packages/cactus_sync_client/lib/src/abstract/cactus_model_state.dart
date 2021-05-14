@@ -8,8 +8,11 @@ class StateModelValidationResult<TData> {
   final bool isValid;
   final bool isNotValid;
   final TData data;
-  StateModelValidationResult(
-      {required this.isValid, required this.isNotValid, required this.data});
+  StateModelValidationResult({
+    required this.isValid,
+    required this.isNotValid,
+    required this.data,
+  });
 }
 
 /// Every response model should contain method getList to get
@@ -40,15 +43,22 @@ class CactusModelState<
         TFindInput,
         TFindResult> {
   StateModelValidationResult<GraphqlResult<TResult>>
-      validateStateModelResult<TResult>(
-          {required GraphqlResult<TResult> result}) {
+      validateStateModelResult<TResult>({
+    required GraphqlResult<TResult> result,
+  }) {
     final notValidResult = StateModelValidationResult<GraphqlResult<TResult>>(
-        isNotValid: true, isValid: false, data: result);
+      isNotValid: true,
+      isValid: false,
+      data: result,
+    );
     if (result.hasException) return notValidResult;
     final data = result.typedData;
     if (data == null) return notValidResult;
     return StateModelValidationResult<GraphqlResult<TResult>>(
-        isNotValid: false, isValid: true, data: result);
+      isNotValid: false,
+      isValid: true,
+      data: result,
+    );
   }
 
   final List<TModel?> list = [];

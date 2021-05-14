@@ -1,7 +1,6 @@
-import 'package:cactus_sync_client/src/utils/utils.dart';
-
 import '../graphql/gql_builder.dart';
 import '../graphql/graphql_result.dart';
+import '../utils/utils.dart';
 import 'cactus_sync.dart';
 import 'graphql_runner.dart';
 
