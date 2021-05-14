@@ -24,17 +24,17 @@ enum SubscribeGqlOperationType {
 /// If function receive modelFragment it uses as return fields
 ///
 class GqlBuilder {
-  String modelName;
-  late String returnFields;
-  late String pluralModelName;
+  final String modelName;
+  late final String returnFields;
+  late final String pluralModelName;
   GqlBuilder({
     List<String?>? modelFields,
     String? modelFragment,
     required this.modelName,
   }) {
-    if (modelFragment != null) {
+    if (modelFragment != null && modelFragment.isNotEmpty) {
       returnFields = toFields(gqlFragment: modelFragment);
-    } else if (modelFields != null) {
+    } else if (modelFields != null && modelFields.isNotEmpty) {
       returnFields = modelFields.join('\n');
     } else {
       throw ArgumentError.notNull('modelFragment or modelFields');

@@ -109,11 +109,11 @@ class CactusModel<
   FromJsonCallback<TType> getFromJsonCallback;
   FromJsonCallback<TType> findFromJsonCallback;
 
-  CactusSync db;
-  late String graphqlModelName;
-  late GqlBuilder gqlBuilder;
-  List<String?> graphqlModelFieldNames;
-  String defaultModelFragment;
+  final CactusSync db;
+  final String graphqlModelName;
+  late final GqlBuilder gqlBuilder;
+  final List<String?> graphqlModelFieldNames;
+  final String defaultModelFragment;
 
   CactusModel({
     required this.createFromJsonCallback,
@@ -176,8 +176,9 @@ class CactusModel<
             updateFromJsonCallback: updateFromJsonCallback,
           );
 
-  FromJsonCallback<TType> _getFromJsonCallbackByOperationType(
-      {required DefaultGqlOperationType operationType}) {
+  FromJsonCallback<TType> _getFromJsonCallbackByOperationType({
+    required DefaultGqlOperationType operationType,
+  }) {
     switch (operationType) {
       case DefaultGqlOperationType.create:
         return createFromJsonCallback;
@@ -202,19 +203,22 @@ class CactusModel<
           required DefaultGqlOperationType operationType,
           required FromJsonCallback<TType> fromJsonCallback}) async =>
       _graphqlRunner.execute<TVariables, TQueryResult>(
-          fromJsonCallback: fromJsonCallback,
-          operationType: operationType,
-          query: query,
-          variableValues: variableValues);
+        fromJsonCallback: fromJsonCallback,
+        operationType: operationType,
+        query: query,
+        variableValues: variableValues,
+      );
 
   String _resolveOperationGql({
     required DefaultGqlOperationType operationType,
     QueryGql? queryGql,
   }) {
     final stringQueryGql = queryGql?.stringQueryGql;
-    if (stringQueryGql != null) return stringQueryGql;
+    if (stringQueryGql != null && stringQueryGql.isNotEmpty) {
+      return stringQueryGql;
+    }
     final modelFragmentGql = queryGql?.modelFragmentGql;
-    final builder = modelFragmentGql != null
+    final builder = modelFragmentGql != null && modelFragmentGql.isNotEmpty
         ? GqlBuilder(
             modelName: graphqlModelName,
             modelFragment: modelFragmentGql,
@@ -223,19 +227,22 @@ class CactusModel<
     return builder.getByOperationType(operationType: operationType);
   }
 
-  Future<GraphqlResult<TResult>> _executeMiddleware<TVariables, TResult>(
-      {QueryGql? queryGql,
-      required DefaultGqlOperationType operationType,
-      bool notifyListeners = true,
-      variableValues}) async {
+  Future<GraphqlResult<TResult>> _executeMiddleware<TVariables, TResult>({
+    QueryGql? queryGql,
+    required DefaultGqlOperationType operationType,
+    bool notifyListeners = true,
+    variableValues,
+  }) async {
     /**
      * If we receive modelFragmentGql, we concat it with default query
      * If we receive stringQueryGql we replace default by stringQueryGql
      * If class has default fragment it will be use it
      * And then it will be use default fields
      */
-    final query =
-        _resolveOperationGql(operationType: operationType, queryGql: queryGql);
+    final query = _resolveOperationGql(
+      operationType: operationType,
+      queryGql: queryGql,
+    );
     final result = await _execute<TVariables, TResult>(
       variableValues: variableValues,
       query: query,
