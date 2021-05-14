@@ -26,7 +26,19 @@ typedef CactusModelBuilder<
         TGetResult,
         TFindInput,
         TFindResult>
-    = CactusModel Function({required CactusSync db});
+    = CactusModel<
+            TModel,
+            TCreateInput,
+            TCreateResult,
+            TUpdateInput,
+            TUpdateResult,
+            TDeleteInput,
+            TDeleteResult,
+            TGetInput,
+            TGetResult,
+            TFindInput,
+            TFindResult>
+        Function({required CactusSync db});
 
 /// Abstract Model class to insure consistency in CUDGF
 abstract class AbstractCactusModel<

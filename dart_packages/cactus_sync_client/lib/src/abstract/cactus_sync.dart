@@ -15,7 +15,18 @@ class CactusSync {
   /// Model must be created from GraphQl schema
   ///
   ///
-  static CactusModel attachModel<
+  static CactusModel<
+      TModel,
+      TCreateInput,
+      TCreateResult,
+      TUpdateInput,
+      TUpdateResult,
+      TDeleteInput,
+      TDeleteResult,
+      TGetInput,
+      TGetResult,
+      TFindInput,
+      TFindResult> attachModel<
           TModel,
           TCreateInput,
           TCreateResult,

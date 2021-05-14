@@ -161,30 +161,41 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final defaultFragmentName = '${properModelType}Fragment';
     final defaultModelFragment = '""';
 
+    // ********** CALLBACKS ******
+    String getCallbackStr({
+      required String operationName,
+    }) {
+      return """
+          (json){
+            final verifiedJson = ArgumentError.checkNotNull(json,'json');
+            return $properModelType.fromJson(
+              verifiedJson["$operationName$properModelType"],
+            );
+          }
+        """
+          .unindent();
+    }
+
     final mutationCreateArgs = 'Create${properModelType}Input';
-    final mutationCreateCallback =
-        '(json)=> $properModelType.fromJson(json["create$properModelType"])';
+    final mutationCreateCallback = getCallbackStr(operationName: 'create');
 
     final mutationUpdateArgs = 'Mutate${properModelType}Input';
-    final mutationUpdateCallback =
-        '(json)=> $properModelType.fromJson(json["update$properModelType"])';
+    final mutationUpdateCallback = getCallbackStr(operationName: 'update');
 
     final mutationDeleteArgs = 'Mutate${properModelType}Input';
-    final mutationDeleteCallback =
-        '(json)=> $properModelType.fromJson(json["delete$properModelType"])';
+    final mutationDeleteCallback = getCallbackStr(operationName: 'delete');
 
     final queryGetArgs = properModelType;
-    final queryGetCallback =
-        '(json)=> $properModelType.fromJson(json["get$properModelType"])';
+    final queryGetCallback = getCallbackStr(operationName: 'get');
 
     final queryFindArgs = '${properModelType}Filter';
     final queryFindResult = '${properModelType}ResultList';
-    final queryFindCallback =
-        '(json)=> $queryFindResult.fromJson(json["find$properModelType"])';
+    final queryFindCallback = getCallbackStr(operationName: 'find');
+
     final modelName = '${camelModelName}Model';
     final modelProviderStr = '''
-          final use${properModelType}State = Provider<$properModelType>((_)=>
-            CactusStateModel<
+          final use${properModelType}State = Provider<
+            CactusModelState<
               $properModelType,
               $mutationCreateArgs,
               $properModelType,
@@ -195,7 +206,21 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
               $queryGetArgs,
               $properModelType,
               $queryFindArgs,
-              $queryFindResult,
+              $queryFindResult
+            >
+          >((_) =>
+            CactusModelState<
+              $properModelType,
+              $mutationCreateArgs,
+              $properModelType,
+              $mutationUpdateArgs,
+              $properModelType,
+              $mutationDeleteArgs,
+              $properModelType,
+              $queryGetArgs,
+              $properModelType,
+              $queryFindArgs,
+              $queryFindResult
             >(
               cactusModel: $modelName,
             )
@@ -220,7 +245,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             $queryFindResult
           >(
             graphqlModelFieldNames: $fieldDefinitionNames,
-            graphqlModelName: $properModelType,
+            graphqlModelName: '$properModelType',
             defaultModelFragment: $defaultModelFragment,
             createFromJsonCallback: $mutationCreateCallback,
             findFromJsonCallback: $queryFindCallback,
