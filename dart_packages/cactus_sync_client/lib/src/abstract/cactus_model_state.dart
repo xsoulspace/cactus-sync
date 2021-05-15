@@ -115,8 +115,11 @@ class CactusModelState<
   /// new/updated/removed item
   ///
   /// should not be used with subscribed events
-  void _updateStateModel(
-      {TModel? maybeModel, bool? remove, bool? notifyListeners}) {
+  void _updateStateModel({
+    TModel? maybeModel,
+    bool? remove,
+    bool? notifyListeners,
+  }) {
     if (maybeModel == null) return;
     final index = list.indexOf(maybeModel);
     final isIndexExists = index >= 0;
@@ -144,7 +147,9 @@ class CactusModelState<
 
   /// This function must be used only with queires and not mutations!
   /// The purpose is to update a whole state
-  void _updateListState<TResult>({required GraphqlResult<TResult> result}) {
+  void _updateListState<TResult>({
+    required GraphqlResult<TResult> result,
+  }) {
     final validatedResult = validateStateModelResult(result: result);
     final data = validatedResult.data.typedData;
     if (validatedResult.isNotValid ||
@@ -158,53 +163,61 @@ class CactusModelState<
   /// ==================== PUBLIC SECTION ======================
   ///
   @override
-  Future<GraphqlResult<TCreateResult>> create(
-      {required TCreateInput variableValues,
-      QueryGql? queryGql,
-      bool notifyListeners = true}) async {
+  Future<GraphqlResult<TCreateResult>> create({
+    required TCreateInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
+  }) async {
     final result = await cactusModel.create(
-        variableValues: variableValues,
-        notifyListeners: notifyListeners,
-        queryGql: queryGql);
+      variableValues: variableValues,
+      notifyListeners: notifyListeners,
+      queryGql: queryGql,
+    );
     _updateState(result: result, notifyListeners: true);
     return result;
   }
 
   @override
-  Future<GraphqlResult<TUpdateInput>> update(
-      {required TUpdateResult variableValues,
-      QueryGql? queryGql,
-      bool notifyListeners = true}) async {
+  Future<GraphqlResult<TUpdateResult>> update({
+    required TUpdateInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
+  }) async {
     final result = await cactusModel.update(
-        variableValues: variableValues,
-        notifyListeners: notifyListeners,
-        queryGql: queryGql);
+      variableValues: variableValues,
+      notifyListeners: notifyListeners,
+      queryGql: queryGql,
+    );
     _updateState(result: result, notifyListeners: true);
     return result;
   }
 
   @override
-  Future<GraphqlResult<TDeleteInput>> remove(
-      {required TDeleteResult variableValues,
-      QueryGql? queryGql,
-      bool notifyListeners = true}) async {
+  Future<GraphqlResult<TDeleteResult>> remove({
+    required TDeleteInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
+  }) async {
     final result = await cactusModel.remove(
-        variableValues: variableValues,
-        notifyListeners: notifyListeners,
-        queryGql: queryGql);
+      variableValues: variableValues,
+      notifyListeners: notifyListeners,
+      queryGql: queryGql,
+    );
     _updateState(result: result, notifyListeners: true);
     return result;
   }
 
   @override
-  Future<GraphqlResult<TFindInput>> find(
-      {required TFindResult variableValues,
-      QueryGql? queryGql,
-      bool notifyListeners = true}) async {
+  Future<GraphqlResult<TFindResult>> find({
+    required TFindInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
+  }) async {
     final result = await cactusModel.find(
-        variableValues: variableValues,
-        notifyListeners: notifyListeners,
-        queryGql: queryGql);
+      variableValues: variableValues,
+      notifyListeners: notifyListeners,
+      queryGql: queryGql,
+    );
     _updateListState(
       result: result,
     );
@@ -212,14 +225,16 @@ class CactusModelState<
   }
 
   @override
-  Future<GraphqlResult<TGetInput>> get(
-      {required TGetResult variableValues,
-      QueryGql? queryGql,
-      bool notifyListeners = true}) async {
+  Future<GraphqlResult<TGetResult>> get({
+    required TGetInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
+  }) async {
     final result = await cactusModel.get(
-        variableValues: variableValues,
-        notifyListeners: notifyListeners,
-        queryGql: queryGql);
+      variableValues: variableValues,
+      notifyListeners: notifyListeners,
+      queryGql: queryGql,
+    );
     _updateListState(
       result: result,
     );

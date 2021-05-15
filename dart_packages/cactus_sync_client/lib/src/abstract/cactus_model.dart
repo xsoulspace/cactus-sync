@@ -44,14 +44,14 @@ typedef CactusModelBuilder<
 abstract class AbstractCactusModel<
     TCreateInput,
     TCreateResult,
-    TUpdateResult,
     TUpdateInput,
-    TRemoveResult,
+    TUpdateResult,
     TRemoveInput,
-    TGetResult,
+    TRemoveResult,
     TGetInput,
-    TFindResult,
-    TFindInput> {
+    TGetResult,
+    TFindInput,
+    TFindResult> {
   Future<GraphqlResult<TCreateResult>> create({
     required TCreateInput variableValues,
     QueryGql? queryGql,
@@ -83,26 +83,26 @@ class CactusModel<
         TType,
         TCreateInput,
         TCreateResult,
-        TUpdateResult,
         TUpdateInput,
-        TRemoveResult,
+        TUpdateResult,
         TRemoveInput,
-        TGetResult,
+        TRemoveResult,
         TGetInput,
-        TFindResult,
-        TFindInput>
+        TGetResult,
+        TFindInput,
+        TFindResult>
     implements
         AbstractCactusModel<
             TCreateInput,
             TCreateResult,
-            TUpdateResult,
             TUpdateInput,
-            TRemoveResult,
+            TUpdateResult,
             TRemoveInput,
-            TGetResult,
+            TRemoveResult,
             TGetInput,
-            TFindResult,
-            TFindInput> {
+            TGetResult,
+            TFindInput,
+            TFindResult> {
   FromJsonCallback<TType> createFromJsonCallback;
   FromJsonCallback<TType> updateFromJsonCallback;
   FromJsonCallback<TType> removeFromJsonCallback;
@@ -197,11 +197,12 @@ class CactusModel<
   }
 
   GraphqlRunner get _graphqlRunner => db.graphqlRunner;
-  Future<GraphqlResult<TQueryResult>> _execute<TVariables, TQueryResult>(
-          {required String query,
-          required Map<String, dynamic> variableValues,
-          required DefaultGqlOperationType operationType,
-          required FromJsonCallback<TType> fromJsonCallback}) async =>
+  Future<GraphqlResult<TQueryResult>> _execute<TVariables, TQueryResult>({
+    required String query,
+    required Map<String, dynamic> variableValues,
+    required DefaultGqlOperationType operationType,
+    required FromJsonCallback<TType> fromJsonCallback,
+  }) async =>
       _graphqlRunner.execute<TVariables, TQueryResult>(
         fromJsonCallback: fromJsonCallback,
         operationType: operationType,
