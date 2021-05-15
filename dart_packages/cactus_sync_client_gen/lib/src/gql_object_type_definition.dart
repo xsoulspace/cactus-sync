@@ -118,23 +118,28 @@ class GqlObjectTypeDefinition {
     required String? name,
     required String? description,
     required String? baseTypeName,
+    required bool isRequired,
   }) {
     final verifiedTypeNames = verifyTypeAndName(
       baseTypeName: baseTypeName,
       typedefName: name,
     );
     if (verifiedTypeNames == null) return;
+    final fieldTypeName = (() {
+      // FIXME: temp solving arrays
+      final name = verifiedTypeNames.typedefName == 'items'
+          ? "List<${verifiedTypeNames.baseTypeName}?>"
+          : verifiedTypeNames.baseTypeName;
+
+      if (isRequired) return name;
+      return "$name?";
+    })();
     final field = Field(
       (f) {
         f
           ..modifier = FieldModifier.final$
           ..name = verifiedTypeNames.typedefName
-          ..type = refer(
-            // FIXME: temp solving arrays
-            verifiedTypeNames.typedefName == 'items'
-                ? "List<${verifiedTypeNames.baseTypeName}?>"
-                : verifiedTypeNames.baseTypeName,
-          )
+          ..type = refer(fieldTypeName)
           ..docs.add(description ?? '');
 
         if (verifiedTypeNames.isKeyword) {
@@ -163,7 +168,7 @@ class GqlObjectTypeDefinition {
         (p) => p
           ..toThis = true
           ..named = true
-          ..required = true
+          ..required = isRequired
           ..name = verifiedTypeNames.typedefName,
       ),
     );
