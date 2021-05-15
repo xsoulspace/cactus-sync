@@ -15,6 +15,7 @@ dependencies:
   built_collection: ^5.0.0
   json_annotation: ^4.0.0
   riverpod: ^0.14.0
+  indent: ^2.0.0
 
 dev_dependencies:
   flutter:
@@ -25,7 +26,6 @@ dev_dependencies:
       path: dart_packages/cactus_sync_client
   build_runner: ^2.0.1
   json_serializable: ^4.0.0
-  indent: ^2.0.0
   build_web_compilers: ^3.0.0
   build_config: ^1.0.0
   lint: ^1.5.3
