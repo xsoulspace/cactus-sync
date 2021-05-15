@@ -105,7 +105,10 @@ class CactusModelState<
       CactusSync.l.warning('the model is null, state will not updated');
       return;
     }
-
+    CactusSync.l.fine({
+      'maybeData is GraphbackResultList': maybeData is GraphbackResultList,
+      'maybeData runtimeType': maybeData.runtimeType
+    });
     if (maybeData is GraphbackResultList) {
       setState(maybeData.items as List<TModel?>);
     }
