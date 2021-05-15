@@ -206,7 +206,7 @@ class CactusModel<
     required FromJsonCallback<TType> fromJsonCallback,
   }) async {
     CactusSync.l.info({
-      'is graphqlRunner null': _graphqlRunner == null,
+      'is graphqlRunner initialized': _graphqlRunner != null,
     });
     return _graphqlRunner.execute<TVariables, TQueryResult>(
       fromJsonCallback: fromJsonCallback,
