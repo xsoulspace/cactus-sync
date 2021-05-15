@@ -248,15 +248,15 @@ class CactusModel<
       operationType: operationType,
       queryGql: queryGql,
     );
-
-    CactusSync.l.info(query);
+    final fromJsonCallback =
+        _getFromJsonCallbackByOperationType(operationType: operationType);
+    CactusSync.l.info({"query": query, "jsonCallback": fromJsonCallback});
 
     final result = await _execute<TVariables, TResult>(
       variableValues: variableValues,
       query: query,
       operationType: operationType,
-      fromJsonCallback:
-          _getFromJsonCallbackByOperationType(operationType: operationType),
+      fromJsonCallback: fromJsonCallback,
     );
 
     CactusSync.l.info(result);
