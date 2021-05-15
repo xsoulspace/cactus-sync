@@ -42,35 +42,38 @@ class GqlObjectTypeDefinition {
         ),
     );
     final finalClass = Class(
-      (b) {
-        b
-          ..annotations.addAll(serializable
+      (b) => b
+        ..annotations.addAll(serializable
+            ? [
+                refer(
+                  'JsonSerializable',
+                  'package:json_annotation/json_annotation.dart',
+                ).call([], {
+                  'explicitToJson': refer('true'),
+                }),
+              ]
+            : [])
+        ..name = typeDefinitionName
+        ..fields.addAll(definedFields)
+        ..methods.addAll(definedMethods)
+        ..constructors.addAll(
+          [
+            defaultConstructor,
+            ...definedConstructors,
+          ],
+        )
+        ..implements.addAll(
+          serializable
               ? [
                   refer(
-                    'JsonSerializable',
-                    'package:json_annotation/json_annotation.dart',
-                  ).call([], {
-                    'explicitToJson': refer('true'),
-                  }),
+                    'SerializableModel',
+                    'package:cactus_sync_client/cactus_sync_client.dart',
+                  ),
                 ]
-              : [])
-          ..name = typeDefinitionName
-          ..fields.addAll(definedFields)
-          ..methods.addAll(definedMethods)
-          ..constructors.addAll(
-            [
-              defaultConstructor,
-              ...definedConstructors,
-            ],
-          )
-          ..abstract = abstract;
-        if (serializable) {
-          b.extend = refer(
-            'Serializable',
-            'package:cactus_sync_client/cactus_sync_client.dart',
-          );
-        }
-      }
+              : [],
+        )
+        ..abstract = abstract
+
       // FIXME: interfaces are not working
       // ..implements.addAll(
       //   (implementsInterfaces ?? [])
