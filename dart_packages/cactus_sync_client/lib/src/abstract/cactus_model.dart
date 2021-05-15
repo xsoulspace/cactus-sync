@@ -313,7 +313,7 @@ class CactusModel<
   }) {
     CactusSync.l.info('update');
     return _executeMiddleware(
-      operationType: DefaultGqlOperationType.create,
+      operationType: DefaultGqlOperationType.update,
       queryGql: queryGql,
       notifyListeners: notifyListeners,
       variableValues: variableValues,
@@ -328,7 +328,7 @@ class CactusModel<
   }) {
     CactusSync.l.info('remove');
     return _executeMiddleware(
-      operationType: DefaultGqlOperationType.create,
+      operationType: DefaultGqlOperationType.remove,
       queryGql: queryGql,
       notifyListeners: notifyListeners,
       variableValues: variableValues,
@@ -343,7 +343,7 @@ class CactusModel<
   }) {
     CactusSync.l.info('find');
     return _executeMiddleware(
-      operationType: DefaultGqlOperationType.create,
+      operationType: DefaultGqlOperationType.find,
       queryGql: queryGql,
       notifyListeners: notifyListeners,
       variableValues: variableValues,
@@ -358,7 +358,7 @@ class CactusModel<
   }) {
     CactusSync.l.info('get');
     return _executeMiddleware(
-      operationType: DefaultGqlOperationType.create,
+      operationType: DefaultGqlOperationType.get,
       queryGql: queryGql,
       notifyListeners: notifyListeners,
       variableValues: variableValues,
