@@ -67,7 +67,7 @@ class GqlObjectTypeDefinition {
                   final names = definedFields.map((f) => f.name).join(',');
                   return "return [$names];";
                 })())
-                ..returns = refer('List<Object?>'),
+                ..returns = refer('List<dynamic?>'),
             ),
             Method(
               (m) => m
