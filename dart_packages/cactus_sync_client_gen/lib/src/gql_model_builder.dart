@@ -119,7 +119,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       } else {
         fillClassParameterFromField(
           definedFields: definedFields,
-          isRequired: true,
+          isRequired: field.type?.isNonNull ?? false,
           defaultConstructorInitializers: defaultConstructorInitializers,
           name: field.name,
           // FIXME: errors happened with comments
