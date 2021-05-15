@@ -1,6 +1,6 @@
-import '../graphql/graphql_find_list.dart';
 import '../graphql/graphql_result.dart';
 import 'cactus_model.dart';
+import 'cactus_sync.dart';
 import 'serializable_model.dart';
 
 enum StateModelEvents { addUpdateStateModel, removeStateModel }
@@ -62,7 +62,7 @@ class CactusModelState<
     );
   }
 
-  final List<TModel?> list = [];
+  final Set<TModel?> list = {};
   void setState(List<TModel?> value) {
     list
       ..clear()
@@ -90,48 +90,54 @@ class CactusModelState<
   }
 
   /// ================== STATE CHANGES HANDLERS ======================
-
-  void _updateState<TResult>({
+  /// Used only for find  method.
+  /// Will clean up state and refill it
+  /// with new data
+  void _updateStateList<TResult>({
     required GraphqlResult<TResult> result,
     bool? remove,
     bool? notifyListeners,
   }) {
     final validatedResult = validateStateModelResult(result: result);
     if (validatedResult.isNotValid) return;
-    final maybeData = validatedResult.data.typedData ?? [];
-    if (maybeData is List) {
-      for (final TModel? maybeModel in maybeData) {
-        _updateStateModel(
-            maybeModel: maybeModel,
-            remove: remove,
-            notifyListeners: notifyListeners);
-      }
-    } else {
-      throw ArgumentError(
-          'The data should have type List but has type ${maybeData.runtimeType}');
+    final maybeData = validatedResult.data.typedData;
+    if (maybeData == null) {
+      CactusSync.l.info('the model is null, state will not updated');
+      return;
     }
+
+    if (maybeData is List<TModel?>) {
+      setState(maybeData);
+    }
+    CactusSync.l.info(
+      'the data has unknown type ${maybeData.runtimeType} '
+      ', state will not updated',
+    );
   }
 
   /// notifyListeners should notify all states for this model about
   /// new/updated/removed item
   ///
   /// should not be used with subscribed events
-  void _updateStateModel({
-    TModel? maybeModel,
+  void _updateStateModel<TResult>({
+    required GraphqlResult<TResult> result,
     bool? remove,
     bool? notifyListeners,
   }) {
-    if (maybeModel == null) return;
-    final index = list.indexOf(maybeModel);
-    final isIndexExists = index >= 0;
-    if (remove == true) {
-      if (isIndexExists) list.removeAt(index);
-    } else if (isIndexExists) {
-      list[index] = maybeModel;
-    } else {
-      list.add(maybeModel);
+    final validatedResult = validateStateModelResult(result: result);
+    if (validatedResult.isNotValid) return;
+    final maybeModel = validatedResult.data.typedData;
+    if (maybeModel is TModel) {
+      final isItemExists = list.contains(maybeModel);
+      if (remove == true) {
+        if (isItemExists) list.remove(maybeModel);
+      } else {
+        list.add(maybeModel);
+      }
+      return;
     }
 
+    CactusSync.l.info('the model is null, state will not updated');
     // TODO: implement notify
     // notifyStateModelListeners(
     //   notifyListeners,
@@ -146,21 +152,6 @@ class CactusModelState<
 
   bool _verifyModelName({required String? name}) => name == modelName;
 
-  /// This function must be used only with queires and not mutations!
-  /// The purpose is to update a whole state
-  void _updateListState<TResult>({
-    required GraphqlResult<TResult> result,
-  }) {
-    final validatedResult = validateStateModelResult(result: result);
-    final data = validatedResult.data.typedData;
-    if (validatedResult.isNotValid ||
-        data == null ||
-        data is! GraphqlFindList<TModel>) return;
-    final items = data.getValues;
-    if (items.isEmpty) return;
-    setState(items);
-  }
-
   /// ==================== PUBLIC SECTION ======================
   ///
   @override
@@ -174,7 +165,11 @@ class CactusModelState<
       notifyListeners: notifyListeners,
       queryGql: queryGql,
     );
-    _updateState(result: result, notifyListeners: true);
+
+    _updateStateModel(
+      result: result,
+      notifyListeners: true,
+    );
     return result;
   }
 
@@ -189,7 +184,10 @@ class CactusModelState<
       notifyListeners: notifyListeners,
       queryGql: queryGql,
     );
-    _updateState(result: result, notifyListeners: true);
+    _updateStateModel(
+      result: result,
+      notifyListeners: true,
+    );
     return result;
   }
 
@@ -204,7 +202,11 @@ class CactusModelState<
       notifyListeners: notifyListeners,
       queryGql: queryGql,
     );
-    _updateState(result: result, notifyListeners: true);
+    _updateStateModel(
+      result: result,
+      notifyListeners: true,
+      remove: true,
+    );
     return result;
   }
 
@@ -219,7 +221,7 @@ class CactusModelState<
       notifyListeners: notifyListeners,
       queryGql: queryGql,
     );
-    _updateListState(
+    _updateStateList(
       result: result,
     );
     return result;
@@ -236,8 +238,9 @@ class CactusModelState<
       notifyListeners: notifyListeners,
       queryGql: queryGql,
     );
-    _updateListState(
+    _updateStateModel(
       result: result,
+      notifyListeners: notifyListeners,
     );
     return result;
   }

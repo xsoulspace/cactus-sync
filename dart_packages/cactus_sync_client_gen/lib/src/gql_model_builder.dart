@@ -165,12 +165,13 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     String getCallbackStr({
       required String operationName,
       bool isPlural = false,
+      String? fromJsonFields,
     }) {
       return """
           (json){
             final verifiedJson = ArgumentError.checkNotNull(json,'json');
             return $properModelType.fromJson(
-              verifiedJson["$operationName${isPlural ? pluralModelName : properModelType}"],
+              verifiedJson["$operationName${isPlural ? pluralModelName : properModelType}"]${fromJsonFields ?? ''},
             );
           }"""
           .unindent();
@@ -193,6 +194,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final queryFindCallback = getCallbackStr(
       operationName: 'find',
       isPlural: true,
+      fromJsonFields: '["items"]',
     );
 
     final modelName = '${camelModelName}Model';

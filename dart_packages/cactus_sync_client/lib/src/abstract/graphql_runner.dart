@@ -88,17 +88,27 @@ class GraphqlRunner {
       case DefaultGqlOperationType.update:
       case DefaultGqlOperationType.remove:
         final queryResult = await client.mutate(
-            MutationOptions(document: document, variables: jsonVariableValues));
-        return GraphqlResult.fromQueryResult<TQueryResult>(
-            queryResult: queryResult, fromJsonCallback: fromJsonCallback);
-      case DefaultGqlOperationType.get:
-      case DefaultGqlOperationType.find:
-        final queryResult = await client.query(QueryOptions(
+          MutationOptions(
             document: document,
             variables: jsonVariableValues,
-            fetchPolicy: defaultFetchPolicy));
+          ),
+        );
         return GraphqlResult.fromQueryResult<TQueryResult>(
-            queryResult: queryResult, fromJsonCallback: fromJsonCallback);
+          queryResult: queryResult,
+          fromJsonCallback: fromJsonCallback,
+        );
+      case DefaultGqlOperationType.get:
+      case DefaultGqlOperationType.find:
+        final queryResult = await client.query(
+          QueryOptions(
+              document: document,
+              variables: jsonVariableValues,
+              fetchPolicy: defaultFetchPolicy),
+        );
+        return GraphqlResult.fromQueryResult<TQueryResult>(
+          queryResult: queryResult,
+          fromJsonCallback: fromJsonCallback,
+        );
       case DefaultGqlOperationType.fromString:
         throw Exception('DefaultGqlOperationType is fromString but '
             'has to be different');
