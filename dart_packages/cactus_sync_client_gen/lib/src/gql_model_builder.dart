@@ -38,6 +38,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
           implementsInterfaces: typeDefinition.interfaces,
           serializable: !isSystemType,
           isResultList: isResultList,
+          isEquatable: true,
         );
         finalClasses.putIfAbsent(dartModel.name, () => dartModel);
         // FIXME: Issue #6: refactor: separate models from input classes
@@ -103,6 +104,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     List<gql_schema.InterfaceTypeDefinition?>? implementsInterfaces,
     bool serializable = false,
     bool isResultList = false,
+    bool isEquatable = false,
   }) {
     final Set<Field> definedFields = {};
     final Set<Method> definedMethods = {};
@@ -155,6 +157,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       abstract: abstract,
       implementsInterfaces: implementsInterfaces,
       baseTypeName: itemsBaseTypeName,
+      isEquatable: isEquatable,
     );
     return dartClass;
   }

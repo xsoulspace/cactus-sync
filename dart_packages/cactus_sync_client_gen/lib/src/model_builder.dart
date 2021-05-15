@@ -45,7 +45,8 @@ class ModelBuilder implements Builder {
         import 'package:built_value/built_value.dart';
         import 'package:json_annotation/json_annotation.dart';
         import 'sync_config.dart';
-        
+        import 'package:equatable/equatable.dart';
+
         part '$assetName.g.dart';
 
         /// !------------ CAUTION ------------!

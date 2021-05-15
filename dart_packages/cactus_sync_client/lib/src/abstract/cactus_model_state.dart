@@ -96,7 +96,6 @@ class CactusModelState<
   /// with new data
   void _updateStateList<TResult>({
     required GraphqlResult<TResult> result,
-    bool? remove,
     bool? notifyListeners,
   }) {
     final validatedResult = validateStateModelResult(result: result);
@@ -222,6 +221,7 @@ class CactusModelState<
       notifyListeners: notifyListeners,
       queryGql: queryGql,
     );
+    CactusSync.l.info('find recevied result');
     _updateStateList(
       result: result,
     );

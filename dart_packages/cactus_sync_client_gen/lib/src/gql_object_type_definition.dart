@@ -32,6 +32,7 @@ class GqlObjectTypeDefinition {
     bool serializable = false,
     bool isResultList = false,
     String baseTypeName = '',
+    bool isEquatable = false,
   }) {
     if (typeDefinitionName == null || typeDefinitionName.isEmpty) {
       throw ArgumentError.value(
@@ -55,6 +56,29 @@ class GqlObjectTypeDefinition {
           ],
         ),
     );
+    final getters = isEquatable
+        ? [
+            Method(
+              (m) => m
+                ..annotations.addAll([refer('override')])
+                ..name = 'props'
+                ..type = MethodType.getter
+                ..body = Code((() {
+                  final names = definedFields.map((f) => f.name).join(',');
+                  return "return [$names];";
+                })())
+                ..returns = refer('List<Object>'),
+            ),
+            Method(
+              (m) => m
+                ..annotations.addAll([refer('override')])
+                ..name = 'stringify'
+                ..type = MethodType.getter
+                ..body = const Code('return true;')
+                ..returns = refer('bool'),
+            ),
+          ]
+        : [];
     final finalClass = Class(
       (b) {
         b
@@ -75,7 +99,12 @@ class GqlObjectTypeDefinition {
           )
           ..name = typeDefinitionName
           ..fields.addAll(definedFields)
-          ..methods.addAll(definedMethods)
+          ..methods.addAll(
+            [
+              ...getters,
+              ...definedMethods,
+            ],
+          )
           ..constructors.addAll(
             [
               defaultConstructor,
@@ -97,6 +126,12 @@ class GqlObjectTypeDefinition {
           b.extend = refer(
             'GraphbackResultList<$baseTypeName>',
             'package:cactus_sync_client/cactus_sync_client.dart',
+          );
+        }
+        if (isEquatable) {
+          b.extend = refer(
+            'Equatable',
+            'package:equatable/equatable.dart',
           );
         }
       }

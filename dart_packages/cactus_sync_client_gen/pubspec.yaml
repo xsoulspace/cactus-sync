@@ -16,6 +16,7 @@ dependencies:
   json_annotation: ^4.0.0
   riverpod: ^0.14.0
   indent: ^2.0.0
+  equatable: ^2.0.0
 
 dev_dependencies:
   flutter:
