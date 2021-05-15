@@ -2,6 +2,7 @@ import 'package:simple_logger/simple_logger.dart';
 
 import 'cactus_model.dart';
 import 'graphql_runner.dart';
+import 'serializable_model.dart';
 
 // import 'package:';
 class CactusSync {
@@ -40,15 +41,15 @@ class CactusSync {
       TFindInput,
       TFindResult> attachModel<
           TModel,
-          TCreateInput,
+          TCreateInput extends SerializableModel,
           TCreateResult,
-          TUpdateInput,
+          TUpdateInput extends SerializableModel,
           TUpdateResult,
-          TDeleteInput,
+          TDeleteInput extends SerializableModel,
           TDeleteResult,
-          TGetInput,
+          TGetInput extends SerializableModel,
           TGetResult,
-          TFindInput,
+          TFindInput extends SerializableModel,
           TFindResult>(
       CactusModelBuilder<
               TModel,

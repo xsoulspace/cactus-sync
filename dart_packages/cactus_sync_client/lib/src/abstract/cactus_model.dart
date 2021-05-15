@@ -3,6 +3,7 @@ import '../graphql/graphql_result.dart';
 import '../utils/utils.dart';
 import 'cactus_sync.dart';
 import 'graphql_runner.dart';
+import 'serializable_model.dart';
 
 /// [stringQueryGql] is a gql which replaces the whole gql
 /// TODO: add an example
@@ -16,15 +17,15 @@ class QueryGql {
 
 typedef CactusModelBuilder<
         TModel,
-        TCreateInput,
+        TCreateInput extends SerializableModel,
         TCreateResult,
-        TUpdateInput,
+        TUpdateInput extends SerializableModel,
         TUpdateResult,
-        TDeleteInput,
+        TDeleteInput extends SerializableModel,
         TDeleteResult,
-        TGetInput,
+        TGetInput extends SerializableModel,
         TGetResult,
-        TFindInput,
+        TFindInput extends SerializableModel,
         TFindResult>
     = CactusModel<
             TModel,
@@ -81,15 +82,15 @@ abstract class AbstractCactusModel<
 
 class CactusModel<
         TType,
-        TCreateInput,
+        TCreateInput extends SerializableModel,
         TCreateResult,
-        TUpdateInput,
+        TUpdateInput extends SerializableModel,
         TUpdateResult,
-        TRemoveInput,
+        TRemoveInput extends SerializableModel,
         TRemoveResult,
-        TGetInput,
+        TGetInput extends SerializableModel,
         TGetResult,
-        TFindInput,
+        TFindInput extends SerializableModel,
         TFindResult>
     implements
         AbstractCactusModel<
@@ -145,15 +146,15 @@ class CactusModel<
       TFindInput,
       TFindResult> init<
           TModel,
-          TCreateInput,
+          TCreateInput extends SerializableModel,
           TCreateResult,
-          TUpdateInput,
+          TUpdateInput extends SerializableModel,
           TUpdateResult,
-          TDeleteInput,
+          TDeleteInput extends SerializableModel,
           TDeleteResult,
-          TGetInput,
+          TGetInput extends SerializableModel,
           TGetResult,
-          TFindInput,
+          TFindInput extends SerializableModel,
           TFindResult>({
     required List<String?> graphqlModelFieldNames,
     required String graphqlModelName,
@@ -197,9 +198,10 @@ class CactusModel<
   }
 
   GraphqlRunner get _graphqlRunner => db.graphqlRunner;
-  Future<GraphqlResult<TQueryResult>> _execute<TVariables, TQueryResult>({
+  Future<GraphqlResult<TQueryResult>>
+      _execute<TVariables extends SerializableModel, TQueryResult>({
     required String query,
-    required Map<String, dynamic> variableValues,
+    required TVariables variableValues,
     required DefaultGqlOperationType operationType,
     required FromJsonCallback<TType> fromJsonCallback,
   }) async {
@@ -232,11 +234,12 @@ class CactusModel<
     return builder.getByOperationType(operationType: operationType);
   }
 
-  Future<GraphqlResult<TResult>> _executeMiddleware<TVariables, TResult>({
+  Future<GraphqlResult<TResult>>
+      _executeMiddleware<TVariables extends SerializableModel, TResult>({
     QueryGql? queryGql,
     required DefaultGqlOperationType operationType,
     bool notifyListeners = true,
-    variableValues,
+    required TVariables variableValues,
   }) async {
     /**
      * If we receive modelFragmentGql, we concat it with default query
@@ -250,7 +253,10 @@ class CactusModel<
     );
     final fromJsonCallback =
         _getFromJsonCallbackByOperationType(operationType: operationType);
-    CactusSync.l.info({"query": query, "jsonCallback": fromJsonCallback});
+    CactusSync.l.info({
+      "query": query,
+      "jsonCallback": fromJsonCallback,
+    });
 
     final result = await _execute<TVariables, TResult>(
       variableValues: variableValues,

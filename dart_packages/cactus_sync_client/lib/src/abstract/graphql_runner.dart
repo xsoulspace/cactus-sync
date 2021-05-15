@@ -7,6 +7,7 @@ import '../graphql/gql_builder.dart';
 import '../graphql/graphql_result.dart';
 import '../utils/utils.dart';
 import 'cactus_sync.dart';
+import 'serializable_model.dart';
 
 /// This config required to init GraphqlRunner
 /// Under the hood it uses default ferry with hive and hive_flutter setup
@@ -68,9 +69,10 @@ class GraphqlRunner {
   }
 
   /// Method to call mutations and queries
-  Future<GraphqlResult<TQueryResult>> execute<TVariables, TQueryResult>({
+  Future<GraphqlResult<TQueryResult>>
+      execute<TVariables extends SerializableModel, TQueryResult>({
     required String query,
-    required Map<String, dynamic> variableValues,
+    required TVariables variableValues,
     required DefaultGqlOperationType operationType,
     required FromJsonCallback fromJsonCallback,
   }) async {
@@ -78,20 +80,22 @@ class GraphqlRunner {
     CactusSync.l.info({
       'execute document': document,
       'operationType': operationType,
+      "variableValues": variableValues,
     });
+    final jsonVariableValues = variableValues.toJson();
     switch (operationType) {
       case DefaultGqlOperationType.create:
       case DefaultGqlOperationType.update:
       case DefaultGqlOperationType.remove:
         final queryResult = await client.mutate(
-            MutationOptions(document: document, variables: variableValues));
+            MutationOptions(document: document, variables: jsonVariableValues));
         return GraphqlResult.fromQueryResult<TQueryResult>(
             queryResult: queryResult, fromJsonCallback: fromJsonCallback);
       case DefaultGqlOperationType.get:
       case DefaultGqlOperationType.find:
         final queryResult = await client.query(QueryOptions(
             document: document,
-            variables: variableValues,
+            variables: jsonVariableValues,
             fetchPolicy: defaultFetchPolicy));
         return GraphqlResult.fromQueryResult<TQueryResult>(
             queryResult: queryResult, fromJsonCallback: fromJsonCallback);

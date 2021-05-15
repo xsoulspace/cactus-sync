@@ -1,6 +1,7 @@
 import '../graphql/graphql_find_list.dart';
 import '../graphql/graphql_result.dart';
 import 'cactus_model.dart';
+import 'serializable_model.dart';
 
 enum StateModelEvents { addUpdateStateModel, removeStateModel }
 
@@ -21,15 +22,15 @@ class StateModelValidationResult<TData> {
 ///
 class CactusModelState<
         TModel,
-        TCreateInput,
+        TCreateInput extends SerializableModel,
         TCreateResult,
-        TUpdateInput,
+        TUpdateInput extends SerializableModel,
         TUpdateResult,
-        TDeleteInput,
+        TDeleteInput extends SerializableModel,
         TDeleteResult,
-        TGetInput,
+        TGetInput extends SerializableModel,
         TGetResult,
-        TFindInput,
+        TFindInput extends SerializableModel,
         TFindResult>
     extends AbstractCactusModel<
         TCreateInput,
