@@ -210,7 +210,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
     final modelName = '${camelModelName}Model';
     final modelProviderStr = '''
-          final use${properModelType}State = Provider<
+          final use${properModelType}State = StateProvider<
             CactusModelState<
               $properModelType,
               $mutationCreateArgs,
