@@ -74,7 +74,7 @@ class GraphqlRunner {
     required String query,
     required TVariables variableValues,
     required DefaultGqlOperationType operationType,
-    required FromJsonCallback fromJsonCallback,
+    required FromJsonCallback<TQueryResult> fromJsonCallback,
   }) async {
     final document = gql_lang.parseString(query);
     CactusSync.l.info({

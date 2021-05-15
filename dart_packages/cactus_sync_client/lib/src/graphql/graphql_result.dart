@@ -1,13 +1,12 @@
 import 'package:graphql/client.dart';
 
-import '../abstract/cactus_sync.dart';
 import '../utils/utils.dart';
 
 ///Generic query result based on query result
 ///
 ///to use typed data provide fromJson callback and generic TResult
 class GraphqlResult<TResult> extends QueryResult {
-  final FromJsonCallback fromJsonCallback;
+  final FromJsonCallback<TResult> fromJsonCallback;
 
   GraphqlResult({
     Map<String, dynamic>? data,
@@ -23,7 +22,7 @@ class GraphqlResult<TResult> extends QueryResult {
 
   static GraphqlResult<TResult> fromQueryResult<TResult>({
     required QueryResult queryResult,
-    required FromJsonCallback fromJsonCallback,
+    required FromJsonCallback<TResult> fromJsonCallback,
   }) {
     return GraphqlResult<TResult>(
       fromJsonCallback: fromJsonCallback,
@@ -33,9 +32,5 @@ class GraphqlResult<TResult> extends QueryResult {
     );
   }
 
-  TResult? get typedData {
-    final type = fromJsonCallback(data);
-    CactusSync.l.info({'typedData': type});
-    return type;
-  }
+  TResult? get typedData => fromJsonCallback(data);
 }

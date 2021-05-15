@@ -104,11 +104,11 @@ class CactusModel<
             TGetResult,
             TFindInput,
             TFindResult> {
-  FromJsonCallback<TType> createFromJsonCallback;
-  FromJsonCallback<TType> updateFromJsonCallback;
-  FromJsonCallback<TType> removeFromJsonCallback;
-  FromJsonCallback<TType> getFromJsonCallback;
-  FromJsonCallback<TType> findFromJsonCallback;
+  FromJsonCallback<TCreateResult> createFromJsonCallback;
+  FromJsonCallback<TFindResult> findFromJsonCallback;
+  FromJsonCallback<TGetResult> getFromJsonCallback;
+  FromJsonCallback<TRemoveResult> removeFromJsonCallback;
+  FromJsonCallback<TUpdateResult> updateFromJsonCallback;
 
   final CactusSync db;
   final String graphqlModelName;
@@ -159,11 +159,11 @@ class CactusModel<
     required List<String?> graphqlModelFieldNames,
     required String graphqlModelName,
     required String defaultModelFragment,
-    required FromJsonCallback<TModel> createFromJsonCallback,
-    required FromJsonCallback<TModel> findFromJsonCallback,
-    required FromJsonCallback<TModel> getFromJsonCallback,
-    required FromJsonCallback<TModel> removeFromJsonCallback,
-    required FromJsonCallback<TModel> updateFromJsonCallback,
+    required FromJsonCallback<TCreateResult> createFromJsonCallback,
+    required FromJsonCallback<TFindResult> findFromJsonCallback,
+    required FromJsonCallback<TGetResult> getFromJsonCallback,
+    required FromJsonCallback<TDeleteResult> removeFromJsonCallback,
+    required FromJsonCallback<TUpdateResult> updateFromJsonCallback,
   }) =>
       ({required db}) => CactusModel(
             createFromJsonCallback: createFromJsonCallback,
@@ -177,20 +177,21 @@ class CactusModel<
             updateFromJsonCallback: updateFromJsonCallback,
           );
 
-  FromJsonCallback<TType> _getFromJsonCallbackByOperationType({
+  FromJsonCallback<TQueryResult>
+      _getFromJsonCallbackByOperationType<TQueryResult>({
     required DefaultGqlOperationType operationType,
   }) {
     switch (operationType) {
       case DefaultGqlOperationType.create:
-        return createFromJsonCallback;
+        return createFromJsonCallback as dynamic;
       case DefaultGqlOperationType.update:
-        return updateFromJsonCallback;
+        return updateFromJsonCallback as dynamic;
       case DefaultGqlOperationType.remove:
-        return removeFromJsonCallback;
+        return removeFromJsonCallback as dynamic;
       case DefaultGqlOperationType.get:
-        return getFromJsonCallback;
+        return getFromJsonCallback as dynamic;
       case DefaultGqlOperationType.find:
-        return findFromJsonCallback;
+        return findFromJsonCallback as dynamic;
       case DefaultGqlOperationType.fromString:
         throw Exception('DefaultGqlOperationType is fromString but '
             'has to be different');
@@ -203,7 +204,7 @@ class CactusModel<
     required String query,
     required TVariables variableValues,
     required DefaultGqlOperationType operationType,
-    required FromJsonCallback<TType> fromJsonCallback,
+    required FromJsonCallback<TQueryResult> fromJsonCallback,
   }) async {
     CactusSync.l.info({
       'is graphqlRunner initialized': _graphqlRunner != null,
@@ -251,8 +252,8 @@ class CactusModel<
       operationType: operationType,
       queryGql: queryGql,
     );
-    final fromJsonCallback =
-        _getFromJsonCallbackByOperationType(operationType: operationType);
+    final fromJsonCallback = _getFromJsonCallbackByOperationType<TResult>(
+        operationType: operationType);
     CactusSync.l.info({
       "query": query,
       "jsonCallback": fromJsonCallback,
