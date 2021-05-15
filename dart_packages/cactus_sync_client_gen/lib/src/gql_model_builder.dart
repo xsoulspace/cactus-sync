@@ -283,12 +283,13 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
   }) {
     final fieldsNames = fields
         .where((el) =>
-            el.description?.contains('manyToOne') != true ||
-            el.description?.contains('oneToMany') != true ||
-            el.description?.contains('oneToOne') != true)
+            el.description?.toLowerCase().contains('manytoone') != true &&
+            el.description?.toLowerCase().contains('onetomany') != true &&
+            el.description?.toLowerCase().contains('onetoone') != true)
         .map((el) => el.name)
         .whereType<String>()
         .map((e) => "'$e'");
+
     return fieldsNames.toList();
   }
 
