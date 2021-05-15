@@ -202,13 +202,17 @@ class CactusModel<
     required Map<String, dynamic> variableValues,
     required DefaultGqlOperationType operationType,
     required FromJsonCallback<TType> fromJsonCallback,
-  }) async =>
-      _graphqlRunner.execute<TVariables, TQueryResult>(
-        fromJsonCallback: fromJsonCallback,
-        operationType: operationType,
-        query: query,
-        variableValues: variableValues,
-      );
+  }) async {
+    CactusSync.l.info({
+      'is graphqlRunner null': _graphqlRunner == null,
+    });
+    return _graphqlRunner.execute<TVariables, TQueryResult>(
+      fromJsonCallback: fromJsonCallback,
+      operationType: operationType,
+      query: query,
+      variableValues: variableValues,
+    );
+  }
 
   String _resolveOperationGql({
     required DefaultGqlOperationType operationType,
