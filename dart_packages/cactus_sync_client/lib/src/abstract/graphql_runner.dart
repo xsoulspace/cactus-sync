@@ -90,7 +90,7 @@ class GraphqlRunner {
         final queryResult = await client.mutate(
           MutationOptions(
             document: document,
-            variables: jsonVariableValues,
+            variables: {"input": jsonVariableValues},
           ),
         );
         return GraphqlResult.fromQueryResult<TQueryResult>(
