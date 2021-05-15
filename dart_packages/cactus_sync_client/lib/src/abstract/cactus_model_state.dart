@@ -106,8 +106,8 @@ class CactusModelState<
       return;
     }
 
-    if (maybeData is GraphbackResultList<TModel>) {
-      setState(maybeData.items);
+    if (maybeData is GraphbackResultList) {
+      setState(maybeData.items as List<TModel?>);
     }
     CactusSync.l.warning(
       'the data has unknown type ${maybeData.runtimeType} '
