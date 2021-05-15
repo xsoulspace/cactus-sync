@@ -67,7 +67,7 @@ class GqlObjectTypeDefinition {
                   final names = definedFields.map((f) => f.name).join(',');
                   return "return [$names];";
                 })())
-                ..returns = refer('List<Object>'),
+                ..returns = refer('List<Object?>'),
             ),
             Method(
               (m) => m
@@ -127,8 +127,7 @@ class GqlObjectTypeDefinition {
             'GraphbackResultList<$baseTypeName>',
             'package:cactus_sync_client/cactus_sync_client.dart',
           );
-        }
-        if (isEquatable) {
+        } else if (isEquatable) {
           b.extend = refer(
             'Equatable',
             'package:equatable/equatable.dart',

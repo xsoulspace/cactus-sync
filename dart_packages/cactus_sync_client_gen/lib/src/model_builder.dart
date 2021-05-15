@@ -40,12 +40,13 @@ class ModelBuilder implements Builder {
 
     final finalBuffer = StringBuffer(
       """
-        import 'package:cactus_sync_client/cactus_sync_client.dart';
-        import 'package:riverpod/riverpod.dart';
         import 'package:built_value/built_value.dart';
-        import 'package:json_annotation/json_annotation.dart';
-        import 'sync_config.dart';
+        import 'package:cactus_sync_client/cactus_sync_client.dart';
         import 'package:equatable/equatable.dart';
+        import 'package:json_annotation/json_annotation.dart';
+        import 'package:riverpod/riverpod.dart';
+        
+        import 'sync_config.dart';
 
         part '$assetName.g.dart';
 
