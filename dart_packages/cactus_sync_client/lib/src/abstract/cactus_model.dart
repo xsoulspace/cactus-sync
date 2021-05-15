@@ -244,6 +244,9 @@ class CactusModel<
       operationType: operationType,
       queryGql: queryGql,
     );
+
+    CactusSync.l.info(query);
+
     final result = await _execute<TVariables, TResult>(
       variableValues: variableValues,
       query: query,
@@ -251,6 +254,8 @@ class CactusModel<
       fromJsonCallback:
           _getFromJsonCallbackByOperationType(operationType: operationType),
     );
+
+    CactusSync.l.info(result);
 
     /// STATE UPDATES
     return result;
@@ -282,47 +287,77 @@ class CactusModel<
   }
 
   @override
-  create({required variableValues, queryGql, notifyListeners = true}) {
+  create({
+    required variableValues,
+    queryGql,
+    notifyListeners = true,
+  }) {
+    CactusSync.l.info('create');
     return _executeMiddleware(
-        operationType: DefaultGqlOperationType.create,
-        queryGql: queryGql,
-        notifyListeners: notifyListeners,
-        variableValues: variableValues);
+      operationType: DefaultGqlOperationType.create,
+      queryGql: queryGql,
+      notifyListeners: notifyListeners,
+      variableValues: variableValues,
+    );
   }
 
   @override
-  update({required variableValues, queryGql, notifyListeners = true}) {
+  update({
+    required variableValues,
+    queryGql,
+    notifyListeners = true,
+  }) {
+    CactusSync.l.info('update');
     return _executeMiddleware(
-        operationType: DefaultGqlOperationType.create,
-        queryGql: queryGql,
-        notifyListeners: notifyListeners,
-        variableValues: variableValues);
+      operationType: DefaultGqlOperationType.create,
+      queryGql: queryGql,
+      notifyListeners: notifyListeners,
+      variableValues: variableValues,
+    );
   }
 
   @override
-  remove({required variableValues, queryGql, notifyListeners = true}) {
+  remove({
+    required variableValues,
+    queryGql,
+    notifyListeners = true,
+  }) {
+    CactusSync.l.info('remove');
     return _executeMiddleware(
-        operationType: DefaultGqlOperationType.create,
-        queryGql: queryGql,
-        notifyListeners: notifyListeners,
-        variableValues: variableValues);
+      operationType: DefaultGqlOperationType.create,
+      queryGql: queryGql,
+      notifyListeners: notifyListeners,
+      variableValues: variableValues,
+    );
   }
 
   @override
-  find({required variableValues, queryGql, notifyListeners = true}) {
+  find({
+    required variableValues,
+    queryGql,
+    notifyListeners = true,
+  }) {
+    CactusSync.l.info('find');
     return _executeMiddleware(
-        operationType: DefaultGqlOperationType.create,
-        queryGql: queryGql,
-        notifyListeners: notifyListeners,
-        variableValues: variableValues);
+      operationType: DefaultGqlOperationType.create,
+      queryGql: queryGql,
+      notifyListeners: notifyListeners,
+      variableValues: variableValues,
+    );
   }
 
   @override
-  get({required variableValues, queryGql, notifyListeners = true}) {
+  get({
+    required variableValues,
+    queryGql,
+    notifyListeners = true,
+  }) {
+    CactusSync.l.info('get');
     return _executeMiddleware(
-        operationType: DefaultGqlOperationType.create,
-        queryGql: queryGql,
-        notifyListeners: notifyListeners,
-        variableValues: variableValues);
+      operationType: DefaultGqlOperationType.create,
+      queryGql: queryGql,
+      notifyListeners: notifyListeners,
+      variableValues: variableValues,
+    );
   }
 }

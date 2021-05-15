@@ -6,6 +6,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import '../graphql/gql_builder.dart';
 import '../graphql/graphql_result.dart';
 import '../utils/utils.dart';
+import 'cactus_sync.dart';
 
 /// This config required to init GraphqlRunner
 /// Under the hood it uses default ferry with hive and hive_flutter setup
@@ -20,14 +21,15 @@ class GraphqlRunnerConfig {
   DefaultPolicies? defaultPolicies;
   GraphQLCache? cache;
   FetchPolicy? defaultFetchPolicy;
-  GraphqlRunnerConfig(
-      {this.hiveSubDir,
-      required this.authLink,
-      required this.httpLink,
-      this.defaultPolicies,
-      this.alwaysRebroadcast = false,
-      this.cache,
-      this.defaultFetchPolicy});
+  GraphqlRunnerConfig({
+    this.hiveSubDir,
+    required this.authLink,
+    required this.httpLink,
+    this.defaultPolicies,
+    this.alwaysRebroadcast = false,
+    this.cache,
+    this.defaultFetchPolicy,
+  });
 }
 
 ///To init this class use `GraphqlRunner.init(...)`
@@ -73,6 +75,10 @@ class GraphqlRunner {
     required FromJsonCallback fromJsonCallback,
   }) async {
     final document = gql_lang.parseString(query);
+    CactusSync.l.info({
+      'execute document': document,
+      'operationType': operationType,
+    });
     switch (operationType) {
       case DefaultGqlOperationType.create:
       case DefaultGqlOperationType.update:

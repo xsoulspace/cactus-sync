@@ -1,12 +1,24 @@
+import 'package:simple_logger/simple_logger.dart';
+
 import 'cactus_model.dart';
 import 'graphql_runner.dart';
 
+// import 'package:';
 class CactusSync {
   static CactusSync? db;
 
   GraphqlRunner graphqlRunner;
+  static final l = SimpleLogger();
   CactusSync({required this.graphqlRunner});
-  static void init<TCacheShape>({required GraphqlRunner graphqlRunner}) {
+  static void init<TCacheShape>({
+    required GraphqlRunner graphqlRunner,
+    Level loggerLevel = Level.OFF,
+    bool loggerIncludeCallerInfo = false,
+  }) {
+    l.setLevel(
+      loggerLevel,
+      includeCallerInfo: loggerIncludeCallerInfo,
+    );
     CactusSync.db = CactusSync(graphqlRunner: graphqlRunner);
   }
 
