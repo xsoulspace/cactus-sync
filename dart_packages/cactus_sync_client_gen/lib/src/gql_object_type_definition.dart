@@ -16,6 +16,10 @@ class _VerifiedTypeName {
   });
 }
 
+/// The [isResultList] is a param that needed to
+/// point class with items.
+/// The [baseTypeName] is a param that used as generic type
+/// for list in case if it is a result list class
 class GqlObjectTypeDefinition {
   Class makeClassContructor({
     required Set<Field> definedFields,
@@ -27,6 +31,7 @@ class GqlObjectTypeDefinition {
     List<gql_schema.InterfaceTypeDefinition?>? implementsInterfaces,
     bool serializable = false,
     bool isResultList = false,
+    String baseTypeName = '',
   }) {
     if (typeDefinitionName == null || typeDefinitionName.isEmpty) {
       throw ArgumentError.value(
@@ -40,41 +45,36 @@ class GqlObjectTypeDefinition {
         ..constant = true
         ..optionalParameters.addAll(
           defaultConstructorInitializers,
+        )
+        ..initializers.addAll(
+          [
+            if (isResultList)
+              const Code(
+                'super(items: items)',
+              ),
+          ],
         ),
     );
     final finalClass = Class(
       (b) {
-        final resolvedFields = isResultList
-            ? definedFields.map((f) {
-                // FIXME: Issue #2: how to handle array type?
-                if (f.name == 'items') {
-                  f.rebuild(
-                    (c) => c
-                      ..annotations.addAll(
-                        [
-                          refer(
-                            'override',
-                          ),
-                        ],
-                      ),
-                  );
-                }
-                return f;
-              })
-            : definedFields;
         b
-          ..annotations.addAll(serializable
-              ? [
-                  refer(
-                    'JsonSerializable',
-                    'package:json_annotation/json_annotation.dart',
-                  ).call([], {
-                    'explicitToJson': refer('true'),
-                  }),
-                ]
-              : [])
+          ..annotations.addAll(
+            serializable
+                ? [
+                    refer(
+                      'JsonSerializable',
+                      'package:json_annotation/json_annotation.dart',
+                    ).call(
+                      [],
+                      {
+                        'explicitToJson': refer('true'),
+                      },
+                    ),
+                  ]
+                : [],
+          )
           ..name = typeDefinitionName
-          ..fields.addAll(resolvedFields)
+          ..fields.addAll(definedFields)
           ..methods.addAll(definedMethods)
           ..constructors.addAll(
             [
@@ -95,7 +95,7 @@ class GqlObjectTypeDefinition {
           ..abstract = abstract;
         if (isResultList) {
           b.extend = refer(
-            'GraphbackResultList',
+            'GraphbackResultList<$baseTypeName>',
             'package:cactus_sync_client/cactus_sync_client.dart',
           );
         }
@@ -162,6 +162,7 @@ class GqlObjectTypeDefinition {
     required String? description,
     required String? baseTypeName,
     required bool isRequired,
+    bool isResultList = false,
   }) {
     final verifiedTypeNames = verifyTypeAndName(
       baseTypeName: baseTypeName,
@@ -204,11 +205,14 @@ class GqlObjectTypeDefinition {
         }
       },
     );
-    definedFields.add(field);
+    final isItemsFieldInsideResultList =
+        isResultList && verifiedTypeNames.typedefName == 'items';
+    final isNotItemsFieldInsideResultList = !isItemsFieldInsideResultList;
+    if (isNotItemsFieldInsideResultList) definedFields.add(field);
     defaultConstructorInitializers.add(
       Parameter(
         (p) => p
-          ..toThis = true
+          ..toThis = isNotItemsFieldInsideResultList
           ..named = true
           ..required = isRequired
           ..name = verifiedTypeNames.typedefName,

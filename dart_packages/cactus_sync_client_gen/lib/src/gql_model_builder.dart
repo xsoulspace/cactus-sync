@@ -108,6 +108,8 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final Set<Method> definedMethods = {};
     final Set<Constructor> definedConstructors = {};
     final Set<Parameter> defaultConstructorInitializers = {};
+    // FIXME: Issue #2
+    String itemsBaseTypeName = '';
     for (final field in typeDefinition.fields) {
       final args = field.args;
       if (args != null && args.isNotEmpty == true) {
@@ -120,6 +122,9 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
           args: args,
         );
       } else {
+        if (field.name == 'items') {
+          itemsBaseTypeName = field.type?.baseTypeName ?? '';
+        }
         fillClassParameterFromField(
           definedFields: definedFields,
           isRequired: field.type?.isNonNull ?? false,
@@ -128,6 +133,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
           // FIXME: errors happened with comments
           description: '', //field.description ,
           baseTypeName: field.type?.baseTypeName,
+          isResultList: isResultList,
         );
       }
     }
@@ -148,6 +154,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       typeDefinitionName: typeDefinitionName,
       abstract: abstract,
       implementsInterfaces: implementsInterfaces,
+      baseTypeName: itemsBaseTypeName,
     );
     return dartClass;
   }
