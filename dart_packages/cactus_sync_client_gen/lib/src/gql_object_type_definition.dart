@@ -178,7 +178,6 @@ class GqlObjectTypeDefinition {
       },
     );
     definedFields.add(field);
-
     defaultConstructorInitializers.add(
       Parameter(
         (p) => p
@@ -200,6 +199,7 @@ class GqlObjectTypeDefinition {
     // Map<String, dynamic> toJson() => _$ModelToJson(this);
     final toJsonMethod = Method(
       (m) => m
+        ..annotations.addAll([refer('override')])
         ..name = 'toJson'
         ..returns = refer('Map<String, dynamic>')
         ..body = Code('return _\$${typeName}ToJson(this);'),
