@@ -1,6 +1,7 @@
 import '../graphql/graphql_result.dart';
 import 'cactus_model.dart';
 import 'cactus_sync.dart';
+import 'graphback_result_list.dart';
 import 'serializable_model.dart';
 
 enum StateModelEvents { addUpdateStateModel, removeStateModel }
@@ -102,14 +103,14 @@ class CactusModelState<
     if (validatedResult.isNotValid) return;
     final maybeData = validatedResult.data.typedData;
     if (maybeData == null) {
-      CactusSync.l.info('the model is null, state will not updated');
+      CactusSync.l.warning('the model is null, state will not updated');
       return;
     }
 
-    if (maybeData is List<TModel?>) {
-      setState(maybeData);
+    if (maybeData is GraphbackResultList<TModel>) {
+      setState(maybeData.items);
     }
-    CactusSync.l.info(
+    CactusSync.l.warning(
       'the data has unknown type ${maybeData.runtimeType} '
       ', state will not updated',
     );
@@ -137,7 +138,7 @@ class CactusModelState<
       return;
     }
 
-    CactusSync.l.info('the model is null, state will not updated');
+    CactusSync.l.warning('the model is null, state will not updated');
     // TODO: implement notify
     // notifyStateModelListeners(
     //   notifyListeners,

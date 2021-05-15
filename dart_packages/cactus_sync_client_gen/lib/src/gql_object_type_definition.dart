@@ -26,6 +26,7 @@ class GqlObjectTypeDefinition {
     bool abstract = false,
     List<gql_schema.InterfaceTypeDefinition?>? implementsInterfaces,
     bool serializable = false,
+    bool isResultList = false,
   }) {
     if (typeDefinitionName == null || typeDefinitionName.isEmpty) {
       throw ArgumentError.value(
@@ -42,37 +43,63 @@ class GqlObjectTypeDefinition {
         ),
     );
     final finalClass = Class(
-      (b) => b
-        ..annotations.addAll(serializable
-            ? [
-                refer(
-                  'JsonSerializable',
-                  'package:json_annotation/json_annotation.dart',
-                ).call([], {
-                  'explicitToJson': refer('true'),
-                }),
-              ]
-            : [])
-        ..name = typeDefinitionName
-        ..fields.addAll(definedFields)
-        ..methods.addAll(definedMethods)
-        ..constructors.addAll(
-          [
-            defaultConstructor,
-            ...definedConstructors,
-          ],
-        )
-        ..implements.addAll(
-          serializable
+      (b) {
+        final resolvedFields = isResultList
+            ? definedFields.map((f) {
+                // FIXME: Issue #2: how to handle array type?
+                if (f.name == 'items') {
+                  f.rebuild(
+                    (c) => c
+                      ..annotations.addAll(
+                        [
+                          refer(
+                            'override',
+                          ),
+                        ],
+                      ),
+                  );
+                }
+                return f;
+              })
+            : definedFields;
+        b
+          ..annotations.addAll(serializable
               ? [
                   refer(
-                    'SerializableModel',
-                    'package:cactus_sync_client/cactus_sync_client.dart',
-                  ),
+                    'JsonSerializable',
+                    'package:json_annotation/json_annotation.dart',
+                  ).call([], {
+                    'explicitToJson': refer('true'),
+                  }),
                 ]
-              : [],
-        )
-        ..abstract = abstract
+              : [])
+          ..name = typeDefinitionName
+          ..fields.addAll(resolvedFields)
+          ..methods.addAll(definedMethods)
+          ..constructors.addAll(
+            [
+              defaultConstructor,
+              ...definedConstructors,
+            ],
+          )
+          ..implements.addAll(
+            serializable
+                ? [
+                    refer(
+                      'SerializableModel',
+                      'package:cactus_sync_client/cactus_sync_client.dart',
+                    ),
+                  ]
+                : [],
+          )
+          ..abstract = abstract;
+        if (isResultList) {
+          b.extend = refer(
+            'GraphbackResultList',
+            'package:cactus_sync_client/cactus_sync_client.dart',
+          );
+        }
+      }
 
       // FIXME: interfaces are not working
       // ..implements.addAll(
@@ -142,7 +169,7 @@ class GqlObjectTypeDefinition {
     );
     if (verifiedTypeNames == null) return;
     final fieldTypeName = (() {
-      // FIXME: temp solving arrays
+      // FIXME: Issue #2: how to handle array type?
       final name = verifiedTypeNames.typedefName == 'items'
           ? "List<${verifiedTypeNames.baseTypeName}?>"
           : verifiedTypeNames.baseTypeName;

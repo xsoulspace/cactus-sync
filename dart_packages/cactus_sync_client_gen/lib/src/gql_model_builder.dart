@@ -31,15 +31,17 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       if (astNode is ObjectTypeDefinitionNode) {
         final typeDefinition = gql_schema.ObjectTypeDefinition(astNode);
         final isSystemType = isItSystemType(typeName: typeDefinitionName);
+        final isResultList = isItResultListType(typeName: typeDefinitionName);
         final dartModel = makeModelClass(
           typeDefinition: typeDefinition,
           typeDefinitionName: typeDefinitionName,
           implementsInterfaces: typeDefinition.interfaces,
           serializable: !isSystemType,
+          isResultList: isResultList,
         );
         finalClasses.putIfAbsent(dartModel.name, () => dartModel);
         // FIXME: Issue #6: refactor: separate models from input classes
-        if (isSystemType || isItResultListType(typeName: typeDefinitionName)) {
+        if (isSystemType || isResultList) {
           continue;
         }
         final strProviderBuffer = makeCactusModels(
@@ -100,6 +102,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     bool abstract = false,
     List<gql_schema.InterfaceTypeDefinition?>? implementsInterfaces,
     bool serializable = false,
+    bool isResultList = false,
   }) {
     final Set<Field> definedFields = {};
     final Set<Method> definedMethods = {};
@@ -137,6 +140,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     }
     final dartClass = makeClassContructor(
       serializable: serializable,
+      isResultList: isResultList,
       definedFields: definedFields,
       definedMethods: definedMethods,
       definedConstructors: definedConstructors,
@@ -307,6 +311,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             return false;
         }
       })();
-  bool isItResultListType({required String typeName}) =>
+  static bool isItResultListType({required String typeName}) =>
       typeName.contains('ResultList');
 }
