@@ -245,11 +245,16 @@ class GqlObjectTypeDefinition {
     if (isNotItemsFieldInsideResultList) definedFields.add(field);
     defaultConstructorInitializers.add(
       Parameter(
-        (p) => p
-          ..toThis = isNotItemsFieldInsideResultList
-          ..named = true
-          ..required = isRequired
-          ..name = verifiedTypeNames.typedefName,
+        (p) {
+          p
+            ..toThis = isNotItemsFieldInsideResultList
+            ..named = true
+            ..required = isRequired
+            ..name = verifiedTypeNames.typedefName;
+          if (isItemsFieldInsideResultList) {
+            p.type = refer(fieldTypeName);
+          }
+        },
       ),
     );
   }
