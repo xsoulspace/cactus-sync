@@ -155,6 +155,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final strBuffer = StringBuffer();
 
     final camelModelName = properModelType.toCamelCase();
+    final pluralModelName = properModelType.toPluralName();
     final fieldDefinitionNames = getModelFieldNames(
       fields: fieldDefinitions,
     );
@@ -163,12 +164,13 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     // ********** CALLBACKS ******
     String getCallbackStr({
       required String operationName,
+      bool isPlural = false,
     }) {
       return """
           (json){
             final verifiedJson = ArgumentError.checkNotNull(json,'json');
             return $properModelType.fromJson(
-              verifiedJson["$operationName$properModelType"],
+              verifiedJson["$operationName${isPlural ? pluralModelName : properModelType}"],
             );
           }"""
           .unindent();
@@ -188,7 +190,10 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
     final queryFindArgs = '${properModelType}Filter';
     final queryFindResult = '${properModelType}ResultList';
-    final queryFindCallback = getCallbackStr(operationName: 'find');
+    final queryFindCallback = getCallbackStr(
+      operationName: 'find',
+      isPlural: true,
+    );
 
     final modelName = '${camelModelName}Model';
     final modelProviderStr = '''
