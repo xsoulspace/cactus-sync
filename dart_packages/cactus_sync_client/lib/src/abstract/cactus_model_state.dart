@@ -138,6 +138,7 @@ class CactusModelState<
         newList.add(maybeModel);
       }
       setState(newList);
+      return;
     }
 
     CactusSync.l.warning('the model is null, state will not updated');
