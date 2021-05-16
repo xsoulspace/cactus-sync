@@ -1,3 +1,5 @@
+import 'package:riverpod/riverpod.dart';
+
 import '../graphql/graphql_result.dart';
 import 'cactus_model.dart';
 import 'cactus_sync.dart';
@@ -32,18 +34,19 @@ class CactusModelState<
         TGetInput extends SerializableModel,
         TGetResult,
         TFindInput extends SerializableModel,
-        TFindResult>
-    extends AbstractCactusModel<
-        TCreateInput,
-        TCreateResult,
-        TUpdateInput,
-        TUpdateResult,
-        TDeleteInput,
-        TDeleteResult,
-        TGetInput,
-        TGetResult,
-        TFindInput,
-        TFindResult> {
+        TFindResult> extends StateNotifier<Set<TModel?>>
+    implements
+        AbstractCactusModel<
+            TCreateInput,
+            TCreateResult,
+            TUpdateInput,
+            TUpdateResult,
+            TDeleteInput,
+            TDeleteResult,
+            TGetInput,
+            TGetResult,
+            TFindInput,
+            TFindResult> {
   StateModelValidationResult<GraphqlResult<TResult>>
       validateStateModelResult<TResult>({
     required GraphqlResult<TResult> result,
@@ -63,9 +66,8 @@ class CactusModelState<
     );
   }
 
-  Set<TModel?> list = {};
   void setState(Iterable<TModel?> value) {
-    list = value.toSet();
+    state = value.toSet();
   }
 
   CactusModel<
@@ -82,7 +84,7 @@ class CactusModelState<
       TFindResult> cactusModel;
   CactusModelState({
     required this.cactusModel,
-  }) {
+  }) : super({}) {
     // TODO: implement listeners
     // _initSubscriptionListener();
     // _listenOtherStatesChanges();
@@ -130,14 +132,14 @@ class CactusModelState<
     if (validatedResult.isNotValid) return;
     final maybeModel = validatedResult.data.typedData;
     if (maybeModel is TModel) {
-      final isItemExists = list.contains(maybeModel);
-      final newList = {...list};
+      final isItemExists = state.contains(maybeModel);
+      final newState = {...state};
       if (remove == true) {
-        if (isItemExists) newList.remove(maybeModel);
+        if (isItemExists) newState.remove(maybeModel);
       } else {
-        newList.add(maybeModel);
+        newState.add(maybeModel);
       }
-      setState(newList);
+      setState(newState);
       return;
     }
 

@@ -213,7 +213,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
     final modelName = '${camelModelName}Model';
     final modelProviderStr = '''
-          final use${properModelType}State = StateProvider<
+          final ${properModelType}State = StateNotifierProvider<
             CactusModelState<
               $properModelType,
               $mutationCreateArgs,
@@ -226,7 +226,8 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
               $properModelType,
               $queryFindArgs,
               $queryFindResult
-            >
+            >,
+            Set<$properModelType?>
           >((_) =>
             CactusModelState<
               $properModelType,
@@ -287,7 +288,10 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         );
       '''
         .unindent();
-    strBuffer.writeAll([modelProviderStr, modelStr], "\n");
+    strBuffer.writeAll([
+      modelStr,
+      modelProviderStr,
+    ], "\n");
     return strBuffer;
   }
 
