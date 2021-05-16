@@ -63,11 +63,9 @@ class CactusModelState<
     );
   }
 
-  final Set<TModel?> list = {};
-  void setState(List<TModel?> value) {
-    list
-      ..clear()
-      ..addAll(value);
+  Set<TModel?> list = {};
+  void setState(Iterable<TModel?> value) {
+    list = value.toSet();
   }
 
   CactusModel<
@@ -133,12 +131,13 @@ class CactusModelState<
     final maybeModel = validatedResult.data.typedData;
     if (maybeModel is TModel) {
       final isItemExists = list.contains(maybeModel);
+      final newList = {...list};
       if (remove == true) {
-        if (isItemExists) list.remove(maybeModel);
+        if (isItemExists) newList.remove(maybeModel);
       } else {
-        list.add(maybeModel);
+        newList.add(maybeModel);
       }
-      return;
+      setState(newList);
     }
 
     CactusSync.l.warning('the model is null, state will not updated');
