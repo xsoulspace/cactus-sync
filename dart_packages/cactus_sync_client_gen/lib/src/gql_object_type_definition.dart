@@ -64,7 +64,10 @@ class GqlObjectTypeDefinition {
                 ..name = 'props'
                 ..type = MethodType.getter
                 ..body = Code((() {
-                  final names = definedFields.map((f) => f.name).join(',');
+                  final names = definedFields
+                      .map((f) => f.name)
+                      .where((f) => f.toLowerCase().contains('id'))
+                      .join(',');
                   return "return [$names];";
                 })())
                 ..returns = refer('List<dynamic?>'),
