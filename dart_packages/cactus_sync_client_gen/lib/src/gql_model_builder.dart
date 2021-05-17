@@ -200,7 +200,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final mutationDeleteArgs = 'Mutate${properModelType}Input';
     final mutationDeleteCallback = getCallbackStr(operationName: 'delete');
 
-    final queryGetArgs = properModelType;
+    const queryGetArgs = 'RecordedModel';
     final queryGetCallback = getCallbackStr(operationName: 'get');
 
     final queryFindArgs = '${properModelType}Filter';
