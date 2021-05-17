@@ -1,6 +1,6 @@
 {
   "name": "@xsoulspace/cactus-sync-client",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Sharp and simple as cactus offline-first client library to sync with graphql server..",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -35,8 +35,8 @@
     "minor": "yarn version --minor && git push && git push origin --tags"
   },
   "dependencies": {
-    "@apollo/client": "^3.3.11",
-    "apollo-link-queue": "^3.0.0",
+    "@apollo/client": "^3.3.18",
+    "apollo-link-queue": "^3.1.0",
     "bson-ext": "^2.0.5",
     "dexie": "^3.0.3",
     "dexie-observable": "^3.0.0-beta.10",
@@ -44,32 +44,32 @@
     "graphql": "^15.5.0",
     "graphql-config": "^3.2.0",
     "graphql-metadata": "^0.7.6",
-    "graphql-tag": "^2.11.0",
-    "graphql-ws": "^4.2.1",
+    "graphql-tag": "^2.12.4",
+    "graphql-ws": "^4.5.0",
     "mitt": "^2.1.0",
     "vue": "^3.0.6",
     "zen-observable": "^0.8.15"
   },
   "peerDependencies": {
-    "@apollo/client": "^3.3.11",
+    "@apollo/client": "^3.3.18",
     "graphql": "^15.5.0",
-    "graphql-ws": "^4.2.1",
-    "vue": "^3.0.6"
+    "graphql-ws": "^4.5.0",
+    "vue": "^3.0.11"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "1.21.2",
-    "@types/jest": "^26.0.20",
+    "@graphql-codegen/cli": "1.21.4",
+    "@types/jest": "^26.0.23",
     "@types/zen-observable": "^0.8.2",
-    "@typescript-eslint/eslint-plugin": "^4.17.0",
-    "@typescript-eslint/parser": "^4.17.0",
-    "eslint": "^7.21.0",
-    "eslint-plugin-prettier": "^3.3.1",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
+    "eslint": "^7.26.0",
+    "eslint-plugin-prettier": "^3.4.0",
     "fake-indexeddb": "^3.1.2",
-    "graphql-tools": "^7.0.4",
+    "graphql-tools": "^7.0.5",
     "jest": "^26.6.3",
-    "prettier": "^2.2.1",
-    "ts-jest": "^26.5.3",
-    "typescript": "^4.2.3",
+    "prettier": "^2.3.0",
+    "ts-jest": "^26.5.6",
+    "typescript": "^4.2.4",
     "yarn-upgrade-all": "^0.5.4"
   }
 }
