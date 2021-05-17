@@ -112,7 +112,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final Set<Parameter> defaultConstructorInitializers = {};
     // FIXME: Issue #2
     String itemsBaseTypeName = '';
-    for (final field in typeDefinition.fields) {
+    void fillField(gql_schema.FieldDefinition field) {
       final args = field.args;
       if (args != null && args.isNotEmpty == true) {
         fillClassMethodField(
@@ -138,6 +138,10 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
           isResultList: isResultList,
         );
       }
+    }
+
+    for (final field in typeDefinition.fields) {
+      fillField(field);
     }
     if (serializable) {
       fillSerializers(

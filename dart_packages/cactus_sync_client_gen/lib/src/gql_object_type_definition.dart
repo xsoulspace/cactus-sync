@@ -56,7 +56,7 @@ class GqlObjectTypeDefinition {
           ],
         ),
     );
-    final getters = isEquatable
+    final getters = isEquatable && !isResultList
         ? [
             Method(
               (m) => m
