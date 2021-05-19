@@ -1,6 +1,8 @@
-abstract class GraphbackResultList<TModel> {
+import 'package:graphql/client.dart';
+
+abstract class GraphbackResultList<TModel> extends JsonSerializable {
   final List<TModel?> items;
-  const GraphbackResultList({
+  GraphbackResultList({
     required this.items,
   });
 }

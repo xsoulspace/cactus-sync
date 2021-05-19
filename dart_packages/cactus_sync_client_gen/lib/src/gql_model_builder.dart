@@ -56,13 +56,12 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         implementsInterfaces: typeDefinition.interfaces,
         serializable: !isSystemType,
         isResultList: isResultList,
-        isEquatable: true,
+        isEquatable: !isResultList,
       );
       finalClasses.putIfAbsent(dartModel.name, () => dartModel);
       // FIXME: Issue #6: refactor: separate models from input classes
-      if (isSystemType || isResultList) {
-        return;
-      }
+      if (isSystemType || isResultList) return;
+
       final strProviderBuffer = makeCactusModels(
         properModelType: typeDefinitionName,
         fieldDefinitions: typeDefinition.fields,
@@ -123,8 +122,8 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     for (final field in typeDefinition.fields) {
       /// FIXME: will suppose that all types are same.
       /// its wrong but for the concept should work
-      final isItems = field.name == 'items';
       if (field.type?.astNode is ListTypeNode) {
+        final isItems = field.name == 'items';
         fillClassParamFromListTypeField(
           definedFields: definedFields,
           defaultConstructorInitializers: defaultConstructorInitializers,
@@ -331,5 +330,5 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         }
       })();
   static bool isItResultListType({required String typeName}) =>
-      typeName.contains('ResultList');
+      typeName.toLowerCase().contains('resultlist');
 }

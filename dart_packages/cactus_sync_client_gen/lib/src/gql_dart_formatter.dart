@@ -3,27 +3,17 @@ import 'package:dart_style/dart_style.dart';
 import 'package:indent/indent.dart';
 
 class GqlDartFormatter {
-  static StringBuffer stringifyAndFormat({
-    Class? dartClass,
-    Enum? dartEnum,
+  static String formatAndStringify({
+    required Library library,
   }) {
-    final emitter = DartEmitter();
-    final dartClassString = dartClass?.accept(emitter).toString() ?? '';
-    final dartEnumString = dartEnum?.accept(emitter).toString() ?? '';
-    final formattedBuffer = StringBuffer();
+    final emitter = DartEmitter(
+      allocator: Allocator.simplePrefixing(),
+      useNullSafetySyntax: true,
+    );
 
-    for (final str in [
-      dartClassString,
-      dartEnumString,
-    ]) {
-      final formattedStr = DartFormatter()
-          .format(
-            str,
-          )
-          .unindent();
-      formattedBuffer.writeln(formattedStr);
-    }
+    final formattedStr =
+        DartFormatter().format("${library.accept(emitter)}").unindent();
 
-    return formattedBuffer;
+    return formattedStr;
   }
 }

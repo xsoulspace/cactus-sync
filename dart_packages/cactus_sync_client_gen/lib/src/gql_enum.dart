@@ -1,12 +1,11 @@
-import 'package:cactus_sync_client_gen/src/gql_dart_formatter.dart';
 import 'package:code_builder/code_builder.dart';
 import "package:gql/schema.dart" as gql_schema;
 
 class GqlEnums {
-  static StringBuffer fromSchema({
+  static Iterable<Enum> fromSchema({
     required List<gql_schema.EnumTypeDefinition> schemaEnums,
   }) {
-    final finalBuffer = StringBuffer();
+    final dartEnums = <String, Enum>{};
     for (final item in schemaEnums) {
       final dartEnum = Enum(
         (e) => e
@@ -21,11 +20,8 @@ class GqlEnums {
             ),
           ),
       );
-      final formattedStr = GqlDartFormatter.stringifyAndFormat(
-        dartEnum: dartEnum,
-      );
-      finalBuffer.writeln(formattedStr);
+      dartEnums.putIfAbsent(dartEnum.name, () => dartEnum);
     }
-    return finalBuffer;
+    return dartEnums.values;
   }
 }

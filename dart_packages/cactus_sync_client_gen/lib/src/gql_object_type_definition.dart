@@ -56,7 +56,8 @@ class GqlObjectTypeDefinition {
           ],
         ),
     );
-    final getters = isEquatable && !isResultList
+    final isVerifiedEquatable = isEquatable && !isResultList;
+    final getters = isVerifiedEquatable
         ? [
             Method(
               (m) => m
@@ -100,31 +101,33 @@ class GqlObjectTypeDefinition {
             ],
           )
           ..abstract = abstract;
-        if (isResultList) {
-          b.extend = refer(
-            'GraphbackResultList<$baseTypeName>',
-            'package:cactus_sync_client/cactus_sync_client.dart',
-          );
-        }
+
         if (serializable) {
-          b
-            ..extend = refer(
+          if (isResultList) {
+            b.extend = refer(
+              'GraphbackResultList<$baseTypeName>',
+              'package:cactus_sync_client/cactus_sync_client.dart',
+            );
+          } else {
+            b.extend = refer(
               'JsonSerializable',
               'package:json_annotation/json_annotation.dart',
-            )
-            ..annotations.add(
-              refer(
-                'JsonSerializable',
-                'package:json_annotation/json_annotation.dart',
-              ).call(
-                [],
-                {
-                  'explicitToJson': refer('true'),
-                },
-              ),
             );
+          }
+
+          b.annotations.add(
+            refer(
+              'JsonSerializable',
+              'package:json_annotation/json_annotation.dart',
+            ).call(
+              [],
+              {
+                'explicitToJson': refer('true'),
+              },
+            ),
+          );
         }
-        if (isEquatable) {
+        if (isVerifiedEquatable) {
           b.mixins.addAll(
             [
               refer(
