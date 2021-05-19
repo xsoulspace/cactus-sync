@@ -182,21 +182,24 @@ class CactusModel<
       _getFromJsonCallbackByOperationType<TQueryResult>({
     required DefaultGqlOperationType operationType,
   }) {
-    switch (operationType) {
-      case DefaultGqlOperationType.create:
-        return createFromJsonCallback as dynamic;
-      case DefaultGqlOperationType.update:
-        return updateFromJsonCallback as dynamic;
-      case DefaultGqlOperationType.remove:
-        return removeFromJsonCallback as dynamic;
-      case DefaultGqlOperationType.get:
-        return getFromJsonCallback as dynamic;
-      case DefaultGqlOperationType.find:
-        return findFromJsonCallback as dynamic;
-      case DefaultGqlOperationType.fromString:
-        throw Exception('DefaultGqlOperationType is fromString but '
-            'has to be different');
-    }
+    final callback = (() {
+      switch (operationType) {
+        case DefaultGqlOperationType.create:
+          return createFromJsonCallback;
+        case DefaultGqlOperationType.update:
+          return updateFromJsonCallback;
+        case DefaultGqlOperationType.remove:
+          return removeFromJsonCallback;
+        case DefaultGqlOperationType.get:
+          return getFromJsonCallback;
+        case DefaultGqlOperationType.find:
+          return findFromJsonCallback;
+        case DefaultGqlOperationType.fromString:
+          throw Exception('DefaultGqlOperationType is fromString but '
+              'has to be different');
+      }
+    })();
+    return callback as FromJsonCallback<TQueryResult>;
   }
 
   GraphqlRunner get _graphqlRunner => db.graphqlRunner;
