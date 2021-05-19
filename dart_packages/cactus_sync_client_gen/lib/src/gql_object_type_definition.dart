@@ -70,7 +70,7 @@ class GqlObjectTypeDefinition {
                       .join(',');
                   return "return [$names];";
                 })())
-                ..returns = refer('List<dynamic?>'),
+                ..returns = refer('List<dynamic>'),
             ),
             Method(
               (m) => m
@@ -85,21 +85,6 @@ class GqlObjectTypeDefinition {
     final finalClass = Class(
       (b) {
         b
-          ..annotations.addAll(
-            serializable
-                ? [
-                    refer(
-                      'JsonSerializable',
-                      'package:json_annotation/json_annotation.dart',
-                    ).call(
-                      [],
-                      {
-                        'explicitToJson': refer('true'),
-                      },
-                    ),
-                  ]
-                : [],
-          )
           ..name = typeDefinitionName
           ..fields.addAll(definedFields)
           ..methods.addAll(
@@ -114,23 +99,32 @@ class GqlObjectTypeDefinition {
               ...definedConstructors,
             ],
           )
-          ..implements.addAll(
-            serializable
-                ? [
-                    refer(
-                      'JsonSerializable',
-                      'package:graphql/client.dart',
-                    ),
-                  ]
-                : [],
-          )
           ..abstract = abstract;
         if (isResultList) {
           b.extend = refer(
             'GraphbackResultList<$baseTypeName>',
             'package:cactus_sync_client/cactus_sync_client.dart',
           );
-        } else if (isEquatable) {
+        }
+        if (serializable) {
+          b
+            ..extend = refer(
+              'JsonSerializable',
+              'package:json_annotation/json_annotation.dart',
+            )
+            ..annotations.add(
+              refer(
+                'JsonSerializable',
+                'package:json_annotation/json_annotation.dart',
+              ).call(
+                [],
+                {
+                  'explicitToJson': refer('true'),
+                },
+              ),
+            );
+        }
+        if (isEquatable) {
           b.mixins.addAll(
             [
               refer(
@@ -225,22 +219,28 @@ class GqlObjectTypeDefinition {
       rawFieldType: rawFieldType,
       rawFieldName: rawFieldName,
     );
+
     if (verifiedTypeNames == null) return;
+
     final correctedFieldTypeName = (() {
       if (isList) return "List<${verifiedTypeNames.fieldType}?>";
       return verifiedTypeNames.fieldType;
     })();
+
     final fieldTypeName = (() {
       if (isNonNull) return correctedFieldTypeName;
       return "$correctedFieldTypeName?";
     })();
+
     final classField = Field(
       (f) {
         f
           ..modifier = FieldModifier.final$
           ..name = verifiedTypeNames.fieldName
           ..type = refer(fieldTypeName)
-          ..docs.add(field.description ?? '');
+          ..docs.addAll(
+            "/// ${field.description}".replaceAll('\n', "\n ///").split("\n"),
+          );
 
         if (!verifiedTypeNames.isKeyword) return;
 

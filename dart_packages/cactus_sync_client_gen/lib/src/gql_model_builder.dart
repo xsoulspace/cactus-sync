@@ -15,8 +15,6 @@ class ModelsAndProvidersResult {
   });
 }
 
-class ListTypeVisitor extends AccumulatingVisitor<ListTypeNode> {}
-
 class GqlModelBuilder extends GqlObjectTypeDefinition {
   ModelsAndProvidersResult makeModelsAndProviders({
     required Iterable<gql_schema.TypeDefinition?> operationTypes,
@@ -45,11 +43,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     if (typeNode == null) return;
     final astNode = typeNode.astNode;
 
-    /// FIXME: will suppose that all types are same.
-    /// its wrong but for the concept should work
-    final listVisitor = ListTypeVisitor();
-    astNode.visitChildren(listVisitor);
-
     final typeDefinitionName = typeNode.name;
     if (typeDefinitionName == null) return;
 
@@ -64,7 +57,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         serializable: !isSystemType,
         isResultList: isResultList,
         isEquatable: true,
-        listTypeNodes: listVisitor.accumulator,
       );
       finalClasses.putIfAbsent(dartModel.name, () => dartModel);
       // FIXME: Issue #6: refactor: separate models from input classes
@@ -120,7 +112,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     bool serializable = false,
     bool isResultList = false,
     bool isEquatable = false,
-    List<ListTypeNode> listTypeNodes = const [],
   }) {
     final Set<Field> definedFields = {};
     final Set<Method> definedMethods = {};
@@ -130,8 +121,10 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     String itemsBaseTypeName = '';
 
     for (final field in typeDefinition.fields) {
-      if (field is ListTypeNode) {
-        final isItems = field.name == 'items';
+      /// FIXME: will suppose that all types are same.
+      /// its wrong but for the concept should work
+      final isItems = field.name == 'items';
+      if (field.type?.astNode is ListTypeNode) {
         fillClassParamFromListTypeField(
           definedFields: definedFields,
           defaultConstructorInitializers: defaultConstructorInitializers,
