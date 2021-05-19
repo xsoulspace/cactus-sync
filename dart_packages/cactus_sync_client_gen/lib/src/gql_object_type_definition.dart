@@ -5,20 +5,20 @@ import "package:gql/schema.dart" as gql_schema;
 
 class _VerifiedTypeName {
   final bool isKeyword;
-  final String typedefName;
-  final String baseTypeName;
+  final String fieldName;
+  final String fieldType;
   final String rawGqlFieldName;
   const _VerifiedTypeName({
     required this.isKeyword,
-    required this.typedefName,
-    required this.baseTypeName,
+    required this.fieldName,
+    required this.fieldType,
     required this.rawGqlFieldName,
   });
 }
 
 /// The [isResultList] is a param that needed to
 /// point class with items.
-/// The [baseTypeName] is a param that used as generic type
+/// The [fieldType] is a param that used as generic type
 /// for list in case if it is a result list class
 class GqlObjectTypeDefinition {
   Class makeClassContructor({
@@ -159,25 +159,25 @@ class GqlObjectTypeDefinition {
   }
 
   _VerifiedTypeName? verifyTypeAndName({
-    required String? typedefName,
-    required String? baseTypeName,
+    required String? rawFieldName,
+    required String? rawFieldType,
   }) {
-    final rawGqlFieldName = typedefName ?? '';
+    final rawGqlFieldName = rawFieldName ?? '';
     final verifiedGqlFieldName = GqlInputFieldHelper.verifyName(
       name: rawGqlFieldName,
     );
     final gqlFieldName = verifiedGqlFieldName.name;
     if (gqlFieldName.isEmpty) return null;
 
-    final rawTypeName = baseTypeName ?? '';
+    final rawTypeName = rawFieldType ?? '';
     final typeName = GqlScalar.verifyName(
       name: rawTypeName,
     );
     if (typeName.isEmpty) return null;
     return _VerifiedTypeName(
       rawGqlFieldName: rawGqlFieldName,
-      typedefName: verifiedGqlFieldName.name,
-      baseTypeName: typeName,
+      fieldName: verifiedGqlFieldName.name,
+      fieldType: typeName,
       isKeyword: verifiedGqlFieldName.isKeyword,
     );
   }
@@ -190,75 +190,88 @@ class GqlObjectTypeDefinition {
     required List<gql_schema.InputValueDefinition> args,
   }) {
     final verifiedTypeNames = verifyTypeAndName(
-      baseTypeName: baseTypeName,
-      typedefName: name,
+      rawFieldType: baseTypeName,
+      rawFieldName: name,
     );
     if (verifiedTypeNames == null) return;
   }
 
-  void fillClassParameterFromField({
+  void fillClassParamFromListTypeField({
     required Set<Field> definedFields,
     required Set<Parameter> defaultConstructorInitializers,
-    required String? name,
-    required String? description,
-    required String? baseTypeName,
-    required bool isRequired,
-    bool isResultList = false,
+    required gql_schema.FieldDefinition field,
+    required bool isItems,
+  }) =>
+      fillClassParamFromFieldDefinition(
+        defaultConstructorInitializers: defaultConstructorInitializers,
+        definedFields: definedFields,
+        field: field,
+        isList: true,
+        isItems: isItems,
+      );
+
+  void fillClassParamFromFieldDefinition({
+    required Set<Field> definedFields,
+    required Set<Parameter> defaultConstructorInitializers,
+    required gql_schema.FieldDefinition field,
+    bool isList = false,
+    bool isItems = false,
   }) {
+    final rawFieldType = field.type?.baseTypeName ?? '';
+    final rawFieldName = field.name;
+    final isNonNull = field.type?.isNonNull ?? false;
+
     final verifiedTypeNames = verifyTypeAndName(
-      baseTypeName: baseTypeName,
-      typedefName: name,
+      rawFieldType: rawFieldType,
+      rawFieldName: rawFieldName,
     );
     if (verifiedTypeNames == null) return;
-    final fieldTypeName = (() {
-      // FIXME: Issue #2: how to handle array type?
-      final name = verifiedTypeNames.typedefName == 'items'
-          ? "List<${verifiedTypeNames.baseTypeName}?>"
-          : verifiedTypeNames.baseTypeName;
-
-      if (isRequired) return name;
-      return "$name?";
+    final correctedFieldTypeName = (() {
+      if (isList) return "List<${verifiedTypeNames.fieldType}?>";
+      return verifiedTypeNames.fieldType;
     })();
-    final field = Field(
+    final fieldTypeName = (() {
+      if (isNonNull) return correctedFieldTypeName;
+      return "$correctedFieldTypeName?";
+    })();
+    final classField = Field(
       (f) {
         f
           ..modifier = FieldModifier.final$
-          ..name = verifiedTypeNames.typedefName
+          ..name = verifiedTypeNames.fieldName
           ..type = refer(fieldTypeName)
-          ..docs.add(description ?? '');
+          ..docs.add(field.description ?? '');
 
-        if (verifiedTypeNames.isKeyword) {
-          f.annotations.addAll(
-            [
-              refer(
-                'BuiltValueField',
-                'package:built_value/built_value.dart',
-              ).call(
-                [],
-                {
-                  'wireName': refer(
-                    "'${verifiedTypeNames.rawGqlFieldName}'",
-                  ),
-                },
-              ),
-            ],
-          );
-        }
+        if (!verifiedTypeNames.isKeyword) return;
+
+        f.annotations.addAll(
+          [
+            refer(
+              'BuiltValueField',
+              'package:built_value/built_value.dart',
+            ).call(
+              [],
+              {
+                'wireName': refer(
+                  "'${verifiedTypeNames.rawGqlFieldName}'",
+                ),
+              },
+            ),
+          ],
+        );
       },
     );
-    final isItemsFieldInsideResultList =
-        isResultList && verifiedTypeNames.typedefName == 'items';
-    final isNotItemsFieldInsideResultList = !isItemsFieldInsideResultList;
-    if (isNotItemsFieldInsideResultList) definedFields.add(field);
+    final isNotItems = !isItems;
+    if (isNotItems) definedFields.add(classField);
     defaultConstructorInitializers.add(
       Parameter(
         (p) {
           p
-            ..toThis = isNotItemsFieldInsideResultList
+            ..toThis = isNotItems
             ..named = true
-            ..required = isRequired
-            ..name = verifiedTypeNames.typedefName;
-          if (isItemsFieldInsideResultList) {
+            ..required = isNonNull
+            ..name = verifiedTypeNames.fieldName;
+          if (isItems) {
             p.type = refer(fieldTypeName);
           }
         },

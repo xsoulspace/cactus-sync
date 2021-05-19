@@ -15,7 +15,7 @@ class ModelsAndProvidersResult {
   });
 }
 
-class TypeVisitor extends AccumulatingVisitor<ListTypeNode> {}
+class ListTypeVisitor extends AccumulatingVisitor<ListTypeNode> {}
 
 class GqlModelBuilder extends GqlObjectTypeDefinition {
   ModelsAndProvidersResult makeModelsAndProviders({
@@ -25,7 +25,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final finalProviderBuffer = StringBuffer();
 
     for (final typeNode in operationTypes) {
-      prepareTypeNode(
+      prepareModels(
         finalClasses: finalClasses,
         finalProviderBuffer: finalProviderBuffer,
         typeNode: typeNode,
@@ -37,18 +37,19 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     );
   }
 
-  void prepareTypeNode({
+  void prepareModels({
     required gql_schema.TypeDefinition? typeNode,
     required StringBuffer finalProviderBuffer,
     required Map<String /** Class name*/, Class> finalClasses,
   }) {
     if (typeNode == null) return;
     final astNode = typeNode.astNode;
-    final listVisitor = TypeVisitor();
+
+    /// FIXME: will suppose that all types are same.
+    /// its wrong but for the concept should work
+    final listVisitor = ListTypeVisitor();
     astNode.visitChildren(listVisitor);
-    if (listVisitor.accumulator.isNotEmpty) {
-      for (final typeList in listVisitor.accumulator) {}
-    }
+
     final typeDefinitionName = typeNode.name;
     if (typeDefinitionName == null) return;
 
@@ -63,6 +64,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         serializable: !isSystemType,
         isResultList: isResultList,
         isEquatable: true,
+        listTypeNodes: listVisitor.accumulator,
       );
       finalClasses.putIfAbsent(dartModel.name, () => dartModel);
       // FIXME: Issue #6: refactor: separate models from input classes
@@ -82,8 +84,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         typeDefinitionName: typeDefinitionName,
       );
       finalClasses.putIfAbsent(dartInterface.name, () => dartInterface);
-    } else {
-      return;
     }
 
     // TODO: handle different types
@@ -98,10 +98,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
     // if (astNode is EnumTypeDefinitionNode) {
     //   gql_schema.EnumTypeDefinition(astNode);
-    // }
-
-    // if (astNode is InputObjectTypeDefinitionNode) {
-    //   gql_schema.InputObjectTypeDefinition(astNode);
     // }
   }
 
@@ -124,43 +120,34 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     bool serializable = false,
     bool isResultList = false,
     bool isEquatable = false,
+    List<ListTypeNode> listTypeNodes = const [],
   }) {
     final Set<Field> definedFields = {};
     final Set<Method> definedMethods = {};
     final Set<Constructor> definedConstructors = {};
     final Set<Parameter> defaultConstructorInitializers = {};
-    // FIXME: Issue #2
+
     String itemsBaseTypeName = '';
-    void fillField(gql_schema.FieldDefinition field) {
-      final args = field.args;
-      if (args != null && args.isNotEmpty == true) {
-        fillClassMethodField(
-          methodsDiefinitions: definedMethods,
-          name: field.name,
-          // FIXME: errors happened with comments
-          description: '', //field.description ,
-          baseTypeName: field.type?.baseTypeName,
-          args: args,
-        );
-      } else {
-        if (field.name == 'items') {
-          itemsBaseTypeName = field.type?.baseTypeName ?? '';
-        }
-        fillClassParameterFromField(
-          definedFields: definedFields,
-          isRequired: field.type?.isNonNull ?? false,
-          defaultConstructorInitializers: defaultConstructorInitializers,
-          name: field.name,
-          // FIXME: errors happened with comments
-          description: '', //field.description ,
-          baseTypeName: field.type?.baseTypeName,
-          isResultList: isResultList,
-        );
-      }
-    }
 
     for (final field in typeDefinition.fields) {
-      fillField(field);
+      if (field is ListTypeNode) {
+        final isItems = field.name == 'items';
+        fillClassParamFromListTypeField(
+          definedFields: definedFields,
+          defaultConstructorInitializers: defaultConstructorInitializers,
+          // FIXME: as
+          field: field, isItems: isItems,
+        );
+        if (isItems) {
+          itemsBaseTypeName = field.type?.baseTypeName ?? '';
+        }
+      } else {
+        fillClassParamFromFieldDefinition(
+          definedFields: definedFields,
+          defaultConstructorInitializers: defaultConstructorInitializers,
+          field: field,
+        );
+      }
     }
     if (serializable) {
       fillSerializers(

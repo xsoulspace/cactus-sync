@@ -30,13 +30,12 @@ class GqlInputs extends GqlObjectTypeDefinition {
     final Set<Parameter> defaultConstructorInitializers = {};
     final Set<Constructor> definedConstructors = {};
     for (final gqlField in typeDefinition.fields) {
-      fillClassParameterFromField(
+      final field = makeFieldDefinitionFormInput(gqlField);
+      if (field == null) continue;
+      fillClassParamFromFieldDefinition(
         definedFields: definedFields,
-        isRequired: gqlField.type?.isNonNull ?? false,
         defaultConstructorInitializers: defaultConstructorInitializers,
-        name: gqlField.name,
-        description: gqlField.description,
-        baseTypeName: gqlField.type?.baseTypeName,
+        field: field,
       );
     }
     final typeDefinitionName = typeDefinition.name;
