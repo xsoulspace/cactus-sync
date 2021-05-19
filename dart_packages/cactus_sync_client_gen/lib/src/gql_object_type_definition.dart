@@ -81,7 +81,7 @@ class GqlObjectTypeDefinition {
                 ..returns = refer('bool'),
             ),
           ]
-        : [];
+        : <Method>[];
     final finalClass = Class(
       (b) {
         b
