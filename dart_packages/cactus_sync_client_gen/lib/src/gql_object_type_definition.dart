@@ -1,5 +1,6 @@
 import 'package:cactus_sync_client_gen/src/gql_input_field_helper.dart';
 import 'package:cactus_sync_client_gen/src/gql_scalar.dart';
+import 'package:cactus_sync_client_gen/src/used_directives.dart';
 import 'package:code_builder/code_builder.dart';
 import "package:gql/schema.dart" as gql_schema;
 
@@ -43,7 +44,7 @@ class GqlObjectTypeDefinition {
     }
     final defaultConstructor = Constructor(
       (c) => c
-        ..constant = true
+        ..constant = !isResultList
         ..optionalParameters.addAll(
           defaultConstructorInitializers,
         )
@@ -106,19 +107,19 @@ class GqlObjectTypeDefinition {
           if (isResultList) {
             b.extend = refer(
               'GraphbackResultList<$baseTypeName>',
-              'package:cactus_sync_client/cactus_sync_client.dart',
+              UsedDirectives.cactusClient,
             );
           } else {
             b.extend = refer(
               'JsonSerializable',
-              'package:json_annotation/json_annotation.dart',
+              UsedDirectives.jsonAnnotation,
             );
           }
 
           b.annotations.add(
             refer(
               'JsonSerializable',
-              'package:json_annotation/json_annotation.dart',
+              UsedDirectives.jsonAnnotation,
             ).call(
               [],
               {
@@ -132,7 +133,7 @@ class GqlObjectTypeDefinition {
             [
               refer(
                 'EquatableMixin',
-                'package:equatable/equatable.dart',
+                UsedDirectives.equatable,
               ),
             ],
           );
@@ -251,7 +252,7 @@ class GqlObjectTypeDefinition {
           [
             refer(
               'BuiltValueField',
-              'package:built_value/built_value.dart',
+              UsedDirectives.builtValue,
             ).call(
               [],
               {

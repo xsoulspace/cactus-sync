@@ -215,6 +215,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
     final modelName = '${camelModelName}Model';
     final modelStateName = '${modelName}State';
+
     final modelProviderStr = '''
           final $modelStateName = StateNotifierProvider<
             CactusModelState<

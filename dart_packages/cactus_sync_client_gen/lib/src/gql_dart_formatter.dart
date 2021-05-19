@@ -4,15 +4,15 @@ import 'package:indent/indent.dart';
 
 class GqlDartFormatter {
   static String formatAndStringify({
-    required Library library,
+    required Spec spec,
   }) {
     final emitter = DartEmitter(
-      allocator: Allocator.simplePrefixing(),
+      // allocator: Allocator.simplePrefixing(),
       useNullSafetySyntax: true,
     );
 
     final formattedStr =
-        DartFormatter().format("${library.accept(emitter)}").unindent();
+        DartFormatter().format("${spec.accept(emitter)}").unindent();
 
     return formattedStr;
   }
