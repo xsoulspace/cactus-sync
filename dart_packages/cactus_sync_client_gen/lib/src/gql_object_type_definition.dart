@@ -44,7 +44,7 @@ class GqlObjectTypeDefinition {
     }
     final defaultConstructor = Constructor(
       (c) => c
-        ..constant = !isResultList
+        ..constant = false
         ..optionalParameters.addAll(
           defaultConstructorInitializers,
         )
