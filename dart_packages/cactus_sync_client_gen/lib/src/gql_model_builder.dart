@@ -15,6 +15,8 @@ class ModelsAndProvidersResult {
   });
 }
 
+class TypeVisitor extends AccumulatingVisitor<ListTypeNode> {}
+
 class GqlModelBuilder extends GqlObjectTypeDefinition {
   ModelsAndProvidersResult makeModelsAndProviders({
     required Iterable<gql_schema.TypeDefinition?> operationTypes,
@@ -23,67 +25,84 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final finalProviderBuffer = StringBuffer();
 
     for (final typeNode in operationTypes) {
-      if (typeNode == null) continue;
-      final typeDefinitionName = typeNode.name;
-      if (typeDefinitionName == null) continue;
-      final astNode = typeNode.astNode;
-
-      if (astNode is ObjectTypeDefinitionNode) {
-        final typeDefinition = gql_schema.ObjectTypeDefinition(astNode);
-        final isSystemType = isItSystemType(typeName: typeDefinitionName);
-        final isResultList = isItResultListType(typeName: typeDefinitionName);
-        final dartModel = makeModelClass(
-          typeDefinition: typeDefinition,
-          typeDefinitionName: typeDefinitionName,
-          implementsInterfaces: typeDefinition.interfaces,
-          serializable: !isSystemType,
-          isResultList: isResultList,
-          isEquatable: true,
-        );
-        finalClasses.putIfAbsent(dartModel.name, () => dartModel);
-        // FIXME: Issue #6: refactor: separate models from input classes
-        if (isSystemType || isResultList) {
-          continue;
-        }
-        final strProviderBuffer = makeCactusModels(
-          properModelType: typeDefinitionName,
-          fieldDefinitions: typeDefinition.fields,
-        );
-        finalProviderBuffer.writeln(strProviderBuffer);
-      } else if (astNode is InterfaceTypeDefinitionNode) {
-        final typeDefinition = gql_schema.InterfaceTypeDefinition(astNode);
-
-        final dartInterface = makeInterfaceClass(
-          typeDefinition: typeDefinition,
-          typeDefinitionName: typeDefinitionName,
-        );
-        finalClasses.putIfAbsent(dartInterface.name, () => dartInterface);
-      } else {
-        continue;
-      }
-
-      // TODO: handle different types
-
-      // if (astNode is ScalarTypeDefinitionNode) {
-      //   gql_schema.ScalarTypeDefinition(astNode);
-      // }
-
-      // if (astNode is UnionTypeDefinitionNode) {
-      //   gql_schema.UnionTypeDefinition(astNode);
-      // }
-
-      // if (astNode is EnumTypeDefinitionNode) {
-      //   gql_schema.EnumTypeDefinition(astNode);
-      // }
-
-      // if (astNode is InputObjectTypeDefinitionNode) {
-      //   gql_schema.InputObjectTypeDefinition(astNode);
-      // }
+      prepareTypeNode(
+        finalClasses: finalClasses,
+        finalProviderBuffer: finalProviderBuffer,
+        typeNode: typeNode,
+      );
     }
     return ModelsAndProvidersResult(
       models: finalClasses.values,
       providers: finalProviderBuffer,
     );
+  }
+
+  void prepareTypeNode({
+    required gql_schema.TypeDefinition? typeNode,
+    required StringBuffer finalProviderBuffer,
+    required Map<String /** Class name*/, Class> finalClasses,
+  }) {
+    if (typeNode == null) return;
+    final astNode = typeNode.astNode;
+    final listVisitor = TypeVisitor();
+    astNode.visitChildren(listVisitor);
+    if (listVisitor.accumulator.isNotEmpty) {
+      for (final typeList in listVisitor.accumulator) {}
+    }
+    final typeDefinitionName = typeNode.name;
+    if (typeDefinitionName == null) return;
+
+    if (astNode is ObjectTypeDefinitionNode) {
+      final typeDefinition = gql_schema.ObjectTypeDefinition(astNode);
+      final isSystemType = isItGraphqlSystemType(typeName: typeDefinitionName);
+      final isResultList = isItResultListType(typeName: typeDefinitionName);
+      final dartModel = makeModelClass(
+        typeDefinition: typeDefinition,
+        typeDefinitionName: typeDefinitionName,
+        implementsInterfaces: typeDefinition.interfaces,
+        serializable: !isSystemType,
+        isResultList: isResultList,
+        isEquatable: true,
+      );
+      finalClasses.putIfAbsent(dartModel.name, () => dartModel);
+      // FIXME: Issue #6: refactor: separate models from input classes
+      if (isSystemType || isResultList) {
+        return;
+      }
+      final strProviderBuffer = makeCactusModels(
+        properModelType: typeDefinitionName,
+        fieldDefinitions: typeDefinition.fields,
+      );
+      finalProviderBuffer.writeln(strProviderBuffer);
+    } else if (astNode is InterfaceTypeDefinitionNode) {
+      final typeDefinition = gql_schema.InterfaceTypeDefinition(astNode);
+
+      final dartInterface = makeInterfaceClass(
+        typeDefinition: typeDefinition,
+        typeDefinitionName: typeDefinitionName,
+      );
+      finalClasses.putIfAbsent(dartInterface.name, () => dartInterface);
+    } else {
+      return;
+    }
+
+    // TODO: handle different types
+
+    // if (astNode is ScalarTypeDefinitionNode) {
+    //   gql_schema.ScalarTypeDefinition(astNode);
+    // }
+
+    // if (astNode is UnionTypeDefinitionNode) {
+    //   gql_schema.UnionTypeDefinition(astNode);
+    // }
+
+    // if (astNode is EnumTypeDefinitionNode) {
+    //   gql_schema.EnumTypeDefinition(astNode);
+    // }
+
+    // if (astNode is InputObjectTypeDefinitionNode) {
+    //   gql_schema.InputObjectTypeDefinition(astNode);
+    // }
   }
 
   Class makeInterfaceClass({
@@ -183,12 +202,12 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     String getCallbackStr({
       required String operationName,
       bool isPlural = false,
-      String? JsonSerializableName,
+      String? jsonSerializableName,
     }) {
       return """
           (json){
             final verifiedJson = ArgumentError.checkNotNull(json,'json');
-            return ${JsonSerializableName ?? properModelType}.fromJson(
+            return ${jsonSerializableName ?? properModelType}.fromJson(
               verifiedJson["$operationName${isPlural ? pluralModelName : properModelType}"],
             );
           }"""
@@ -212,7 +231,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final queryFindCallback = getCallbackStr(
       operationName: 'find',
       isPlural: true,
-      JsonSerializableName: queryFindResult,
+      jsonSerializableName: queryFindResult,
     );
 
     final modelName = '${camelModelName}Model';
@@ -319,7 +338,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     return fieldsNames.toList();
   }
 
-  bool isItSystemType({required String typeName}) =>
+  bool isItGraphqlSystemType({required String typeName}) =>
       typeName.contains('_') ||
       (() {
         switch (typeName.toLowerCase()) {

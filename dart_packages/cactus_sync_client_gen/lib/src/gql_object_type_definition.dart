@@ -119,7 +119,7 @@ class GqlObjectTypeDefinition {
                 ? [
                     refer(
                       'JsonSerializable',
-                      'package:cactus_sync_client/cactus_sync_client.dart',
+                      'package:graphql/client.dart',
                     ),
                   ]
                 : [],
@@ -131,9 +131,13 @@ class GqlObjectTypeDefinition {
             'package:cactus_sync_client/cactus_sync_client.dart',
           );
         } else if (isEquatable) {
-          b.extend = refer(
-            'Equatable',
-            'package:equatable/equatable.dart',
+          b.mixins.addAll(
+            [
+              refer(
+                'EquatableMixin',
+                'package:equatable/equatable.dart',
+              ),
+            ],
           );
         }
       }
