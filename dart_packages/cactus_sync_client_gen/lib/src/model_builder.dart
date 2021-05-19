@@ -45,7 +45,8 @@ class ModelBuilder implements Builder {
         import 'package:equatable/equatable.dart';
         import 'package:json_annotation/json_annotation.dart';
         import 'package:riverpod/riverpod.dart';
-        
+        import 'package:graphql/client.dart';
+
         import 'sync_config.dart';
 
         part '$assetName.g.dart';

@@ -7,7 +7,6 @@ import '../graphql/gql_builder.dart';
 import '../graphql/graphql_result.dart';
 import '../utils/utils.dart';
 import 'cactus_sync.dart';
-import 'serializable_model.dart';
 
 /// This config required to init GraphqlRunner
 /// Under the hood it uses default ferry with hive and hive_flutter setup
@@ -70,7 +69,7 @@ class GraphqlRunner {
 
   /// Method to call mutations and queries
   Future<GraphqlResult<TQueryResult>>
-      execute<TVariables extends SerializableModel, TQueryResult>({
+      execute<TVariables extends JsonSerializable, TQueryResult>({
     required String query,
     required TVariables variableValues,
     required DefaultGqlOperationType operationType,

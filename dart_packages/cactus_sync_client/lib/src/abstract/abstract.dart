@@ -4,4 +4,3 @@ export 'cactus_sync.dart';
 export 'graphback_result_list.dart';
 export 'graphql_runner.dart';
 export 'recorded_model.dart';
-export 'serializable_model.dart';

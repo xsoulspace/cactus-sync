@@ -118,7 +118,7 @@ class GqlObjectTypeDefinition {
             serializable
                 ? [
                     refer(
-                      'SerializableModel',
+                      'JsonSerializable',
                       'package:cactus_sync_client/cactus_sync_client.dart',
                     ),
                   ]

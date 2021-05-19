@@ -1,9 +1,10 @@
+import 'package:graphql/client.dart';
+
 import '../graphql/gql_builder.dart';
 import '../graphql/graphql_result.dart';
 import '../utils/utils.dart';
 import 'cactus_sync.dart';
 import 'graphql_runner.dart';
-import 'serializable_model.dart';
 
 /// [stringQueryGql] is a gql which replaces the whole gql
 /// TODO: add an example
@@ -17,15 +18,15 @@ class QueryGql {
 
 typedef CactusModelBuilder<
         TModel,
-        TCreateInput extends SerializableModel,
+        TCreateInput extends JsonSerializable,
         TCreateResult,
-        TUpdateInput extends SerializableModel,
+        TUpdateInput extends JsonSerializable,
         TUpdateResult,
-        TDeleteInput extends SerializableModel,
+        TDeleteInput extends JsonSerializable,
         TDeleteResult,
-        TGetInput extends SerializableModel,
+        TGetInput extends JsonSerializable,
         TGetResult,
-        TFindInput extends SerializableModel,
+        TFindInput extends JsonSerializable,
         TFindResult>
     = CactusModel<
             TModel,
@@ -82,15 +83,15 @@ abstract class AbstractCactusModel<
 
 class CactusModel<
         TType,
-        TCreateInput extends SerializableModel,
+        TCreateInput extends JsonSerializable,
         TCreateResult,
-        TUpdateInput extends SerializableModel,
+        TUpdateInput extends JsonSerializable,
         TUpdateResult,
-        TRemoveInput extends SerializableModel,
+        TRemoveInput extends JsonSerializable,
         TRemoveResult,
-        TGetInput extends SerializableModel,
+        TGetInput extends JsonSerializable,
         TGetResult,
-        TFindInput extends SerializableModel,
+        TFindInput extends JsonSerializable,
         TFindResult>
     implements
         AbstractCactusModel<
@@ -146,15 +147,15 @@ class CactusModel<
       TFindInput,
       TFindResult> init<
           TModel,
-          TCreateInput extends SerializableModel,
+          TCreateInput extends JsonSerializable,
           TCreateResult,
-          TUpdateInput extends SerializableModel,
+          TUpdateInput extends JsonSerializable,
           TUpdateResult,
-          TDeleteInput extends SerializableModel,
+          TDeleteInput extends JsonSerializable,
           TDeleteResult,
-          TGetInput extends SerializableModel,
+          TGetInput extends JsonSerializable,
           TGetResult,
-          TFindInput extends SerializableModel,
+          TFindInput extends JsonSerializable,
           TFindResult>({
     required List<String?> graphqlModelFieldNames,
     required String graphqlModelName,
@@ -200,7 +201,7 @@ class CactusModel<
 
   GraphqlRunner get _graphqlRunner => db.graphqlRunner;
   Future<GraphqlResult<TQueryResult>>
-      _execute<TVariables extends SerializableModel, TQueryResult>({
+      _execute<TVariables extends JsonSerializable, TQueryResult>({
     required String query,
     required TVariables variableValues,
     required DefaultGqlOperationType operationType,
@@ -236,7 +237,7 @@ class CactusModel<
   }
 
   Future<GraphqlResult<TResult>>
-      _executeMiddleware<TVariables extends SerializableModel, TResult>({
+      _executeMiddleware<TVariables extends JsonSerializable, TResult>({
     QueryGql? queryGql,
     required DefaultGqlOperationType operationType,
     bool notifyListeners = true,

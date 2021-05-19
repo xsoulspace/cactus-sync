@@ -1,10 +1,10 @@
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:riverpod/riverpod.dart';
 
 import '../graphql/graphql_result.dart';
 import 'cactus_model.dart';
 import 'cactus_sync.dart';
 import 'graphback_result_list.dart';
-import 'serializable_model.dart';
 
 enum StateModelEvents { addUpdateStateModel, removeStateModel }
 
@@ -25,15 +25,15 @@ class StateModelValidationResult<TData> {
 ///
 class CactusModelState<
         TModel,
-        TCreateInput extends SerializableModel,
+        TCreateInput extends JsonSerializable,
         TCreateResult,
-        TUpdateInput extends SerializableModel,
+        TUpdateInput extends JsonSerializable,
         TUpdateResult,
-        TDeleteInput extends SerializableModel,
+        TDeleteInput extends JsonSerializable,
         TDeleteResult,
-        TGetInput extends SerializableModel,
+        TGetInput extends JsonSerializable,
         TGetResult,
-        TFindInput extends SerializableModel,
+        TFindInput extends JsonSerializable,
         TFindResult> extends StateNotifier<Set<TModel?>>
     implements
         AbstractCactusModel<
