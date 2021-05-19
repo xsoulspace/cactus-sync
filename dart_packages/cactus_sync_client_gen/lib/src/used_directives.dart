@@ -4,6 +4,7 @@ class UsedDirectives {
   static const jsonAnnotation = 'package:json_annotation/json_annotation.dart';
   static const equatable = 'package:equatable/equatable.dart';
   static const builtValue = 'package:built_value/built_value.dart';
+  static const graphqlClient = 'package:graphql/client.dart';
 }
 
 final usedDirectives = [

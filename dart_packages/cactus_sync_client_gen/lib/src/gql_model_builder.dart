@@ -187,7 +187,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
           (json){
             final verifiedJson = ArgumentError.checkNotNull(json,'json');
             return ${jsonSerializableName ?? properModelType}.fromJson(
-              verifiedJson["$operationName${isPlural ? pluralModelName : properModelType}"],
+              verifiedJson["$operationName${isPlural ? pluralModelName : properModelType}"] as Map<String, dynamic>,
             );
           }"""
           .unindent();
@@ -202,7 +202,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
     final mutationDeleteArgs = 'Mutate${properModelType}Input';
     final mutationDeleteCallback = getCallbackStr(operationName: 'delete');
 
-    const queryGetArgs = 'RecordedModel';
     final queryGetCallback = getCallbackStr(operationName: 'get');
 
     final queryFindArgs = '${properModelType}Filter';
@@ -226,7 +225,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
               $properModelType,
               $mutationDeleteArgs,
               $properModelType,
-              $queryGetArgs,
               $properModelType,
               $queryFindArgs,
               $queryFindResult
@@ -241,7 +239,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
               $properModelType,
               $mutationDeleteArgs,
               $properModelType,
-              $queryGetArgs,
               $properModelType,
               $queryFindArgs,
               $queryFindResult
@@ -263,7 +260,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
             $properModelType,
             $mutationDeleteArgs,
             $properModelType,
-            $queryGetArgs,
             $properModelType,
             $queryFindArgs,
             $queryFindResult
@@ -276,7 +272,6 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
               $properModelType,
               $mutationDeleteArgs,
               $properModelType,
-              $queryGetArgs,
               $properModelType,
               $queryFindArgs,
               $queryFindResult

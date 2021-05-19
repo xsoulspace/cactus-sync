@@ -36,7 +36,6 @@ class CactusSync {
       TUpdateResult,
       TDeleteInput,
       TDeleteResult,
-      TGetInput,
       TGetResult,
       TFindInput,
       TFindResult> attachModel<
@@ -47,7 +46,6 @@ class CactusSync {
           TUpdateResult,
           TDeleteInput extends JsonSerializable,
           TDeleteResult,
-          TGetInput extends JsonSerializable,
           TGetResult,
           TFindInput extends JsonSerializable,
           TFindResult>(
@@ -59,7 +57,6 @@ class CactusSync {
               TUpdateResult,
               TDeleteInput,
               TDeleteResult,
-              TGetInput,
               TGetResult,
               TFindInput,
               TFindResult>

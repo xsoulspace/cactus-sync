@@ -1,8 +1,12 @@
+import 'package:graphql/client.dart';
+
 /// Simple class with only one property - ID
-class RecordedModel {
+
+class RecordedModel extends JsonSerializable {
   final String id;
-  const RecordedModel({
+  RecordedModel({
     required this.id,
   });
+  @override
   Map<String, dynamic> toJson() => {'id': id};
 }

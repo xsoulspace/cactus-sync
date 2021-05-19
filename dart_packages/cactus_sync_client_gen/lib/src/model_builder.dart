@@ -64,6 +64,7 @@ class ModelBuilder implements Builder {
         /// Updated: ${DateTime.now()}
         /// !---------- END CAUTION ----------!
         
+        import 'package:graphql/client.dart' as graphql;
         $directivesStr
       """
           .unindent(),

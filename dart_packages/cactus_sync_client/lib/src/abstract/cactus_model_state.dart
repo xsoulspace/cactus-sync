@@ -5,6 +5,7 @@ import '../graphql/graphql_result.dart';
 import 'cactus_model.dart';
 import 'cactus_sync.dart';
 import 'graphback_result_list.dart';
+import 'recorded_model.dart';
 
 enum StateModelEvents { addUpdateStateModel, removeStateModel }
 
@@ -31,7 +32,6 @@ class CactusModelState<
         TUpdateResult,
         TDeleteInput extends JsonSerializable,
         TDeleteResult,
-        TGetInput extends JsonSerializable,
         TGetResult,
         TFindInput extends JsonSerializable,
         TFindResult> extends StateNotifier<Set<TModel?>>
@@ -43,7 +43,6 @@ class CactusModelState<
             TUpdateResult,
             TDeleteInput,
             TDeleteResult,
-            TGetInput,
             TGetResult,
             TFindInput,
             TFindResult> {
@@ -78,7 +77,6 @@ class CactusModelState<
       TUpdateResult,
       TDeleteInput,
       TDeleteResult,
-      TGetInput,
       TGetResult,
       TFindInput,
       TFindResult> cactusModel;
@@ -236,7 +234,7 @@ class CactusModelState<
 
   @override
   Future<GraphqlResult<TGetResult>> get({
-    required TGetInput variableValues,
+    required RecordedModel variableValues,
     QueryGql? queryGql,
     bool notifyListeners = true,
   }) async {

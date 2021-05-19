@@ -5,6 +5,7 @@ import '../graphql/graphql_result.dart';
 import '../utils/utils.dart';
 import 'cactus_sync.dart';
 import 'graphql_runner.dart';
+import 'recorded_model.dart';
 
 /// [stringQueryGql] is a gql which replaces the whole gql
 /// TODO: add an example
@@ -24,7 +25,6 @@ typedef CactusModelBuilder<
         TUpdateResult,
         TDeleteInput extends JsonSerializable,
         TDeleteResult,
-        TGetInput extends JsonSerializable,
         TGetResult,
         TFindInput extends JsonSerializable,
         TFindResult>
@@ -36,7 +36,6 @@ typedef CactusModelBuilder<
             TUpdateResult,
             TDeleteInput,
             TDeleteResult,
-            TGetInput,
             TGetResult,
             TFindInput,
             TFindResult>
@@ -50,7 +49,6 @@ abstract class AbstractCactusModel<
     TUpdateResult,
     TRemoveInput,
     TRemoveResult,
-    TGetInput,
     TGetResult,
     TFindInput,
     TFindResult> {
@@ -70,7 +68,7 @@ abstract class AbstractCactusModel<
     bool notifyListeners = true,
   });
   Future<GraphqlResult<TGetResult>> get({
-    required TGetInput variableValues,
+    required RecordedModel variableValues,
     QueryGql? queryGql,
     bool notifyListeners = true,
   });
@@ -89,7 +87,6 @@ class CactusModel<
         TUpdateResult,
         TRemoveInput extends JsonSerializable,
         TRemoveResult,
-        TGetInput extends JsonSerializable,
         TGetResult,
         TFindInput extends JsonSerializable,
         TFindResult>
@@ -101,7 +98,6 @@ class CactusModel<
             TUpdateResult,
             TRemoveInput,
             TRemoveResult,
-            TGetInput,
             TGetResult,
             TFindInput,
             TFindResult> {
@@ -142,7 +138,6 @@ class CactusModel<
       TUpdateResult,
       TDeleteInput,
       TDeleteResult,
-      TGetInput,
       TGetResult,
       TFindInput,
       TFindResult> init<
@@ -153,7 +148,6 @@ class CactusModel<
           TUpdateResult,
           TDeleteInput extends JsonSerializable,
           TDeleteResult,
-          TGetInput extends JsonSerializable,
           TGetResult,
           TFindInput extends JsonSerializable,
           TFindResult>({
@@ -302,10 +296,10 @@ class CactusModel<
   }
 
   @override
-  create({
-    required variableValues,
-    queryGql,
-    notifyListeners = true,
+  Future<GraphqlResult<TCreateResult>> create({
+    required TCreateInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
   }) async {
     CactusSync.l.info('create');
     return _executeMiddleware(
@@ -317,10 +311,10 @@ class CactusModel<
   }
 
   @override
-  update({
-    required variableValues,
-    queryGql,
-    notifyListeners = true,
+  Future<GraphqlResult<TUpdateResult>> update({
+    required TUpdateInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
   }) async {
     CactusSync.l.info('update');
     return _executeMiddleware(
@@ -332,10 +326,10 @@ class CactusModel<
   }
 
   @override
-  remove({
-    required variableValues,
-    queryGql,
-    notifyListeners = true,
+  Future<GraphqlResult<TRemoveResult>> remove({
+    required TRemoveInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
   }) async {
     CactusSync.l.info('remove');
     return _executeMiddleware(
@@ -347,10 +341,10 @@ class CactusModel<
   }
 
   @override
-  find({
-    required variableValues,
-    queryGql,
-    notifyListeners = true,
+  Future<GraphqlResult<TFindResult>> find({
+    required TFindInput variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
   }) async {
     CactusSync.l.info('find');
     return _executeMiddleware(
@@ -362,10 +356,10 @@ class CactusModel<
   }
 
   @override
-  get({
-    required variableValues,
-    queryGql,
-    notifyListeners = true,
+  Future<GraphqlResult<TGetResult>> get({
+    required RecordedModel variableValues,
+    QueryGql? queryGql,
+    bool notifyListeners = true,
   }) async {
     CactusSync.l.info('get');
     return _executeMiddleware(

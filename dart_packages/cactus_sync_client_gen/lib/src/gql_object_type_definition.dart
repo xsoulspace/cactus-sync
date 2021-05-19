@@ -111,8 +111,8 @@ class GqlObjectTypeDefinition {
             );
           } else {
             b.extend = refer(
-              'JsonSerializable',
-              UsedDirectives.jsonAnnotation,
+              'graphql.JsonSerializable',
+              UsedDirectives.graphqlClient,
             );
           }
 
