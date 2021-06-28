@@ -214,24 +214,9 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
 
     final modelName = '${camelModelName}Model';
     final modelStateName = '${modelName}State';
-    final modelStateNotifierName = '${modelStateName}Notifier';
 
     final modelProviderStr = '''
-          final $modelStateName = CactusModelState<
-              $properModelType,
-              $mutationCreateArgs,
-              $properModelType,
-              $mutationUpdateArgs,
-              $properModelType,
-              $mutationDeleteArgs,
-              $properModelType,
-              $properModelType,
-              $queryFindArgs,
-              $queryFindResult
-            >(
-              cactusModel: $modelName,
-            );
-          final $modelStateNotifierName = StateNotifierProvider<
+          final $modelStateName = StateNotifierProvider<
             CactusModelState<
               $properModelType,
               $mutationCreateArgs,
@@ -245,8 +230,22 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
               $queryFindResult
             >,
             Set<$properModelType?>
-          >((_) => $modelStateName);
-          final ${modelStateName}List = Provider((ref)=>ref.watch($modelStateNotifierName).toList());
+          >((_) => CactusModelState<
+              $properModelType,
+              $mutationCreateArgs,
+              $properModelType,
+              $mutationUpdateArgs,
+              $properModelType,
+              $mutationDeleteArgs,
+              $properModelType,
+              $properModelType,
+              $queryFindArgs,
+              $queryFindResult
+            >(
+              cactusModel: $modelName,
+            ),
+          );
+          final ${modelStateName}List = Provider((ref)=>ref.watch($modelStateName).toList());
         '''
         .unindent();
 
