@@ -19,9 +19,9 @@ class GqlScalar {
       case 'ID':
         return 'String';
       case 'GraphbackDateTime':
-        return 'String';
+        return 'int';
       case 'GraphbackTimestamp':
-        return 'DateTime';
+        return 'int';
       case 'Float':
         return 'double';
       case 'Int':
