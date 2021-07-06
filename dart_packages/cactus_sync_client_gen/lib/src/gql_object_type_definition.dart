@@ -236,8 +236,8 @@ class GqlObjectTypeDefinition {
 
     final optionalFieldName = "$correctedFieldTypeName?";
     final fieldTypeName = (() {
-      if (isNullable) return correctedFieldTypeName;
-      return optionalFieldName;
+      if (isNullable) return optionalFieldName;
+      return correctedFieldTypeName;
     })();
 
     final classField = Field(
