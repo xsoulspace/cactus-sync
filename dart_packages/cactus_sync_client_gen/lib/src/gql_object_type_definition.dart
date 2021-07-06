@@ -220,8 +220,8 @@ class GqlObjectTypeDefinition {
   }) {
     final rawFieldType = field.type?.baseTypeName ?? '';
     final rawFieldName = field.name;
-    final isNonNull = field.type?.isNonNull ?? false;
-    final isNull = isResultList || !isNonNull;
+    final isRequired = field.type?.isNonNull == true;
+    final isNullable = isResultList || !isRequired;
     final verifiedTypeNames = verifyTypeAndName(
       rawFieldType: rawFieldType,
       rawFieldName: rawFieldName,
@@ -236,7 +236,7 @@ class GqlObjectTypeDefinition {
 
     final fieldTypeName = (() {
       final optionalFieldName = "$correctedFieldTypeName?";
-      if (isNull) return optionalFieldName;
+      if (isNullable) return optionalFieldName;
       return correctedFieldTypeName;
     })();
 
@@ -277,7 +277,7 @@ class GqlObjectTypeDefinition {
           p
             ..toThis = isNotItems
             ..named = true
-            ..required = isNonNull
+            ..required = isRequired
             ..name = verifiedTypeNames.fieldName;
           if (isItems) {
             p.type = refer(fieldTypeName);
