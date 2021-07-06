@@ -199,6 +199,7 @@ class GqlObjectTypeDefinition {
     required Set<Parameter> defaultConstructorInitializers,
     required gql_schema.FieldDefinition field,
     required bool isItems,
+    required bool isResultList,
   }) =>
       fillClassParamFromFieldDefinition(
         defaultConstructorInitializers: defaultConstructorInitializers,
@@ -206,19 +207,21 @@ class GqlObjectTypeDefinition {
         field: field,
         isList: true,
         isItems: isItems,
+        isResultList: isResultList,
       );
 
   void fillClassParamFromFieldDefinition({
     required Set<Field> definedFields,
     required Set<Parameter> defaultConstructorInitializers,
     required gql_schema.FieldDefinition field,
+    required bool isResultList,
     bool isList = false,
     bool isItems = false,
   }) {
     final rawFieldType = field.type?.baseTypeName ?? '';
     final rawFieldName = field.name;
     final isNonNull = field.type?.isNonNull ?? false;
-
+    final isNull = isResultList || !isNonNull;
     final verifiedTypeNames = verifyTypeAndName(
       rawFieldType: rawFieldType,
       rawFieldName: rawFieldName,
@@ -233,9 +236,8 @@ class GqlObjectTypeDefinition {
 
     final fieldTypeName = (() {
       final optionalFieldName = "$correctedFieldTypeName?";
-      if (isList) return optionalFieldName;
-      if (isNonNull) return correctedFieldTypeName;
-      return optionalFieldName;
+      if (isNull) return optionalFieldName;
+      return correctedFieldTypeName;
     })();
 
     final classField = Field(

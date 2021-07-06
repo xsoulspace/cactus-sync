@@ -34,6 +34,7 @@ class GqlInputs extends GqlObjectTypeDefinition {
       if (field == null) continue;
       fillClassParamFromFieldDefinition(
         definedFields: definedFields,
+        isResultList: false,
         defaultConstructorInitializers: defaultConstructorInitializers,
         field: field,
       );

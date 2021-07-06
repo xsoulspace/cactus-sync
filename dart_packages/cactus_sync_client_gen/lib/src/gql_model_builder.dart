@@ -126,6 +126,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
         final isItems = field.name == 'items';
         fillClassParamFromListTypeField(
           definedFields: definedFields,
+          isResultList: isResultList,
           defaultConstructorInitializers: defaultConstructorInitializers,
           // FIXME: as
           field: field, isItems: isItems,
@@ -136,6 +137,7 @@ class GqlModelBuilder extends GqlObjectTypeDefinition {
       } else {
         fillClassParamFromFieldDefinition(
           definedFields: definedFields,
+          isResultList: isResultList,
           defaultConstructorInitializers: defaultConstructorInitializers,
           field: field,
         );
