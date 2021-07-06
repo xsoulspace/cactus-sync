@@ -221,7 +221,7 @@ class GqlObjectTypeDefinition {
     final rawFieldType = field.type?.baseTypeName ?? '';
     final rawFieldName = field.name;
     final isRequired = field.type?.isNonNull == true;
-    final isNullable = (isResultList && !isItems) || !isRequired;
+    final isNullable = (isResultList && !isItems) || isList;
     final verifiedTypeNames = verifyTypeAndName(
       rawFieldType: rawFieldType,
       rawFieldName: rawFieldName,
