@@ -227,7 +227,7 @@ class GqlObjectTypeDefinition {
     if (verifiedTypeNames == null) return;
 
     final correctedFieldTypeName = (() {
-      if (isList) return "List<${verifiedTypeNames.fieldType}?>";
+      if (isList) return "List<${verifiedTypeNames.fieldType}?>?";
       return verifiedTypeNames.fieldType;
     })();
 
