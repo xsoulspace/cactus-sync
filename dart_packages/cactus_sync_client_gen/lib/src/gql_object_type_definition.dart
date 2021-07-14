@@ -116,7 +116,7 @@ class GqlObjectTypeDefinition {
             );
           }
 
-          b.annotations.add(
+          b.annotations.addAll([
             refer(
               'JsonSerializable',
               UsedDirectives.jsonAnnotation,
@@ -124,9 +124,10 @@ class GqlObjectTypeDefinition {
               [],
               {
                 'explicitToJson': refer('true'),
+                'includeIfNull': refer('false'),
               },
             ),
-          );
+          ]);
         }
         if (isVerifiedEquatable) {
           b.mixins.addAll(
