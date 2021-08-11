@@ -8,13 +8,16 @@ import 'graphql_runner.dart';
 import 'recorded_model.dart';
 
 /// [stringQueryGql] is a gql which replaces the whole gql
-/// TODO: add an example
+// TODO(arenukvern): add an example
 /// [modelFragmentGql] is used to fill requested fields only in gql
-/// TODO: add an example
+// TODO(arenukvern): add an example
 class QueryGql {
-  String? stringQueryGql;
-  String? modelFragmentGql;
-  QueryGql({this.stringQueryGql, this.modelFragmentGql});
+  const QueryGql({
+    final this.stringQueryGql,
+    final this.modelFragmentGql,
+  });
+  final String? stringQueryGql;
+  final String? modelFragmentGql;
 }
 
 typedef CactusModelBuilder<
@@ -196,7 +199,7 @@ class CactusModel<
     return callback as FromJsonCallback<TQueryResult>;
   }
 
-  GraphqlRunner get _graphqlRunner => db.graphqlRunner;
+  GraphqlRunner? get _graphqlRunner => db.graphqlRunner;
   Future<GraphqlResult<TQueryResult>>
       _execute<TVariables extends JsonSerializable, TQueryResult>({
     required String query,
@@ -204,10 +207,12 @@ class CactusModel<
     required DefaultGqlOperationType operationType,
     required FromJsonCallback<TQueryResult> fromJsonCallback,
   }) async {
-    CactusSync.l.info({
-      'is graphqlRunner initialized': _graphqlRunner != null,
-    });
-    return _graphqlRunner.execute<TVariables, TQueryResult>(
+    final resolvedGraphqlRunner = _graphqlRunner;
+    if (resolvedGraphqlRunner == null) {
+      throw ArgumentError.notNull('_graphqlRunner');
+    }
+    CactusSync.l.info({'is graphqlRunner initialized'});
+    return resolvedGraphqlRunner.execute<TVariables, TQueryResult>(
       fromJsonCallback: fromJsonCallback,
       operationType: operationType,
       query: query,

@@ -4,24 +4,37 @@ import 'package:simple_logger/simple_logger.dart';
 import 'cactus_model.dart';
 import 'graphql_runner.dart';
 
-// import 'package:';
 class CactusSync {
-  static CactusSync? db;
+  CactusSync._({this.graphqlRunner});
 
-  GraphqlRunner graphqlRunner;
-  static final l = SimpleLogger();
-  CactusSync({required this.graphqlRunner});
-  static void init<TCacheShape>({
-    required GraphqlRunner graphqlRunner,
-    Level loggerLevel = Level.OFF,
-    bool loggerIncludeCallerInfo = false,
+  static CactusSync init<TCacheShape>({
+    required final GraphqlRunner graphqlRunner,
+    final Level loggerLevel = Level.OFF,
+    final bool loggerIncludeCallerInfo = false,
   }) {
     l.setLevel(
       loggerLevel,
       includeCallerInfo: loggerIncludeCallerInfo,
     );
-    CactusSync.db = CactusSync(graphqlRunner: graphqlRunner);
+    final db = CactusSync._(graphqlRunner: graphqlRunner);
+    if (CactusSync.db != null) {
+      l.info('CactusSync is already intialized');
+    } else {
+      CactusSync.db = db;
+    }
+    return db;
   }
+
+  static late final CactusSync? db;
+  static bool get isInitialized => db != null;
+  static void setRunner({GraphqlRunner? graphqlRunner}) {
+    if (graphqlRunner == null) return;
+    db?.graphqlRunner = graphqlRunner;
+  }
+
+  GraphqlRunner? graphqlRunner;
+
+  static final l = SimpleLogger();
 
   ///
   /// Start point to include Model into db
@@ -63,10 +76,12 @@ class CactusSync {
           modelBuilder) {
     final db = CactusSync.db;
     if (db == null) {
-      throw Exception('''
+      throw Exception(
+        '''
         You don't have CactusSync db instance! Be aware: 
         CactusSync.init(...) should be called before attachModel!
-      ''');
+        ''',
+      );
     }
     final model = modelBuilder(db: db);
     db.models.addAll({model.graphqlModelName: model});
