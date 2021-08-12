@@ -25,7 +25,7 @@ class CactusSync {
     return db;
   }
 
-  static late final CactusSync? db;
+  static CactusSync? db;
   static bool get isInitialized => db != null;
   static void setRunner({GraphqlRunner? graphqlRunner}) {
     if (graphqlRunner == null) return;
