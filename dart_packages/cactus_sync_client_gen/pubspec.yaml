@@ -17,7 +17,7 @@ homepage: https://xsoulspace.dev/cactus-sync
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.3.0
+version: 0.3.1
 
 environment:
   sdk: '>=2.14.0 <3.0.0'
@@ -40,9 +40,7 @@ dev_dependencies:
   flutter:
     sdk: flutter
   cactus_sync_client:
-    git:
-      url: https://github.com/xsoulspace/cactus-sync.git
-      path: dart_packages/cactus_sync_client
+    path: ../cactus_sync_client
   build_runner: ^2.1.2
   json_serializable: ^5.0.0
   build_web_compilers: ^3.0.0
