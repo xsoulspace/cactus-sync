@@ -1,12 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:riverpod/riverpod.dart';
-
-import '../graphql/graphql_result.dart';
-import 'cactus_model.dart';
-import 'cactus_sync.dart';
-import 'graphback_result_list.dart';
-import 'recorded_model.dart';
+part of cactus_client_abstract;
 
 enum StateModelEvents { addUpdateStateModel, removeStateModel }
 

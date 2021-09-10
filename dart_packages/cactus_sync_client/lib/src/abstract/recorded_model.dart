@@ -1,12 +1,12 @@
-import 'package:graphql/client.dart';
+part of cactus_client_abstract;
 
 /// Simple class with only one property - ID
 
 class RecordedModel extends JsonSerializable {
-  final String id;
   RecordedModel({
-    required this.id,
+    required final this.id,
   });
+  final String id;
   @override
   Map<String, dynamic> toJson() => {'id': id};
 }

@@ -1,13 +1,12 @@
 /// This extensition able to plurify name
 /// If you update this file please update file
 /// in cactus_sync_client_gen too
-part of 'utils.dart';
+part of cactus_utils;
 
 extension StringUtil on String {
   String toPluralName() {
-    final str = this;
-    final lastLetter = str.substring(str.length - 1).toLowerCase();
-    var newStr = str.toString();
+    final lastLetter = substring(length - 1).toLowerCase();
+    var newStr = toString();
     switch (lastLetter) {
       case 'h':
         newStr = '${newStr}es';
@@ -17,7 +16,7 @@ extension StringUtil on String {
         newStr = '${newStr}ies';
         return newStr;
       default:
-        return '${str}s';
+        return '${this}s';
     }
   }
 

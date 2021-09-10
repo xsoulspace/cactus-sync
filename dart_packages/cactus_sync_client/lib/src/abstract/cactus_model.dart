@@ -1,11 +1,4 @@
-import 'package:graphql/client.dart';
-
-import '../graphql/gql_builder.dart';
-import '../graphql/graphql_result.dart';
-import '../utils/utils.dart';
-import 'cactus_sync.dart';
-import 'graphql_runner.dart';
-import 'recorded_model.dart';
+part of cactus_client_abstract;
 
 /// [stringQueryGql] is a gql which replaces the whole gql
 // TODO(arenukvern): add an example

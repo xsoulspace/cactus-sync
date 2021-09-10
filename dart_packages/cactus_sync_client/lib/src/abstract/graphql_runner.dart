@@ -1,12 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:gql/language.dart' as gql_lang;
-import 'package:gql_http_link/gql_http_link.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-
-import '../graphql/gql_builder.dart';
-import '../graphql/graphql_result.dart';
-import '../utils/utils.dart';
-import 'cactus_sync.dart';
+part of cactus_client_abstract;
 
 /// This config required to init GraphqlRunner
 /// Under the hood it uses default ferry with hive and hive_flutter setup

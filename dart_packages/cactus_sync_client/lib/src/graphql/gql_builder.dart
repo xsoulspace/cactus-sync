@@ -1,4 +1,4 @@
-import '../utils/utils.dart';
+part of cactus_graphql;
 
 enum DefaultGqlOperationType {
   fromString,
@@ -28,8 +28,8 @@ class GqlBuilder {
   late final String returnFields;
   late final String pluralModelName;
   GqlBuilder({
-    List<String?>? modelFields,
-    String? modelFragment,
+    final List<String?>? modelFields,
+    final String? modelFragment,
     required this.modelName,
   }) {
     if (modelFragment != null && modelFragment.isNotEmpty) {
@@ -46,7 +46,7 @@ class GqlBuilder {
   /// The function removes all outside {} from gql
   /// and returns clear string
   ///
-  String toFields({required String gqlFragment}) {
+  String toFields({required final String gqlFragment}) {
     final arrOrigin = gqlFragment.split('{');
     arrOrigin.removeAt(0);
     final cuttedStart = arrOrigin.join('{');
@@ -56,7 +56,8 @@ class GqlBuilder {
     return finalStr;
   }
 
-  String getByOperationType({required DefaultGqlOperationType operationType}) {
+  String getByOperationType(
+      {required final DefaultGqlOperationType operationType}) {
     switch (operationType) {
       case DefaultGqlOperationType.create:
         return createGqlStr;

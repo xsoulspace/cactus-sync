@@ -1,9 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:graphql/client.dart';
-import 'package:simple_logger/simple_logger.dart';
-
-import 'cactus_model.dart';
-import 'graphql_runner.dart';
+part of cactus_client_abstract;
 
 /// Using notifyListeners mostly to reset states
 class CactusSync extends ChangeNotifier {

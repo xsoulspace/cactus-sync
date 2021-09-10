@@ -1,6 +1,4 @@
-import 'package:graphql/client.dart';
-
-import '../utils/utils.dart';
+part of cactus_graphql;
 
 ///Generic query result based on query result
 ///
@@ -9,9 +7,9 @@ class GraphqlResult<TResult> extends QueryResult {
   final FromJsonCallback<TResult> fromJsonCallback;
 
   GraphqlResult({
-    Map<String, dynamic>? data,
-    required QueryResultSource? source,
-    OperationException? exception,
+    final Map<String, dynamic>? data,
+    required final QueryResultSource? source,
+    final OperationException? exception,
     required this.fromJsonCallback,
   }) : super(
           source: source,
@@ -21,8 +19,8 @@ class GraphqlResult<TResult> extends QueryResult {
         );
 
   static GraphqlResult<TResult> fromQueryResult<TResult>({
-    required QueryResult queryResult,
-    required FromJsonCallback<TResult> fromJsonCallback,
+    required final QueryResult queryResult,
+    required final FromJsonCallback<TResult> fromJsonCallback,
   }) {
     return GraphqlResult<TResult>(
       fromJsonCallback: fromJsonCallback,

@@ -1,4 +1,4 @@
-import 'package:graphql/client.dart';
+part of cactus_client_abstract;
 
 abstract class GraphbackResultList<TModel> extends JsonSerializable {
   final List<TModel?> items;
