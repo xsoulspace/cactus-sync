@@ -33,6 +33,7 @@ dependencies:
   gql_http_link: ^0.4.0
   simple_logger: ^1.8.1
   equatable: ^2.0.0
+  event_bus: ^2.0.0
 
 dev_dependencies:
   hive_generator: ^1.0.1

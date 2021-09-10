@@ -1,9 +1,9 @@
-part of cactus_client_abstract;
+part of cactus_abstract;
 
 /// Using notifyListeners mostly to reset states
-class CactusSync extends ChangeNotifier {
+class CactusSync {
   CactusSync._({final this.graphqlRunner});
-
+  final emitter = CactusEmitter();
   static CactusSync init<TCacheShape>({
     required final GraphqlRunner graphqlRunner,
     final Level loggerLevel = Level.OFF,
@@ -34,7 +34,7 @@ class CactusSync extends ChangeNotifier {
   void _setRunner(final GraphqlRunner? _graphqlRunner) {
     if (graphqlRunner == null) return;
     graphqlRunner = _graphqlRunner;
-    notifyListeners();
+    emitter.add(const CactusResetStateEvent());
   }
 
   static final l = SimpleLogger();

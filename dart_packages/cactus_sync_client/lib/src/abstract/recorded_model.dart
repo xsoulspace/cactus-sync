@@ -1,4 +1,4 @@
-part of cactus_client_abstract;
+part of cactus_abstract;
 
 /// Simple class with only one property - ID
 

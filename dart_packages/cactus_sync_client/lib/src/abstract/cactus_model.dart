@@ -1,4 +1,4 @@
-part of cactus_client_abstract;
+part of cactus_abstract;
 
 /// [stringQueryGql] is a gql which replaces the whole gql
 // TODO(arenukvern): add an example
@@ -268,32 +268,43 @@ class CactusModel<
     CactusSync.l.info(result);
 
     /// STATE UPDATES
+    if (notifyListeners) {
+      switch (operationType) {
+        case DefaultGqlOperationType.create:
+          db.emitter.add(
+            CactusAddEvent(
+              result: result,
+              modelName: graphqlModelName,
+            ),
+          );
+          break;
+        case DefaultGqlOperationType.update:
+          db.emitter.add(
+            CactusUpdateEvent(
+              result: result,
+              modelName: graphqlModelName,
+            ),
+          );
+
+          break;
+        case DefaultGqlOperationType.remove:
+          db.emitter.add(
+            CactusRemoveEvent(
+              result: result,
+              modelName: graphqlModelName,
+            ),
+          );
+
+          break;
+        default:
+          throw UnimplementedError(operationType.toString());
+      }
+    }
     return result;
-    // TODO: enable sync for different states
-    // if (!notifyListeners) return result;
-    // var validateAndEmit = ({bool? remove}){
-    //   var { isNotValid, data } = validateStateModelResult(result);
-    //   if (isNotValid || data == null) return;
-    //   for (var maybeModel of Object.values(data)) {
-    //     notifyStateModelListeners({
-    //       emitter: this.db.graphqlRunner.subscriptionsEmitter,
-    //       remove: remove,
-    //       item: maybeModel,
-    //       notifyListeners,
-    //       modelName: this.modelName,
-    //     });
-    //   }
-    // }
-    // switch (operationType) {
-    //   case DefaultGqlOperationType.create:
-    //   case DefaultGqlOperationType.update:
-    //     validateAndEmit({});
-    //     break
-    //   case DefaultGqlOperationType.remove:
-    //     validateAndEmit({ remove: true });
-    //     break
-    // }
-    // return result;
+  }
+
+  void addEvent(final CactusEvent event) {
+    db.emitter.add(event);
   }
 
   @override

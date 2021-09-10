@@ -1,6 +1,7 @@
-library cactus_client_abstract;
+library cactus_abstract;
 
 import 'package:equatable/equatable.dart';
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:gql/language.dart' as gql_lang;
 import 'package:gql_http_link/gql_http_link.dart';
@@ -11,6 +12,7 @@ import 'package:simple_logger/simple_logger.dart';
 import '../graphql/graphql.dart';
 import '../utils/utils.dart';
 
+part 'cactus_emitter.dart';
 part 'cactus_events.dart';
 part 'cactus_model.dart';
 part 'cactus_model_state.dart';

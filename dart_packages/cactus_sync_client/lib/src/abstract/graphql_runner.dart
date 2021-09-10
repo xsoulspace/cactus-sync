@@ -1,4 +1,4 @@
-part of cactus_client_abstract;
+part of cactus_abstract;
 
 /// This config required to init GraphqlRunner
 /// Under the hood it uses default ferry with hive and hive_flutter setup

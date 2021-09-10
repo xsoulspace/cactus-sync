@@ -1,8 +1,8 @@
-part of cactus_client_abstract;
+part of cactus_abstract;
 
 abstract class GraphbackResultList<TModel> extends JsonSerializable {
-  final List<TModel?> items;
   GraphbackResultList({
-    required this.items,
+    required final this.items,
   });
+  final List<TModel?> items;
 }

@@ -1,16 +1,31 @@
-part of cactus_client_abstract;
+part of cactus_abstract;
 
 // ignore: avoid_implementing_value_types
-abstract class CactusEvent implements Equatable {}
+abstract class CactusEvent {}
 
-/// Used to update states dependant from particaluar model
+/// Used to add states dependant from particaluar model
 @immutable
-class CactusAddUpdateEvent<T> with EquatableMixin implements CactusEvent {
-  const CactusAddUpdateEvent({
-    required final this.model,
+class CactusAddEvent with EquatableMixin implements CactusEvent {
+  const CactusAddEvent({
+    required final this.result,
     required final this.modelName,
   });
-  final T model;
+  final GraphqlResult result;
+  final String modelName;
+  @override
+  List<Object?> get props => [modelName];
+  @override
+  bool? get stringify => true;
+}
+
+/// Used to add states dependant from particaluar model
+@immutable
+class CactusUpdateEvent with EquatableMixin implements CactusEvent {
+  const CactusUpdateEvent({
+    required final this.result,
+    required final this.modelName,
+  });
+  final GraphqlResult result;
   final String modelName;
   @override
   List<Object?> get props => [modelName];
@@ -19,12 +34,12 @@ class CactusAddUpdateEvent<T> with EquatableMixin implements CactusEvent {
 }
 
 @immutable
-class CactusRemoveEvent<T> with EquatableMixin implements CactusEvent {
+class CactusRemoveEvent with EquatableMixin implements CactusEvent {
   const CactusRemoveEvent({
-    required final this.model,
+    required final this.result,
     required final this.modelName,
   });
-  final T model;
+  final GraphqlResult result;
   final String modelName;
   @override
   List<Object?> get props => [modelName];
@@ -33,13 +48,6 @@ class CactusRemoveEvent<T> with EquatableMixin implements CactusEvent {
 }
 
 @immutable
-class CactusResetStateEvent with EquatableMixin implements CactusEvent {
-  const CactusResetStateEvent({
-    required final this.modelName,
-  });
-  final String modelName;
-  @override
-  List<Object?> get props => [modelName];
-  @override
-  bool? get stringify => true;
+class CactusResetStateEvent implements CactusEvent {
+  const CactusResetStateEvent();
 }

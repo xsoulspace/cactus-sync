@@ -1,4 +1,4 @@
-part of cactus_client_abstract;
+part of cactus_abstract;
 
 enum StateModelEvents { addUpdateStateModel, removeStateModel }
 
@@ -43,11 +43,41 @@ class CactusModelState<
   CactusModelState({
     required final this.cactusModel,
   }) : super({}) {
-    cactusModel.db.addListener(resetState);
-    // TODO: implement listeners
-    // _initSubscriptionListener();
     // _listenOtherStatesChanges();
+    _subscribeToChanges();
   }
+  void _subscribeToChanges() {
+    cactusModel.db.emitter.source
+      ..on<CactusResetStateEvent>().listen((final _) => resetState())
+      // in case if it is possible to make many states , then we need to remove
+      // or make optional this listen
+      ..on<CactusAddEvent>().listen((final event) {
+        if (event.modelName == modelName) {
+          _updateStateModel(
+            result: event.result,
+            notifyListeners: false,
+          );
+        }
+      })
+      ..on<CactusUpdateEvent>().listen((final event) {
+        if (event.modelName == modelName) {
+          _updateStateModel(
+            result: event.result,
+            notifyListeners: false,
+          );
+        }
+      })
+      ..on<CactusRemoveEvent>().listen((final event) {
+        if (event.modelName == modelName) {
+          _updateStateModel(
+            result: event.result,
+            notifyListeners: false,
+            remove: true,
+          );
+        }
+      });
+  }
+
   StateModelValidationResult<GraphqlResult<TResult>>
       validateStateModelResult<TResult>({
     required final GraphqlResult<TResult> result,
@@ -127,10 +157,9 @@ class CactusModelState<
     if (validatedResult.isNotValid) return;
     final maybeModel = validatedResult.data.typedData;
     if (maybeModel is TModel) {
-      final isItemExists = state.contains(maybeModel);
       final newState = {...state};
       if (remove == true) {
-        if (isItemExists) newState.remove(maybeModel);
+        newState.remove(maybeModel);
       } else {
         newState.add(maybeModel);
       }
