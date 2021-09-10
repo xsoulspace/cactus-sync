@@ -296,6 +296,10 @@ class CactusModel<
           );
 
           break;
+        case DefaultGqlOperationType.get:
+        case DefaultGqlOperationType.find:
+        case DefaultGqlOperationType.fromString:
+          break;
         default:
           throw UnimplementedError(operationType.toString());
       }
