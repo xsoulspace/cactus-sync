@@ -1,11 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:graphql/client.dart';
 import 'package:simple_logger/simple_logger.dart';
 
 import 'cactus_model.dart';
 import 'graphql_runner.dart';
 
-class CactusSync {
-  CactusSync._({this.graphqlRunner});
+/// Using notifyListeners mostly to reset states
+class CactusSync extends ChangeNotifier {
+  CactusSync._({final this.graphqlRunner});
 
   static CactusSync init<TCacheShape>({
     required final GraphqlRunner graphqlRunner,
@@ -27,12 +29,18 @@ class CactusSync {
 
   static CactusSync? db;
   static bool get isInitialized => db != null;
-  static void setRunner({GraphqlRunner? graphqlRunner}) {
-    if (graphqlRunner == null) return;
-    db?.graphqlRunner = graphqlRunner;
-  }
+
+  /// Sets new graphql runner (for example in case of http endpoint change)
+  /// Will notify all states to reset their state.
+  static void setRunner({final GraphqlRunner? graphqlRunner}) =>
+      db?._setRunner(graphqlRunner);
 
   GraphqlRunner? graphqlRunner;
+  void _setRunner(final GraphqlRunner? _graphqlRunner) {
+    if (graphqlRunner == null) return;
+    graphqlRunner = _graphqlRunner;
+    notifyListeners();
+  }
 
   static final l = SimpleLogger();
 
@@ -42,16 +50,17 @@ class CactusSync {
   ///
   ///
   static CactusModel<
-      TModel,
-      TCreateInput,
-      TCreateResult,
-      TUpdateInput,
-      TUpdateResult,
-      TDeleteInput,
-      TDeleteResult,
-      TGetResult,
-      TFindInput,
-      TFindResult> attachModel<
+          TModel,
+          TCreateInput,
+          TCreateResult,
+          TUpdateInput,
+          TUpdateResult,
+          TDeleteInput,
+          TDeleteResult,
+          TGetResult,
+          TFindInput,
+          TFindResult>
+      attachModel<
           TModel,
           TCreateInput extends JsonSerializable,
           TCreateResult,
@@ -62,21 +71,22 @@ class CactusSync {
           TGetResult,
           TFindInput extends JsonSerializable,
           TFindResult>(
-      CactusModelBuilder<
-              TModel,
-              TCreateInput,
-              TCreateResult,
-              TUpdateInput,
-              TUpdateResult,
-              TDeleteInput,
-              TDeleteResult,
-              TGetResult,
-              TFindInput,
-              TFindResult>
-          modelBuilder) {
+    final CactusModelBuilder<
+            TModel,
+            TCreateInput,
+            TCreateResult,
+            TUpdateInput,
+            TUpdateResult,
+            TDeleteInput,
+            TDeleteResult,
+            TGetResult,
+            TFindInput,
+            TFindResult>
+        modelBuilder,
+  ) {
     final db = CactusSync.db;
     if (db == null) {
-      throw Exception(
+      throw ArgumentError.notNull(
         '''
         You don't have CactusSync db instance! Be aware: 
         CactusSync.init(...) should be called before attachModel!

@@ -48,7 +48,7 @@ class GraphqlRunner {
   });
 
   static Future<GraphqlRunner> init(
-      {required GraphqlRunnerConfig config}) async {
+      {required final GraphqlRunnerConfig config}) async {
     await initHiveForFlutter(subDir: config.hiveSubDir);
 
     final link = config.authLink.concat(config.httpLink);
@@ -70,16 +70,16 @@ class GraphqlRunner {
   /// Method to call mutations and queries
   Future<GraphqlResult<TQueryResult>>
       execute<TVariables extends JsonSerializable, TQueryResult>({
-    required String query,
-    required TVariables variableValues,
-    required DefaultGqlOperationType operationType,
-    required FromJsonCallback<TQueryResult> fromJsonCallback,
+    required final String query,
+    required final TVariables variableValues,
+    required final DefaultGqlOperationType operationType,
+    required final FromJsonCallback<TQueryResult> fromJsonCallback,
   }) async {
     final document = gql_lang.parseString(query);
     CactusSync.l.info({
       'execute document': document,
       'operationType': operationType,
-      "variableValues": variableValues,
+      'variableValues': variableValues,
     });
     final jsonVariableValues = variableValues.toJson();
     switch (operationType) {
@@ -89,7 +89,7 @@ class GraphqlRunner {
         final queryResult = await client.mutate(
           MutationOptions(
             document: document,
-            variables: {"input": jsonVariableValues},
+            variables: {'input': jsonVariableValues},
           ),
         );
         return GraphqlResult.fromQueryResult<TQueryResult>(

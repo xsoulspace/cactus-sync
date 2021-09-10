@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:riverpod/riverpod.dart';
 
@@ -9,15 +10,16 @@ import 'recorded_model.dart';
 
 enum StateModelEvents { addUpdateStateModel, removeStateModel }
 
+@immutable
 class StateModelValidationResult<TData> {
+  const StateModelValidationResult({
+    required final this.isValid,
+    required final this.isNotValid,
+    required final this.data,
+  });
   final bool isValid;
   final bool isNotValid;
   final TData data;
-  StateModelValidationResult({
-    required this.isValid,
-    required this.isNotValid,
-    required this.data,
-  });
 }
 
 /// Every response model should contain method getList to get
@@ -46,9 +48,17 @@ class CactusModelState<
             TGetResult,
             TFindInput,
             TFindResult> {
+  CactusModelState({
+    required final this.cactusModel,
+  }) : super({}) {
+    cactusModel.db.addListener(resetState);
+    // TODO: implement listeners
+    // _initSubscriptionListener();
+    // _listenOtherStatesChanges();
+  }
   StateModelValidationResult<GraphqlResult<TResult>>
       validateStateModelResult<TResult>({
-    required GraphqlResult<TResult> result,
+    required final GraphqlResult<TResult> result,
   }) {
     final notValidResult = StateModelValidationResult<GraphqlResult<TResult>>(
       isNotValid: true,
@@ -65,9 +75,11 @@ class CactusModelState<
     );
   }
 
-  void setState(Iterable<TModel?> value) {
+  void setState(final Iterable<TModel?> value) {
     state = value.toSet();
   }
+
+  void resetState() => setState({});
 
   CactusModel<
       TModel,
@@ -80,21 +92,14 @@ class CactusModelState<
       TGetResult,
       TFindInput,
       TFindResult> cactusModel;
-  CactusModelState({
-    required this.cactusModel,
-  }) : super({}) {
-    // TODO: implement listeners
-    // _initSubscriptionListener();
-    // _listenOtherStatesChanges();
-  }
 
   /// ================== STATE CHANGES HANDLERS ======================
   /// Used only for find  method.
   /// Will clean up state and refill it
   /// with new data
   void _updateStateList<TResult>({
-    required GraphqlResult<TResult> result,
-    bool? notifyListeners,
+    required final GraphqlResult<TResult> result,
+    final bool? notifyListeners,
   }) {
     final validatedResult = validateStateModelResult(result: result);
     if (validatedResult.isNotValid) return;
@@ -122,9 +127,9 @@ class CactusModelState<
   ///
   /// should not be used with subscribed events
   void _updateStateModel<TResult>({
-    required GraphqlResult<TResult> result,
-    bool? remove,
-    bool? notifyListeners,
+    required final GraphqlResult<TResult> result,
+    final bool? remove,
+    final bool? notifyListeners,
   }) {
     final validatedResult = validateStateModelResult(result: result);
     if (validatedResult.isNotValid) return;
@@ -154,14 +159,14 @@ class CactusModelState<
 
   String get modelName => cactusModel.graphqlModelName;
 
-  bool _verifyModelName({required String? name}) => name == modelName;
+  bool _verifyModelName({required final String? name}) => name == modelName;
 
   /// ==================== PUBLIC SECTION ======================
   ///
   @override
   Future<GraphqlResult<TCreateResult>> create({
-    required TCreateInput variableValues,
-    QueryGql? queryGql,
+    required final TCreateInput variableValues,
+    final QueryGql? queryGql,
     bool notifyListeners = true,
   }) async {
     final result = await cactusModel.create(
@@ -179,8 +184,8 @@ class CactusModelState<
 
   @override
   Future<GraphqlResult<TUpdateResult>> update({
-    required TUpdateInput variableValues,
-    QueryGql? queryGql,
+    required final TUpdateInput variableValues,
+    final QueryGql? queryGql,
     bool notifyListeners = true,
   }) async {
     final result = await cactusModel.update(
@@ -197,8 +202,8 @@ class CactusModelState<
 
   @override
   Future<GraphqlResult<TDeleteResult>> remove({
-    required TDeleteInput variableValues,
-    QueryGql? queryGql,
+    required final TDeleteInput variableValues,
+    final QueryGql? queryGql,
     bool notifyListeners = true,
   }) async {
     final result = await cactusModel.remove(
@@ -216,8 +221,8 @@ class CactusModelState<
 
   @override
   Future<GraphqlResult<TFindResult>> find({
-    required TFindInput variableValues,
-    QueryGql? queryGql,
+    required final TFindInput variableValues,
+    final QueryGql? queryGql,
     bool notifyListeners = true,
   }) async {
     final result = await cactusModel.find(
@@ -234,8 +239,8 @@ class CactusModelState<
 
   @override
   Future<GraphqlResult<TGetResult>> get({
-    required RecordedModel variableValues,
-    QueryGql? queryGql,
+    required final RecordedModel variableValues,
+    final QueryGql? queryGql,
     bool notifyListeners = true,
   }) async {
     final result = await cactusModel.get(
