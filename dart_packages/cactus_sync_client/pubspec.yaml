@@ -34,6 +34,7 @@ dependencies:
   simple_logger: ^1.8.1
   equatable: ^2.0.0
   event_bus: ^2.0.0
+  gql: ^0.13.0
 
 dev_dependencies:
   hive_generator: ^1.0.1

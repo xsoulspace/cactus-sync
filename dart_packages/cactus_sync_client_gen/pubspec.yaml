@@ -33,6 +33,7 @@ dependencies:
   riverpod: ^0.14.0+3
   indent: ^2.0.0
   equatable: ^2.0.0
+  gql: ^0.13.0
 
 dev_dependencies:
   flutter:
