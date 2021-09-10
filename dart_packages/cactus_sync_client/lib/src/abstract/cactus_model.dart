@@ -58,27 +58,27 @@ abstract class AbstractCactusModel<
   Future<GraphqlResult<TCreateResult>> create({
     required final TCreateInput variableValues,
     final QueryGql? queryGql,
-    bool notifyListeners = true,
+    final bool notifyListeners = true,
   });
   Future<GraphqlResult<TUpdateResult>> update({
     required final TUpdateInput variableValues,
     final QueryGql? queryGql,
-    bool notifyListeners = true,
+    final bool notifyListeners = true,
   });
   Future<GraphqlResult<TRemoveResult>> remove({
     required final TRemoveInput variableValues,
     final QueryGql? queryGql,
-    bool notifyListeners = true,
+    final bool notifyListeners = true,
   });
   Future<GraphqlResult<TGetResult>> get({
     required final RecordedModel variableValues,
     final QueryGql? queryGql,
-    bool notifyListeners = true,
+    final bool notifyListeners = true,
   });
   Future<GraphqlResult<TFindResult>> find({
     required final TFindInput variableValues,
     final QueryGql? queryGql,
-    bool notifyListeners = true,
+    final bool notifyListeners = true,
   });
 }
 
@@ -104,6 +104,23 @@ class CactusModel<
             TGetResult,
             TFindInput,
             TFindResult> {
+  CactusModel({
+    required final this.createFromJsonCallback,
+    required final this.updateFromJsonCallback,
+    required final this.removeFromJsonCallback,
+    required final this.getFromJsonCallback,
+    required final this.findFromJsonCallback,
+    required final this.defaultModelFragment,
+    required final this.graphqlModelFieldNames,
+    required final this.graphqlModelName,
+    required final this.db,
+  }) {
+    gqlBuilder = GqlBuilder(
+      modelName: graphqlModelName,
+      modelFields: graphqlModelFieldNames,
+      modelFragment: defaultModelFragment,
+    );
+  }
   FromJsonCallback<TCreateResult> createFromJsonCallback;
   FromJsonCallback<TFindResult> findFromJsonCallback;
   FromJsonCallback<TGetResult> getFromJsonCallback;
@@ -116,23 +133,6 @@ class CactusModel<
   final List<String?> graphqlModelFieldNames;
   final String defaultModelFragment;
 
-  CactusModel({
-    required this.createFromJsonCallback,
-    required this.updateFromJsonCallback,
-    required this.removeFromJsonCallback,
-    required this.getFromJsonCallback,
-    required this.findFromJsonCallback,
-    required this.defaultModelFragment,
-    required this.graphqlModelFieldNames,
-    required this.graphqlModelName,
-    required this.db,
-  }) {
-    gqlBuilder = GqlBuilder(
-      modelName: graphqlModelName,
-      modelFields: graphqlModelFieldNames,
-      modelFragment: defaultModelFragment,
-    );
-  }
   static CactusModelBuilder<
       TModel,
       TCreateInput,
@@ -192,8 +192,10 @@ class CactusModel<
         case DefaultGqlOperationType.find:
           return findFromJsonCallback;
         case DefaultGqlOperationType.fromString:
-          throw Exception('DefaultGqlOperationType is fromString but '
-              'has to be different');
+          throw Exception(
+            'DefaultGqlOperationType is fromString but '
+            'has to be different',
+          );
       }
     })();
     return callback as FromJsonCallback<TQueryResult>;
@@ -240,10 +242,10 @@ class CactusModel<
 
   Future<GraphqlResult<TResult>>
       _executeMiddleware<TVariables extends JsonSerializable, TResult>({
-    final QueryGql? queryGql,
     required final DefaultGqlOperationType operationType,
-    bool notifyListeners = true,
     required final TVariables variableValues,
+    final QueryGql? queryGql,
+    final bool notifyListeners = true,
   }) async {
     /**
      * If we receive modelFragmentGql, we concat it with default query
@@ -256,7 +258,8 @@ class CactusModel<
       queryGql: queryGql,
     );
     final fromJsonCallback = _getFromJsonCallbackByOperationType<TResult>(
-        operationType: operationType);
+      operationType: operationType,
+    );
     CactusSync.l.info({
       'query': query,
       'jsonCallback': fromJsonCallback,
@@ -304,7 +307,7 @@ class CactusModel<
   Future<GraphqlResult<TCreateResult>> create({
     required final TCreateInput variableValues,
     final QueryGql? queryGql,
-    bool notifyListeners = true,
+    final bool notifyListeners = true,
   }) async {
     CactusSync.l.info('create');
     return _executeMiddleware(
@@ -319,7 +322,7 @@ class CactusModel<
   Future<GraphqlResult<TUpdateResult>> update({
     required final TUpdateInput variableValues,
     final QueryGql? queryGql,
-    bool notifyListeners = true,
+    final bool notifyListeners = true,
   }) async {
     CactusSync.l.info('update');
     return _executeMiddleware(
@@ -334,7 +337,7 @@ class CactusModel<
   Future<GraphqlResult<TRemoveResult>> remove({
     required final TRemoveInput variableValues,
     final QueryGql? queryGql,
-    bool notifyListeners = true,
+    final bool notifyListeners = true,
   }) async {
     CactusSync.l.info('remove');
     return _executeMiddleware(
@@ -349,7 +352,7 @@ class CactusModel<
   Future<GraphqlResult<TFindResult>> find({
     required final TFindInput variableValues,
     final QueryGql? queryGql,
-    bool notifyListeners = true,
+    final bool notifyListeners = true,
   }) async {
     CactusSync.l.info('find');
     return _executeMiddleware(
@@ -364,7 +367,7 @@ class CactusModel<
   Future<GraphqlResult<TGetResult>> get({
     required final RecordedModel variableValues,
     final QueryGql? queryGql,
-    bool notifyListeners = true,
+    final bool notifyListeners = true,
   }) async {
     CactusSync.l.info('get');
     return _executeMiddleware(

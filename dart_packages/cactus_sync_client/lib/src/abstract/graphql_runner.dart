@@ -13,23 +13,24 @@ import 'cactus_sync.dart';
 /// as described in [ferry setup](https://ferrygraphql.com/docs/setup)
 ///
 /// You can provide a [hiveSubDir] - where the hive boxes should be stored.
+@immutable
 class GraphqlRunnerConfig {
-  String? hiveSubDir;
-  HttpLink httpLink;
-  AuthLink authLink;
-  bool alwaysRebroadcast;
-  DefaultPolicies? defaultPolicies;
-  GraphQLCache? cache;
-  FetchPolicy? defaultFetchPolicy;
-  GraphqlRunnerConfig({
-    this.hiveSubDir,
-    required this.authLink,
-    required this.httpLink,
-    this.defaultPolicies,
-    this.alwaysRebroadcast = false,
-    this.cache,
-    this.defaultFetchPolicy,
+  const GraphqlRunnerConfig({
+    required final this.authLink,
+    required final this.httpLink,
+    final this.hiveSubDir,
+    final this.defaultPolicies,
+    final this.alwaysRebroadcast = false,
+    final this.cache,
+    final this.defaultFetchPolicy,
   });
+  final String? hiveSubDir;
+  final HttpLink httpLink;
+  final AuthLink authLink;
+  final bool alwaysRebroadcast;
+  final DefaultPolicies? defaultPolicies;
+  final GraphQLCache? cache;
+  final FetchPolicy? defaultFetchPolicy;
 }
 
 ///To init this class use `GraphqlRunner.init(...)`
@@ -38,28 +39,30 @@ class GraphqlRunnerConfig {
 ///https://pub.dev/packages/graphql_flutter/versions/5.0.0-nullsafety.2
 ///
 class GraphqlRunner {
+  GraphqlRunner({
+    required final this.client,
+    required final this.clientNotifier,
+    final this.defaultFetchPolicy = FetchPolicy.networkOnly,
+  });
   GraphQLClient client;
   ValueNotifier<GraphQLClient> clientNotifier;
   FetchPolicy defaultFetchPolicy;
-  GraphqlRunner({
-    required this.client,
-    required this.clientNotifier,
-    this.defaultFetchPolicy = FetchPolicy.networkOnly,
-  });
 
-  static Future<GraphqlRunner> init(
-      {required final GraphqlRunnerConfig config}) async {
+  static Future<GraphqlRunner> init({
+    required final GraphqlRunnerConfig config,
+  }) async {
     await initHiveForFlutter(subDir: config.hiveSubDir);
 
     final link = config.authLink.concat(config.httpLink);
     final client = GraphQLClient(
-        link: link,
-        cache: config.cache ??
-            GraphQLCache(
-              store: HiveStore(),
-            ),
-        alwaysRebroadcast: config.alwaysRebroadcast,
-        defaultPolicies: config.defaultPolicies);
+      link: link,
+      cache: config.cache ??
+          GraphQLCache(
+            store: HiveStore(),
+          ),
+      alwaysRebroadcast: config.alwaysRebroadcast,
+      defaultPolicies: config.defaultPolicies,
+    );
     final clientNotifier = ValueNotifier(client);
     final runner =
         GraphqlRunner(client: client, clientNotifier: clientNotifier);
@@ -100,17 +103,20 @@ class GraphqlRunner {
       case DefaultGqlOperationType.find:
         final queryResult = await client.query(
           QueryOptions(
-              document: document,
-              variables: jsonVariableValues,
-              fetchPolicy: defaultFetchPolicy),
+            document: document,
+            variables: jsonVariableValues,
+            fetchPolicy: defaultFetchPolicy,
+          ),
         );
         return GraphqlResult.fromQueryResult<TQueryResult>(
           queryResult: queryResult,
           fromJsonCallback: fromJsonCallback,
         );
       case DefaultGqlOperationType.fromString:
-        throw Exception('DefaultGqlOperationType is fromString but '
-            'has to be different');
+        throw Exception(
+          'DefaultGqlOperationType is fromString but '
+          'has to be different',
+        );
     }
   }
 }
