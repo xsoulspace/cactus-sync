@@ -1,6 +1,6 @@
 {
   "name": "@xsoulspace/cactus-sync-client",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "description": "Sharp and simple as cactus offline-first client library to sync with graphql server..",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

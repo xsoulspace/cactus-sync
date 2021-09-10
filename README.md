@@ -6,4 +6,4 @@ To see how it works clone the project and take a look for examples folder.
 
 This project is only in ealy stage development. Please don't use it for production until version ^1.0.0.
 
-To generate types use `cactus_sync_client_gen` package
+To generate types use `cactus_sync_client_gen` package in Typescript(Vue) or Dart(Flutter) version
